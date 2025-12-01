@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+npm-debug.log
+yarn-error.log
+Dockerfile
+.dockerignore
+dist
+coverage
+
