@@ -2,11 +2,11 @@
 
 import { useRef, useState } from 'react'
 import html2canvas from 'html2canvas'
-import type { Participant } from '@/lib/supabase'
+import type { ParticipantRecord } from '@/lib/models'
 
 type ShareCardProps = {
-  participantA: Participant
-  participantB: Participant
+  participantA: ParticipantRecord
+  participantB: ParticipantRecord
   matchPercentage: number
   topMatch: {
     question: { text: string; icon: string }

@@ -15,8 +15,9 @@ A fun and interactive quiz app for couples and friends to discover how well they
 
 ### Prerequisites
 
-- Node.js 18+ 
-- A Supabase account (free tier works perfectly)
+- Node.js 18+
+- AWS account with permission to create DynamoDB tables (free tier works)
+- AWS CLI configured locally (`aws configure`) or `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` env vars
 
 ### Installation
 
@@ -30,21 +31,21 @@ A fun and interactive quiz app for couples and friends to discover how well they
    npm install
    ```
 
-3. **Set up Supabase:**
-   
-   a. Create a new project at [supabase.com](https://supabase.com)
-   
-   b. Go to Project Settings > API and copy your project URL and anon key
-   
-   c. Create a `.env.local` file in the root directory:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-   ```
+3. **Configure AWS credentials:**
 
-4. **Set up the database:**
-   
-   Go to the SQL Editor in your Supabase dashboard and run the SQL from `SUPABASE_SETUP.sql`
+   - For local development you can either export env vars  
+     (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`)  
+     or run `aws configure` once.
+   - The app expects the following DynamoDB tables (auto-created in prod, or create manually for local dev):
+     - `kykm_sessions`
+     - `kykm_participants`
+     - `kykm_questions`
+     - `kykm_ratings`
+   - To override table names, set `AWS_DDB_SESSIONS_TABLE`, `AWS_DDB_PARTICIPANTS_TABLE`, etc.
+
+4. **(Optional) Override AWS region:**
+
+   The default region is `eu-north-1`. Set `AWS_REGION` if you use a different one.
 
 5. **Run the development server:**
    ```bash
@@ -80,22 +81,22 @@ knowing-you/
 │   │       └── results/
 │   │           └── page.tsx       # Results page
 │   └── api/
-│       ├── create-room/
-│       │   └── route.ts          # Create room API
-│       ├── join-room/
-│       │   └── route.ts          # Join room API
-│       ├── start-session/
-│       │   └── route.ts          # Start session API
-│       └── submit-rating/
-│           └── route.ts          # Submit rating API
+│       ├── create-room/          # Create room API
+│       ├── join-room/            # Join room API
+│       ├── start-session/        # Host starts the game
+│       ├── finish-session/       # Mark session as completed
+│       ├── submit-rating/        # Persist rating values
+│       └── room/
+│           └── state/            # Pollable room state (session, players, ratings)
 ├── components/
 │   └── ShareCard.tsx             # Share card component
 ├── data/
 │   └── questionPacks.ts          # Question packs data
 ├── lib/
-│   ├── supabase.ts               # Supabase client & types
+│   ├── models.ts                 # Shared TypeScript models
+│   ├── sessionStore.ts           # DynamoDB helper functions
 │   └── utils.ts                  # Utility functions
-└── SUPABASE_SETUP.sql            # Database schema
+└── deploy/                       # Elastic Beanstalk artifacts
 ```
 
 ## 🎨 Customization
@@ -132,38 +133,40 @@ className="bg-gradient-to-br from-your-color-1 via-your-color-2 to-your-color-3"
 
 ## 🔒 Security & Privacy
 
-For the MVP, RLS (Row Level Security) is enabled but set to allow all operations. Before deploying to production:
+For the MVP every session lives in your own AWS account (DynamoDB). To harden production:
 
-1. Update RLS policies in Supabase to restrict access
-2. Add user authentication if needed
-3. Implement rate limiting on API routes
-4. Add session expiration logic
+1. Attach a least-privilege IAM role to the Elastic Beanstalk/EC2 instance (read + write for the four `kykm_*` tables only).
+2. Enable DynamoDB TTL or a scheduled cleanup Lambda so finished rooms disappear after N hours.
+3. Add authentication or signed room tokens if you need more than ad-hoc 1:1 games.
+4. Introduce API rate limiting (Lambda@Edge, CloudFront, or a tiny middleware) to protect against brute-force room-code scans.
 
 ## 🛠️ Tech Stack
 
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
-- **Supabase** - Backend (database + real-time)
+- **AWS DynamoDB** - Backend storage
 - **Recharts** - Data visualization
 - **html2canvas** - Image generation
 
-## 📊 Database Schema
+## 📊 Data Model
 
-- **sessions** - Game sessions with unique codes
-- **participants** - Players (A and B) in each session
-- **questions** - Questions for each session (copied from packs)
-- **ratings** - Individual ratings (who rated whom on what)
+All game data lives in DynamoDB (one table per entity):
+
+- `kykm_sessions` — game session metadata with the short code
+- `kykm_participants` — two records (roles A/B) per session
+- `kykm_questions` — questions cloned from the selected pack
+- `kykm_ratings` — every 1–10 rating (who rated whom on which question)
 
 ## 🐛 Troubleshooting
 
 **"Комната не найдена" error:**
-- Make sure your Supabase credentials are correct in `.env.local`
-- Check that the database tables were created successfully
+- Ensure the AWS credentials you provided have DynamoDB read/write permissions
+- Confirm that the `kykm_sessions` table exists in the region you configured
 
-**Real-time not working:**
-- Verify that your Supabase project has real-time enabled (it's on by default)
-- Check browser console for connection errors
+**No updates in лобби / вопросы:**
+- The polling endpoints rely on DynamoDB – double-check the table contains the newly created session
+- Verify that the EC2/Elastic Beanstalk instance role has DynamoDB permissions
 
 **Charts not displaying:**
 - Make sure you have at least 4 ratings per question
@@ -171,20 +174,14 @@ For the MVP, RLS (Row Level Security) is enabled but set to allow all operations
 
 ## 🚀 Deployment
 
-### Deploy to Vercel
+### Deploy to AWS Elastic Beanstalk (recommended)
 
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy!
+1. Build the standalone bundle (`npm run build`)
+2. Zip `.next/standalone` + `.next/static` + `public`
+3. Upload via `eb deploy` (see `/deploy` folder for examples)
+4. The application reads DynamoDB using the instance role, so no secrets are stored on disk
 
-### Deploy to Other Platforms
-
-The app works on any platform that supports Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
+You can still deploy to Vercel/Netlify/etc., just make sure those platforms have IAM users with access to the DynamoDB tables.
 
 ## 📝 Future Enhancements
 

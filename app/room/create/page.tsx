@@ -48,44 +48,25 @@ function CreateRoomContent() {
 
     setLoading(true)
     try {
-      // Import demo storage dynamically (client-side only)
-      const { createDemoRoom, addDemoQuestions, isDemoMode } = await import('@/lib/demo-storage')
-      const { getQuestionPack } = await import('@/data/questionPacks')
-      
-      if (isDemoMode()) {
-        // Client-side demo mode
-        const { code, sessionId, participantId } = createDemoRoom(selectedPack, name, emoji)
-        
-        // Add questions
-        const pack = getQuestionPack(selectedPack)
-        if (pack) {
-          addDemoQuestions(sessionId, pack.questions)
-        }
-        
-        localStorage.setItem(`session_${code}_role`, 'A')
-        localStorage.setItem(`session_${code}_participant_id`, participantId)
-        router.push(`/room/${code}`)
-      } else {
-        // Real Supabase mode
-        const response = await fetch('/api/create-room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            questionPack: selectedPack,
-            creatorName: name,
-            creatorEmoji: emoji,
-          }),
+      const response = await fetch('/api/create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionPack: selectedPack,
+          creatorName: name.trim(),
+          creatorEmoji: emoji
         })
+      })
 
-        const data = await response.json()
-        
-        if (data.code) {
-          // Store creator info in localStorage
-          localStorage.setItem(`session_${data.code}_role`, 'A')
-          localStorage.setItem(`session_${data.code}_participant_id`, data.participantId)
-          router.push(`/room/${data.code}`)
-        }
+      if (!response.ok) {
+        throw new Error('Failed to create room')
       }
+
+      const data = await response.json()
+      localStorage.setItem(`session_${data.code}_role`, 'A')
+      localStorage.setItem(`session_${data.code}_participant_id`, data.participantId)
+      localStorage.setItem(`session_${data.code}_session_id`, data.sessionId)
+      router.push(`/room/${data.code}`)
     } catch (error) {
       console.error('Error creating room:', error)
       alert('Ошибка создания комнаты')

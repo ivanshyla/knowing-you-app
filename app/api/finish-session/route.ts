@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchParticipants, fetchSessionById, updateSessionStatus } from '@/lib/sessionStore'
+import { fetchSessionById, updateSessionStatus } from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,19 +17,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (session.status === 'live') {
-      return NextResponse.json({ success: true })
-    }
-
-    const participants = await fetchParticipants(sessionId)
-    if (participants.length < 2) {
-      return NextResponse.json({ error: 'Need two players' }, { status: 400 })
-    }
-
-    await updateSessionStatus(sessionId, 'live')
+    await updateSessionStatus(sessionId, 'done')
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error starting session:', error)
-    return NextResponse.json({ error: 'Failed to start session' }, { status: 500 })
+    console.error('Error finishing session:', error)
+    return NextResponse.json({ error: 'Failed to finish session' }, { status: 500 })
   }
 }
+

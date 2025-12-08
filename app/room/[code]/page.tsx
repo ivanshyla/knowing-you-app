@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { supabase, type Participant, type Session } from '@/lib/supabase'
+import type { ParticipantRecord } from '@/lib/models'
 import { formatCode } from '@/lib/utils'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫', '🔥', '💖', '🎯', '🦄']
 
-type ViewState = 'loading' | 'join' | 'lobby' | 'live'
+type ViewState = 'loading' | 'join' | 'lobby'
 
 export default function RoomPage() {
   const params = useParams()
@@ -15,138 +15,73 @@ export default function RoomPage() {
   const code = params.code as string
 
   const [viewState, setViewState] = useState<ViewState>('loading')
-  const [session, setSession] = useState<Session | null>(null)
-  const [participants, setParticipants] = useState<Participant[]>([])
+  const [participants, setParticipants] = useState<ParticipantRecord[]>([])
   const [myRole, setMyRole] = useState<'A' | 'B' | null>(null)
-  
-  // Join form state
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('😊')
+  const [emoji, setEmoji] = useState(EMOJIS[0])
   const [joining, setJoining] = useState(false)
+  const [pollingError, setPollingError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadSession()
+    const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
+    const storedSessionId = localStorage.getItem(`session_${code}_session_id`)
+    if (storedRole) setMyRole(storedRole)
+    if (storedSessionId) setSessionId(storedSessionId)
   }, [code])
 
-  useEffect(() => {
-    if (!session) return
+  const loadState = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({ code })
+      const response = await fetch(`/api/room/state?${params.toString()}`, { cache: 'no-store' })
+      if (!response.ok) {
+        if (response.status === 404) {
+          setPollingError('Комната не найдена')
+          setViewState('loading')
+        }
+        return
+      }
 
-    // Check if user already joined
-    const storedRole = localStorage.getItem(`session_${code}_role`)
-    if (storedRole) {
-      setMyRole(storedRole as 'A' | 'B')
-      setViewState(session.status === 'live' ? 'live' : 'lobby')
-    } else {
-      setViewState('join')
+      const data = await response.json()
+      setParticipants(data.participants ?? [])
+      setSessionId(data.session.id)
+      localStorage.setItem(`session_${code}_session_id`, data.session.id)
+      setPollingError(null)
+
+      if (data.session.status === 'live') {
+        router.push(`/room/${code}/questions`)
+        return
+      }
+
+      if (data.session.status === 'done') {
+        router.push(`/room/${code}/results`)
+        return
+      }
+
+      const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
+      setMyRole(storedRole)
+      setViewState(storedRole ? 'lobby' : 'join')
+    } catch (error) {
+      console.error('Failed to load room state:', error)
+      setPollingError('Не удаётся обновить комнату')
     }
+  }, [code, router])
 
-    // Subscribe to participants changes
-    const channel = supabase
-      .channel(`room_${session.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'participants',
-          filter: `session_id=eq.${session.id}`,
-        },
-        () => {
-          loadParticipants(session.id)
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'sessions',
-          filter: `id=eq.${session.id}`,
-        },
-        (payload) => {
-          const updated = payload.new as Session
-          setSession(updated)
-          if (updated.status === 'live') {
-            setViewState('live')
-            router.push(`/room/${code}/questions`)
-          }
-        }
-      )
-      .subscribe()
-
+  useEffect(() => {
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      await loadState()
+    }
+    tick()
+    const interval = setInterval(tick, 2000)
     return () => {
-      supabase.removeChannel(channel)
+      cancelled = true
+      clearInterval(interval)
     }
-  }, [session?.id])
+  }, [loadState])
 
-  useEffect(() => {
-    if (session) {
-      loadParticipants(session.id)
-    }
-  }, [session])
-
-  async function loadSession() {
-    // Import demo storage
-    const { getDemoSession, isDemoMode } = await import('@/lib/demo-storage')
-    
-    if (isDemoMode()) {
-      // Demo mode - load from localStorage
-      const sessionData = getDemoSession(code)
-      if (sessionData) {
-        setSession(sessionData)
-      } else {
-        alert('Комната не найдена')
-        router.push('/')
-      }
-    } else {
-      // Real Supabase mode - try to load session with retry logic
-      let attempts = 0
-      const maxAttempts = 3
-      
-      while (attempts < maxAttempts) {
-        const { data, error } = await supabase
-          .from('sessions')
-          .select('*')
-          .eq('code', code)
-          .single()
-
-        if (data) {
-          setSession(data)
-          return
-        }
-        
-        attempts++
-        if (attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 300))
-        }
-      }
-
-      // After all attempts failed
-      alert('Комната не найдена')
-      router.push('/')
-    }
-  }
-
-  async function loadParticipants(sessionId: string) {
-    const { getDemoParticipants, isDemoMode } = await import('@/lib/demo-storage')
-    
-    if (isDemoMode()) {
-      const data = getDemoParticipants(sessionId)
-      setParticipants(data)
-    } else {
-      const { data } = await supabase
-        .from('participants')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('joined_at', { ascending: true })
-
-      if (data) {
-        setParticipants(data)
-      }
-    }
-  }
-
-  async function handleJoin() {
+  const handleJoin = useCallback(async () => {
     if (!name.trim()) {
       alert('Введите ваше имя!')
       return
@@ -154,316 +89,186 @@ export default function RoomPage() {
 
     setJoining(true)
     try {
-      const { joinDemoRoom, isDemoMode } = await import('@/lib/demo-storage')
-      
-      if (isDemoMode()) {
-        // Demo mode - join via localStorage
-        const result = joinDemoRoom(code, name, emoji)
-        if (result) {
-          localStorage.setItem(`session_${code}_role`, result.role)
-          localStorage.setItem(`session_${code}_participant_id`, result.participantId)
-          setMyRole(result.role)
-          setViewState('lobby')
-          // Reload participants
-          if (session) {
-            await loadParticipants(session.id)
-          }
-        } else {
-          alert('Комната заполнена или не найдена')
-        }
-      } else {
-        // Real Supabase mode
-        const response = await fetch('/api/join-room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, name, emoji }),
-        })
+      const response = await fetch('/api/join-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, name: name.trim(), emoji })
+      })
 
-        const data = await response.json()
-
-        if (data.role) {
-          localStorage.setItem(`session_${code}_role`, data.role)
-          localStorage.setItem(`session_${code}_participant_id`, data.participantId)
-          setMyRole(data.role)
-          setViewState('lobby')
-        } else {
-          alert(data.error || 'Ошибка при присоединении')
-        }
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to join')
       }
+
+      localStorage.setItem(`session_${code}_role`, data.role)
+      localStorage.setItem(`session_${code}_participant_id`, data.participantId)
+      localStorage.setItem(`session_${code}_session_id`, data.sessionId)
+      setMyRole(data.role)
+      setSessionId(data.sessionId)
+      setViewState('lobby')
+      await loadState()
     } catch (error) {
-      console.error('Error joining:', error)
-      alert('Ошибка при присоединении')
+      console.error('Error joining room:', error)
+      alert('Не получилось зайти. Попробуйте ещё раз.')
     } finally {
       setJoining(false)
     }
-  }
+  }, [code, emoji, loadState, name])
 
-  async function handleStart() {
-    if (!session) return
+  const handleStart = useCallback(async () => {
+    if (!sessionId) return
 
     try {
-      const { updateDemoSessionStatus, isDemoMode } = await import('@/lib/demo-storage')
-      
-      if (isDemoMode()) {
-        updateDemoSessionStatus(session.id, 'live')
-        router.push(`/room/${code}/questions`)
-      } else {
-        await fetch('/api/start-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: session.id }),
-        })
+      const response = await fetch('/api/start-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        alert(data?.error || 'Ошибка старта')
+        return
       }
+
+      router.push(`/room/${code}/questions`)
     } catch (error) {
       console.error('Error starting session:', error)
     }
-  }
+  }, [code, router, sessionId])
 
-  function handleCopyCode() {
+  const handleCopyCode = useCallback(() => {
     navigator.clipboard.writeText(code)
-    alert('Код скопирован!')
-  }
+  }, [code])
 
-  async function handleAddBot() {
-    if (!session || participants.length >= 2) return
-    
-    const botNames = ['Бот Алекс', 'Бот Мария', 'Бот Иван', 'Бот Катя']
-    const botEmojis = ['🤖', '🎮', '👾', '🦾']
-    const randomName = botNames[Math.floor(Math.random() * botNames.length)]
-    const randomEmoji = botEmojis[Math.floor(Math.random() * botEmojis.length)]
-    
-    try {
-      const { joinDemoRoom, isDemoMode } = await import('@/lib/demo-storage')
-      
-      if (isDemoMode()) {
-        // Demo mode - add bot via localStorage
-        const result = joinDemoRoom(code, randomName, randomEmoji)
-        if (result) {
-          // Reload participants
-          await loadParticipants(session.id)
-        }
-      } else {
-        // Real Supabase mode
-        const response = await fetch('/api/join-room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, name: randomName, emoji: randomEmoji }),
-        })
-        
-        if (response.ok) {
-          await loadParticipants(session.id)
-        }
-      }
-    } catch (error) {
-      console.error('Error adding bot:', error)
-    }
-  }
+  const isReady = useMemo(() => participants.length === 2, [participants])
+  const participantA = useMemo(() => participants.find((p) => p.role === 'A'), [participants])
+  const participantB = useMemo(() => participants.find((p) => p.role === 'B'), [participants])
 
   if (viewState === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <div className="text-gray-600">Загрузка...</div>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center px-4">
+        <div className="text-center text-gray-700">
+          <div className="text-4xl mb-3">⏳</div>
+          <p>{pollingError || 'Ищем комнату...'}</p>
         </div>
       </div>
     )
   }
 
   if (viewState === 'join') {
+    const roomFull = participants.length >= 2
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-8 px-4">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Присоединиться к игре 🎮
-            </h1>
-            <div className="text-2xl font-mono font-bold text-purple-600 mb-2">
-              {formatCode(code)}
-            </div>
+            <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Комната</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Присоединиться 🎮</h1>
+            <div className="text-2xl font-mono font-bold text-purple-600 mb-2">{formatCode(code)}</div>
+            {pollingError && <p className="text-sm text-red-500">{pollingError}</p>}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6">
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ваше имя
-              </label>
+          <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ваше имя</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Введите ваше имя"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                placeholder="Например, Ася"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
                 maxLength={20}
+                disabled={roomFull}
               />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Выберите эмодзи
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Эмодзи-настроение</label>
               <div className="grid grid-cols-8 gap-2">
-                {EMOJIS.map((e) => (
+                {EMOJIS.map((icon) => (
                   <button
-                    key={e}
-                    onClick={() => setEmoji(e)}
-                    className={`text-2xl p-2 rounded-lg transition-all ${
-                      emoji === e ? 'bg-purple-100 scale-110' : 'hover:bg-gray-100'
-                    }`}
+                    type="button"
+                    key={icon}
+                    onClick={() => setEmoji(icon)}
+                    disabled={roomFull}
+                    className={`text-2xl p-2 rounded-xl transition-all ${
+                      emoji === icon ? 'bg-purple-100 scale-110 shadow' : 'bg-gray-100 hover:bg-gray-200'
+                    } ${roomFull ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    {e}
+                    {icon}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600 mb-2">Предпросмотр:</div>
-              <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
+              <p className="font-semibold text-gray-800 mb-1">Предпросмотр</p>
+              <div className="flex items-center gap-3 text-lg font-semibold text-gray-900">
                 <span className="text-3xl">{emoji}</span>
-                <span className="font-semibold text-gray-800">
-                  {name || 'Ваше имя'}
-                </span>
+                <span>{name || 'Ваше имя'}</span>
               </div>
             </div>
 
             <button
               onClick={handleJoin}
-              disabled={joining || !name.trim()}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              disabled={joining || !name.trim() || roomFull}
+              className="w-full rounded-full bg-gradient-to-r from-purple-600 to-pink-500 py-4 text-white font-semibold shadow-lg transition hover:opacity-90 disabled:opacity-40"
             >
-              {joining ? 'Присоединяемся...' : 'Присоединиться 🚀'}
+              {roomFull ? 'Комната заполнена' : joining ? 'Подключаемся...' : 'Войти в игру'}
             </button>
           </div>
         </div>
-      </div>
-    )
-  }
-
-  if (viewState === 'lobby') {
-    const isReady = participants.length === 2
-    const participantA = participants.find(p => p.role === 'A')
-    const participantB = participants.find(p => p.role === 'B')
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Лобби 🎯
-            </h1>
-            
-            {/* Room Code */}
-            <div className="inline-block bg-white rounded-xl shadow-md px-6 py-3 mb-4">
-              <div className="text-sm text-gray-600 mb-1">Код комнаты:</div>
-              <div className="flex items-center gap-3">
-                <div className="text-2xl font-mono font-bold text-purple-600">
-                  {formatCode(code)}
-                </div>
-                <button
-                  onClick={handleCopyCode}
-                  className="text-sm bg-purple-100 text-purple-600 px-3 py-1 rounded-lg hover:bg-purple-200 transition-colors"
-                >
-                  📋 Копировать
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Participants */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              Участники ({participants.length}/2)
-            </h2>
-            
-            <div className="space-y-3">
-              <ParticipantCard
-                participant={participantA}
-                label="Игрок 1"
-                isYou={myRole === 'A'}
-              />
-              <ParticipantCard
-                participant={participantB}
-                label="Игрок 2"
-                isYou={myRole === 'B'}
-              />
-            </div>
-          </div>
-
-          {/* Status */}
-          {!isReady && (
-            <>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 text-center">
-                <div className="text-yellow-800 font-medium mb-2">
-                  ⏳ Ждём второго игрока...
-                </div>
-                <div className="text-sm text-yellow-700">
-                  Поделитесь кодом комнаты с другом
-                </div>
-              </div>
-              
-              {/* Add Bot Button */}
-              <button
-                onClick={handleAddBot}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
-              >
-                🤖 Добавить бота для теста
-              </button>
-            </>
-          )}
-
-          {/* Start Button */}
-          {isReady && (
-            <button
-              onClick={handleStart}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-            >
-              Начать игру! 🎮
-            </button>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  return null
-}
-
-function ParticipantCard({ 
-  participant, 
-  label, 
-  isYou 
-}: { 
-  participant?: Participant
-  label: string
-  isYou: boolean
-}) {
-  if (!participant) {
-    return (
-      <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400">
-        <div className="text-3xl mb-2">👤</div>
-        <div className="text-sm">{label} (ожидание...)</div>
       </div>
     )
   }
 
   return (
-    <div className={`border-2 rounded-xl p-4 ${
-      isYou ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white'
-    }`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">{participant.emoji}</span>
-          <div>
-            <div className="font-semibold text-gray-800">
-              {participant.name}
-            </div>
-            <div className="text-sm text-gray-500">{label}</div>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-[0.4em] text-gray-500">Комната</p>
+          <h1 className="text-3xl font-bold text-gray-900 mt-2">Лобби 🎯</h1>
+          <div className="mt-4 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow">
+            <div className="text-sm text-gray-500">Код:</div>
+            <div className="text-2xl font-mono font-semibold text-purple-600">{formatCode(code)}</div>
+            <button
+              onClick={handleCopyCode}
+              className="text-sm rounded-full border border-purple-100 px-3 py-1 text-purple-600"
+            >
+              📋
+            </button>
+          </div>
+          {pollingError && <p className="mt-2 text-sm text-red-500">{pollingError}</p>}
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-xl">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Участники ({participants.length}/2)</h2>
+          <div className="space-y-3">
+            <ParticipantCard participant={participantA} label="Игрок 1" isYou={myRole === 'A'} />
+            <ParticipantCard participant={participantB} label="Игрок 2" isYou={myRole === 'B'} />
           </div>
         </div>
-        {isYou && (
-          <div className="bg-purple-200 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full">
-            Вы
+
+        {!isReady && (
+          <div className="rounded-3xl border border-yellow-200 bg-yellow-50 p-5 text-center text-yellow-900">
+            <p className="font-semibold">Ждём второго игрока</p>
+            <p className="text-sm text-yellow-800 mt-1">Поделитесь кодом — комната живёт пока вы здесь.</p>
+          </div>
+        )}
+
+        {isReady && myRole === 'A' && (
+          <button
+            onClick={handleStart}
+            className="w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 py-4 text-lg font-semibold text-white shadow-xl"
+          >
+            Начать игру
+          </button>
+        )}
+
+        {isReady && myRole === 'B' && (
+          <div className="rounded-3xl border border-green-200 bg-green-50 p-5 text-center text-green-900">
+            <p className="font-semibold">Всё готово</p>
+            <p className="text-sm mt-1">Организатор запускает игру, не закрывайте страницу.</p>
           </div>
         )}
       </div>
@@ -471,3 +276,44 @@ function ParticipantCard({
   )
 }
 
+function ParticipantCard({
+  participant,
+  label,
+  isYou
+}: {
+  participant?: ParticipantRecord
+  label: string
+  isYou: boolean
+}) {
+  if (!participant) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-gray-200 p-4 text-center text-gray-400">
+        <div className="text-3xl mb-1">👤</div>
+        <div className="text-sm">{label} ждём...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={`rounded-2xl border-2 p-4 ${
+        isYou ? 'border-purple-200 bg-purple-50' : 'border-gray-100 bg-gray-50'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{participant.emoji}</span>
+          <div>
+            <p className="font-semibold text-gray-900">{participant.name}</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-gray-500">{label}</p>
+          </div>
+        </div>
+        {isYou && (
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-purple-600 shadow">
+            это вы
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
