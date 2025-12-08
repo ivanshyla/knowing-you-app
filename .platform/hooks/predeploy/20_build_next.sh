@@ -4,6 +4,6 @@ set -euo pipefail
 
 cd /var/app/staging
 
-echo "[postdeploy] Running Next.js production build..."
+echo "[predeploy] Building Next.js app for production..."
 npm run build
 
