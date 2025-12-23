@@ -2,20 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/apiClient'
+import { Share } from '@capacitor/share'
+import { isCapacitor } from '@/lib/capacitor'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
-import { calculateGap, getGapMessage, getRandomMessage, RESULT_MESSAGES } from '@/lib/utils'
+import { getGapMessage, getRandomMessage, RESULT_MESSAGES } from '@/lib/utils'
 import ShareCard from '@/components/ShareCard'
-
-type QuestionResult = {
-  question: QuestionRecord
-  ratings: {
-    AtoA: number
-    AtoB: number
-    BtoA: number
-    BtoB: number
-  }
-  avgGap: number
-}
+import { buildQuestionResults, computeMatchPercentage, pickTopDifferences, pickTopMatches } from '@/lib/results'
 
 export default function ResultsPage() {
   const params = useParams()
@@ -29,12 +22,14 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [showShareCard, setShowShareCard] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       try {
-        const query = new URLSearchParams({ code, include: 'questions,ratings' })
-        const response = await fetch(`/api/room/state?${query.toString()}`, { cache: 'no-store' })
+        const queryParams = new URLSearchParams({ code, include: 'questions,ratings' })
+        const response = await apiFetch(`/api/room/state?${queryParams.toString()}`, { cache: 'no-store' })
 
         if (!response.ok) {
           throw new Error('Комната не найдена')
@@ -60,43 +55,68 @@ export default function ResultsPage() {
     load()
   }, [code, router])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin)
+    }
+  }, [])
+
   const participantA = participants.find((p) => p.role === 'A')
   const participantB = participants.find((p) => p.role === 'B')
 
-  const questionResults = useMemo<QuestionResult[]>(() => {
-    if (!questions.length) return []
-    return questions.map((question) => {
-      const qRatings = ratings.filter((rating) => rating.questionId === question.questionId)
-      const AtoA = qRatings.find((r) => r.raterRole === 'A' && r.targetRole === 'A')?.value ?? 0
-      const AtoB = qRatings.find((r) => r.raterRole === 'A' && r.targetRole === 'B')?.value ?? 0
-      const BtoA = qRatings.find((r) => r.raterRole === 'B' && r.targetRole === 'A')?.value ?? 0
-      const BtoB = qRatings.find((r) => r.raterRole === 'B' && r.targetRole === 'B')?.value ?? 0
-
-      const gap = (calculateGap(AtoA, BtoA) + calculateGap(BtoB, AtoB)) / 2
-
-      return {
-        question,
-        ratings: { AtoA, AtoB, BtoA, BtoB },
-        avgGap: gap
-      }
-    })
-  }, [questions, ratings])
+  const questionResults = useMemo(() => buildQuestionResults(questions, ratings), [questions, ratings])
 
   const matchPercentage = useMemo(() => {
-    if (!questionResults.length) return 0
-    const totalGap = questionResults.reduce((acc, item) => acc + item.avgGap, 0) / questionResults.length
-    return Math.max(0, Math.round(100 - (totalGap / 10) * 100))
+    return computeMatchPercentage(questionResults)
   }, [questionResults])
 
-  const topMatches = useMemo(
-    () => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3),
-    [questionResults]
-  )
+  const topMatches = useMemo(() => pickTopMatches(questionResults, 3), [questionResults])
 
-  const topDifferences = useMemo(
-    () => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 3),
-    [questionResults]
-  )
+  const topDifferences = useMemo(() => pickTopDifferences(questionResults, 3), [questionResults])
+
+  const shareUrl = useMemo(() => {
+    if (!session || !origin) return ''
+    return `${origin}/share/${session.id}`
+  }, [origin, session])
+
+  const copyShareLink = async () => {
+    if (!shareUrl) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch (error) {
+      console.error('Failed to copy share link:', error)
+      window.prompt('Скопируйте ссылку:', shareUrl)
+    }
+  }
+
+  const shareResult = async () => {
+    if (!shareUrl) return
+    try {
+      if (isCapacitor()) {
+        await Share.share({
+          title: 'Knowing You, Knowing Me — результат',
+          text: 'Посмотри наш результат 👇',
+          url: shareUrl,
+          dialogTitle: 'Поделиться результатом'
+        })
+        return
+      }
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Knowing You, Knowing Me — результат',
+          text: 'Посмотри наш результат 👇',
+          url: shareUrl
+        })
+        return
+      }
+    } catch (error) {
+      // ignore and fallback to copy
+      console.warn('Share cancelled/failed:', error)
+    }
+    await copyShareLink()
+  }
 
   const message = useMemo(() => {
     if (matchPercentage >= 70) return getRandomMessage(RESULT_MESSAGES.highMatch)
@@ -203,12 +223,34 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowShareCard(true)}
-          className="w-full rounded-full bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-lg font-semibold text-white shadow-xl"
-        >
-          Создать шэр-картинку 📸
-        </button>
+        <div className="rounded-3xl bg-white p-6 shadow-xl space-y-3">
+          <h3 className="text-lg font-semibold text-gray-900">Поделиться</h3>
+          <p className="text-sm text-gray-600">
+            Ссылка ведёт на публичную страницу результата (секретный id, не код комнаты).
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={shareResult}
+              disabled={!shareUrl}
+              className="flex-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 py-4 text-lg font-semibold text-white shadow-xl disabled:opacity-50"
+            >
+              Поделиться ссылкой 📤
+            </button>
+            <button
+              onClick={copyShareLink}
+              disabled={!shareUrl}
+              className="flex-1 rounded-full border border-gray-200 bg-white py-4 text-lg font-semibold text-gray-900 shadow-sm disabled:opacity-50"
+            >
+              {copied ? 'Скопировано ✅' : 'Копировать ссылку 🔗'}
+            </button>
+          </div>
+          <button
+            onClick={() => setShowShareCard(true)}
+            className="w-full rounded-full bg-gradient-to-r from-purple-600 to-pink-500 py-4 text-lg font-semibold text-white shadow-xl"
+          >
+            Создать шэр-картинку 📸
+          </button>
+        </div>
 
         <div className="text-center">
           <a href="/" className="text-sm font-semibold text-gray-700 underline">
@@ -222,6 +264,7 @@ export default function ResultsPage() {
           participantA={participantA}
           participantB={participantB}
           matchPercentage={matchPercentage}
+          shareUrl={shareUrl || undefined}
           topMatch={{
             question: {
               text: topMatches[0].question.text,

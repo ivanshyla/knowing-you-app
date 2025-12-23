@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { addParticipantRecord, fetchParticipants, fetchSessionByCode } from '@/lib/sessionStore'
+import { createUserId, getUserIdFromRequest, USER_COOKIE } from '@/lib/auth'
+import {
+  addParticipantRecord,
+  createUserSessionLink,
+  ensureUserRecord,
+  fetchParticipants,
+  fetchSessionByCode,
+  syncUserSessionPartnerInfo
+} from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    let userId = getUserIdFromRequest(request)
+    let shouldSetCookie = false
+    if (!userId) {
+      userId = createUserId()
+      shouldSetCookie = true
+    }
+    await ensureUserRecord(userId)
+
     const body = await request.json()
     const code = String(body?.code || '')
     const name = String(body?.name || '').trim()
@@ -35,14 +51,31 @@ export async function POST(request: NextRequest) {
       sessionId: session.id,
       role,
       name,
-      emoji
+      emoji,
+      userId
     })
 
-    return NextResponse.json({
+    await createUserSessionLink({
+      userId,
+      sessionId: session.id,
+      createdAt: new Date().toISOString(),
+      code,
+      role,
+      participantName: name,
+      participantEmoji: emoji
+    })
+    // if both are present now, fill partner info for both accounts
+    await syncUserSessionPartnerInfo(session.id)
+
+    const response = NextResponse.json({
       sessionId: session.id,
       participantId: participant.participantId,
       role
     })
+    if (shouldSetCookie) {
+      response.cookies.set(USER_COOKIE, userId, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 })
+    }
+    return response
   } catch (error: any) {
     if (error?.name === 'ConditionalCheckFailedException') {
       return NextResponse.json({ error: 'Slot already taken' }, { status: 409 })

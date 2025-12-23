@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/apiClient'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 
 type RatingTarget = 'A' | 'B'
@@ -64,7 +65,7 @@ export default function QuestionsPage() {
   const loadInitialState = useCallback(async () => {
     try {
       const query = new URLSearchParams({ code, include: 'questions,ratings' })
-      const response = await fetch(`/api/room/state?${query.toString()}`, { cache: 'no-store' })
+      const response = await apiFetch(`/api/room/state?${query.toString()}`, { cache: 'no-store' })
       if (!response.ok) {
         throw new Error('Комната недоступна')
       }
@@ -111,7 +112,7 @@ export default function QuestionsPage() {
     const poll = async () => {
       try {
         const query = new URLSearchParams({ code, include: 'ratings' })
-        const response = await fetch(`/api/room/state?${query.toString()}`, { cache: 'no-store' })
+        const response = await apiFetch(`/api/room/state?${query.toString()}`, { cache: 'no-store' })
         if (!response.ok || cancelled) return
         const data = await response.json()
         setRatings(data.ratings ?? [])
@@ -145,9 +146,8 @@ export default function QuestionsPage() {
 
     const timer = setTimeout(async () => {
       try {
-        await fetch('/api/finish-session', {
+        await apiFetch('/api/finish-session', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionId: session.id })
         })
       } catch (error) {
@@ -171,9 +171,8 @@ export default function QuestionsPage() {
     if (!session || !currentQuestion || !myRole) return
     setSubmitting(true)
     try {
-      const response = await fetch('/api/submit-rating', {
+      const response = await apiFetch('/api/submit-rating', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId: session.id,
           questionId: currentQuestion.questionId,

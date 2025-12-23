@@ -34,7 +34,15 @@ export default function HomePage() {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10">
         <header className="space-y-4 text-center">
-          <p className="text-xs uppercase tracking-[0.5em] text-white/60">18+ формат</p>
+          <div className="flex items-center justify-between">
+            <div className="text-xs uppercase tracking-[0.5em] text-white/60">18+ формат</div>
+            <Link
+              href="/account"
+              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/80"
+            >
+              Аккаунт
+            </Link>
+          </div>
           <h1 className="text-4xl font-semibold leading-tight text-white">
             Knowing You, Knowing Me
           </h1>

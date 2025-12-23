@@ -15,6 +15,7 @@ export type ParticipantRecord = {
   name: string
   emoji: string
   joinedAt: string
+  userId?: string
 }
 
 export type QuestionRecord = {
@@ -40,5 +41,35 @@ export type RoomState = {
   participants: ParticipantRecord[]
   questions?: QuestionRecord[]
   ratings?: RatingRecord[]
+}
+
+export type UserRecord = {
+  userId: string
+  createdAt: string
+  email?: string
+  passwordSalt?: string
+  passwordHash?: string
+  isPro: boolean
+  gamesPlayed: number
+  matchSum: number
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
+  stripeStatus?: string
+}
+
+export type UserSessionRecord = {
+  userId: string
+  sessionId: string
+  createdAt: string
+  code?: string
+  role?: 'A' | 'B'
+  participantName?: string
+  participantEmoji?: string
+  partnerName?: string
+  partnerEmoji?: string
+  matchPercentage?: number
+  topMatchText?: string
+  topMatchIcon?: string
+  finishedAt?: string
 }
 

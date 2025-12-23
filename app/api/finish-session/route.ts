@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchSessionById, updateSessionStatus } from '@/lib/sessionStore'
+import { fetchSessionById, finalizeSessionAndUpdateStats, updateSessionStatus } from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     await updateSessionStatus(sessionId, 'done')
+    await finalizeSessionAndUpdateStats(sessionId)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error finishing session:', error)

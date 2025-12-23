@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { Share } from '@capacitor/share'
+import { isCapacitor } from '@/lib/capacitor'
 import type { ParticipantRecord } from '@/lib/models'
+import { apiFetch } from '@/lib/apiClient'
 import { formatCode } from '@/lib/utils'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫', '🔥', '💖', '🎯', '🦄']
@@ -22,6 +25,8 @@ export default function RoomPage() {
   const [emoji, setEmoji] = useState(EMOJIS[0])
   const [joining, setJoining] = useState(false)
   const [pollingError, setPollingError] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
+  const [copiedInvite, setCopiedInvite] = useState(false)
 
   useEffect(() => {
     const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
@@ -30,10 +35,16 @@ export default function RoomPage() {
     if (storedSessionId) setSessionId(storedSessionId)
   }, [code])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin)
+    }
+  }, [])
+
   const loadState = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ code })
-      const response = await fetch(`/api/room/state?${params.toString()}`, { cache: 'no-store' })
+      const queryParams = new URLSearchParams({ code })
+      const response = await apiFetch(`/api/room/state?${queryParams.toString()}`, { cache: 'no-store' })
       if (!response.ok) {
         if (response.status === 404) {
           setPollingError('Комната не найдена')
@@ -89,9 +100,8 @@ export default function RoomPage() {
 
     setJoining(true)
     try {
-      const response = await fetch('/api/join-room', {
+      const response = await apiFetch('/api/join-room', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, name: name.trim(), emoji })
       })
 
@@ -119,9 +129,8 @@ export default function RoomPage() {
     if (!sessionId) return
 
     try {
-      const response = await fetch('/api/start-session', {
+      const response = await apiFetch('/api/start-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId })
       })
 
@@ -140,6 +149,46 @@ export default function RoomPage() {
   const handleCopyCode = useCallback(() => {
     navigator.clipboard.writeText(code)
   }, [code])
+
+  const inviteUrl = useMemo(() => (origin ? `${origin}/room/${code}` : ''), [code, origin])
+
+  const handleCopyInvite = useCallback(async () => {
+    if (!inviteUrl) return
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopiedInvite(true)
+      window.setTimeout(() => setCopiedInvite(false), 1500)
+    } catch (error) {
+      console.error('Failed to copy invite link:', error)
+      window.prompt('Скопируйте ссылку:', inviteUrl)
+    }
+  }, [inviteUrl])
+
+  const handleInviteShare = useCallback(async () => {
+    if (!inviteUrl) return
+    try {
+      if (isCapacitor()) {
+        await Share.share({
+          title: 'Knowing You, Knowing Me — приглашение',
+          text: 'Заходи в комнату и сыграем 👇',
+          url: inviteUrl,
+          dialogTitle: 'Пригласить друга'
+        })
+        return
+      }
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Knowing You, Knowing Me — приглашение',
+          text: 'Заходи в комнату и сыграем 👇',
+          url: inviteUrl
+        })
+        return
+      }
+    } catch (error) {
+      console.warn('Share cancelled/failed:', error)
+    }
+    await handleCopyInvite()
+  }, [handleCopyInvite, inviteUrl])
 
   const isReady = useMemo(() => participants.length === 2, [participants])
   const participantA = useMemo(() => participants.find((p) => p.role === 'A'), [participants])
@@ -237,7 +286,24 @@ export default function RoomPage() {
             >
               📋
             </button>
+            <button
+              onClick={handleInviteShare}
+              className="text-sm rounded-full border border-purple-100 px-3 py-1 text-purple-600"
+              title="Поделиться ссылкой"
+            >
+              📤
+            </button>
           </div>
+          {inviteUrl && (
+            <div className="mt-3 flex flex-col items-center gap-2">
+              <button
+                onClick={handleCopyInvite}
+                className="text-xs rounded-full border border-gray-200 bg-white px-4 py-2 text-gray-700 shadow-sm"
+              >
+                {copiedInvite ? 'Ссылка скопирована ✅' : 'Копировать ссылку-приглашение 🔗'}
+              </button>
+            </div>
+          )}
           {pollingError && <p className="mt-2 text-sm text-red-500">{pollingError}</p>}
         </div>
 

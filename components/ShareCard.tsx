@@ -2,12 +2,15 @@
 
 import { useRef, useState } from 'react'
 import html2canvas from 'html2canvas'
+import { Share } from '@capacitor/share'
+import { isCapacitor } from '@/lib/capacitor'
 import type { ParticipantRecord } from '@/lib/models'
 
 type ShareCardProps = {
   participantA: ParticipantRecord
   participantB: ParticipantRecord
   matchPercentage: number
+  shareUrl?: string
   topMatch: {
     question: { text: string; icon: string }
     avgGap: number
@@ -21,12 +24,53 @@ export default function ShareCard({
   participantA, 
   participantB, 
   matchPercentage, 
+  shareUrl,
   topMatch,
   onClose 
 }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [theme, setTheme] = useState<Theme>('cute')
   const [downloading, setDownloading] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const host = typeof window !== 'undefined' ? window.location.host : ''
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      window.prompt('Скопируйте:', text)
+    }
+  }
+
+  const shareLink = async () => {
+    if (!shareUrl) return
+    try {
+      if (isCapacitor()) {
+        await Share.share({
+          title: 'Knowing You, Knowing Me — результат',
+          text: 'Смотри наш результат 👇',
+          url: shareUrl,
+          dialogTitle: 'Поделиться результатом'
+        })
+        return
+      }
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Knowing You, Knowing Me — результат',
+          text: 'Смотри наш результат 👇',
+          url: shareUrl
+        })
+        return
+      }
+    } catch (error) {
+      console.warn('Share cancelled/failed:', error)
+    }
+    await copyText(shareUrl)
+  }
 
   const handleDownload = async () => {
     if (!cardRef.current) return
@@ -181,19 +225,38 @@ export default function ShareCard({
 
               {/* Footer */}
               <div className="text-center text-gray-700 text-sm">
-                Попробуйте сами → knowing-you.app
+                {host ? `Попробуйте сами → ${host}` : 'Попробуйте сами'}
               </div>
             </div>
           </div>
 
-          {/* Download Button */}
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            {downloading ? 'Создаём...' : 'Скачать картинку 📥'}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {downloading ? 'Создаём...' : 'Скачать картинку 📥'}
+            </button>
+
+            {shareUrl && (
+              <button
+                onClick={shareLink}
+                className="w-full border-2 border-gray-200 bg-white text-gray-900 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                {copied ? 'Ссылка скопирована ✅' : 'Поделиться ссылкой 🔗'}
+              </button>
+            )}
+
+            {shareUrl && (
+              <button
+                onClick={() => copyText(shareUrl)}
+                className="w-full border border-gray-200 bg-gray-50 text-gray-900 py-3 rounded-xl font-semibold shadow-sm hover:bg-gray-100 transition-all duration-200"
+              >
+                Копировать ссылку
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

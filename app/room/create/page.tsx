@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { apiFetch } from '@/lib/apiClient'
 import { QUESTION_PACKS } from '@/data/questionPacks'
 
 const EMOJIS = ['🫦', '🔥', '😎', '👑', '🦄', '😈', '💘', '🤫', '🤍', '🫶', '💋', '🌶️', '🎯', '🪩', '🥂', '⚡']
@@ -31,6 +32,8 @@ function CreateRoomContent() {
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('🫦')
   const [loading, setLoading] = useState(false)
+  const [paywall, setPaywall] = useState(false)
+  const [paywallMessage, setPaywallMessage] = useState<string | null>(null)
 
   const packFromQuery = searchParams.get('pack')
 
@@ -47,10 +50,11 @@ function CreateRoomContent() {
     }
 
     setLoading(true)
+    setPaywall(false)
+    setPaywallMessage(null)
     try {
-      const response = await fetch('/api/create-room', {
+      const response = await apiFetch('/api/create-room', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           questionPack: selectedPack,
           creatorName: name.trim(),
@@ -58,11 +62,16 @@ function CreateRoomContent() {
         })
       })
 
+      const data = await response.json()
       if (!response.ok) {
-        throw new Error('Failed to create room')
+        if (response.status === 402) {
+          setPaywall(true)
+          setPaywallMessage(data?.error || 'Нужна подписка')
+          return
+        }
+        throw new Error(data?.error || 'Failed to create room')
       }
 
-      const data = await response.json()
       localStorage.setItem(`session_${data.code}_role`, 'A')
       localStorage.setItem(`session_${data.code}_participant_id`, data.participantId)
       localStorage.setItem(`session_${data.code}_session_id`, data.sessionId)
@@ -91,6 +100,22 @@ function CreateRoomContent() {
             Выберите тему, оставьте своё имя и эмодзи — мы создадим приватный код. Вопросы острые, ответы остаются только у вас.
           </p>
         </header>
+
+        {paywall && (
+          <section className="rounded-[2.5rem] border border-white/10 bg-white/10 p-6 shadow-2xl ring-1 ring-white/10 backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/60">Лимит free</p>
+            <h2 className="mt-2 text-2xl font-semibold">Нужен PRO</h2>
+            <p className="mt-2 text-sm text-white/70">
+              {paywallMessage || 'Вы уже сыграли 1 раз бесплатно. Оформите подписку $9 и играйте без ограничений.'}
+            </p>
+            <Link
+              href="/account"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#BE4039] via-[#B94E56] to-[#863536] px-10 py-4 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_20px_35px_rgba(0,0,0,0.5)]"
+            >
+              Перейти к подписке →
+            </Link>
+          </section>
+        )}
 
         <section className="rounded-[2.5rem] border border-white/10 bg-white/5 p-6 shadow-2xl ring-1 ring-white/10 backdrop-blur">
           <div className="mb-5 flex items-center justify-between text-xs uppercase tracking-[0.4em] text-white/60">
@@ -143,7 +168,7 @@ function CreateRoomContent() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Например, Аня или Босс"
+                placeholder="Твоё имя"
                 maxLength={20}
                 className="w-full rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-white placeholder:text-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/40"
               />
@@ -187,6 +212,9 @@ function CreateRoomContent() {
             {loading ? 'Создаём...' : 'Получить код'}
           </button>
           <p className="text-center text-xs text-white/60">Ссылка работает сразу, данные хранятся только у вас.</p>
+          <Link href="/account" className="text-center text-sm font-semibold text-white/70 underline-offset-4 hover:text-white">
+            Аккаунт и подписка →
+          </Link>
           <Link href="/" className="text-center text-sm font-semibold text-white/70 underline-offset-4 hover:text-white">
             ← Вернуться на главную
           </Link>

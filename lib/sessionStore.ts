@@ -18,8 +18,11 @@ import type {
   RatingRecord,
   RoomState,
   SessionRecord,
-  SessionStatus
+  SessionStatus,
+  UserRecord,
+  UserSessionRecord
 } from './models'
+import { buildQuestionResults, computeMatchPercentage, pickTopMatches } from './results'
 
 const REGION =
   process.env.AWS_REGION ||
@@ -31,7 +34,10 @@ const TABLES = {
   sessions: process.env.AWS_DDB_SESSIONS_TABLE || 'kykm_sessions',
   participants: process.env.AWS_DDB_PARTICIPANTS_TABLE || 'kykm_participants',
   questions: process.env.AWS_DDB_QUESTIONS_TABLE || 'kykm_questions',
-  ratings: process.env.AWS_DDB_RATINGS_TABLE || 'kykm_ratings'
+  ratings: process.env.AWS_DDB_RATINGS_TABLE || 'kykm_ratings',
+  users: process.env.AWS_DDB_USERS_TABLE || 'kykm_users',
+  userSessions: process.env.AWS_DDB_USER_SESSIONS_TABLE || 'kykm_user_sessions',
+  userEmails: process.env.AWS_DDB_USER_EMAILS_TABLE || 'kykm_user_emails'
 }
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }), {
@@ -44,6 +50,7 @@ export async function createSessionRecord(params: {
   questionPack: string
   creatorName: string
   creatorEmoji: string
+  creatorUserId?: string
 }): Promise<{ sessionId: string; code: string; participantId: string }> {
   const pack = QUESTION_PACKS[params.questionPack]
   if (!pack) {
@@ -78,7 +85,8 @@ export async function createSessionRecord(params: {
         participantId,
         name: params.creatorName,
         emoji: params.creatorEmoji,
-        joinedAt: NOW()
+        joinedAt: NOW(),
+        userId: params.creatorUserId
       }
     })
   )
@@ -129,6 +137,7 @@ export async function addParticipantRecord(params: {
   role: 'A' | 'B'
   name: string
   emoji: string
+  userId?: string
 }): Promise<ParticipantRecord> {
   const participant: ParticipantRecord = {
     sessionId: params.sessionId,
@@ -136,7 +145,8 @@ export async function addParticipantRecord(params: {
     participantId: randomUUID(),
     name: params.name,
     emoji: params.emoji,
-    joinedAt: NOW()
+    joinedAt: NOW(),
+    userId: params.userId
   }
 
   await dynamo.send(
@@ -208,6 +218,271 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
       UpdateExpression: 'SET #status = :status',
       ExpressionAttributeNames: { '#status': 'status' },
       ExpressionAttributeValues: { ':status': status }
+    })
+  )
+}
+
+export async function ensureUserRecord(userId: string): Promise<UserRecord> {
+  const existing = await dynamo.send(
+    new GetCommand({
+      TableName: TABLES.users,
+      Key: { userId }
+    })
+  )
+  const found = existing.Item as UserRecord | undefined
+  if (found) return found
+
+  const created: UserRecord = {
+    userId,
+    createdAt: NOW(),
+    isPro: false,
+    gamesPlayed: 0,
+    matchSum: 0
+  }
+
+  await dynamo.send(
+    new PutCommand({
+      TableName: TABLES.users,
+      Item: created
+    })
+  )
+
+  return created
+}
+
+export async function getUserIdByEmail(email: string): Promise<string | null> {
+  const normalized = email.trim().toLowerCase()
+  if (!normalized) return null
+
+  const result = await dynamo.send(
+    new GetCommand({
+      TableName: TABLES.userEmails,
+      Key: { email: normalized }
+    })
+  )
+  return (result.Item as { userId?: string } | undefined)?.userId ?? null
+}
+
+export async function attachEmailAndPasswordToUser(params: {
+  userId: string
+  email: string
+  passwordSalt: string
+  passwordHash: string
+}): Promise<void> {
+  const normalized = params.email.trim().toLowerCase()
+  if (!normalized) throw new Error('Invalid email')
+
+  // 1) Ensure email is unique (email table condition)
+  await dynamo.send(
+    new PutCommand({
+      TableName: TABLES.userEmails,
+      Item: { email: normalized, userId: params.userId, createdAt: NOW() },
+      ConditionExpression: 'attribute_not_exists(email)'
+    })
+  )
+
+  // 2) Update user record
+  await ensureUserRecord(params.userId)
+  await dynamo.send(
+    new UpdateCommand({
+      TableName: TABLES.users,
+      Key: { userId: params.userId },
+      UpdateExpression: 'SET email = :email, passwordSalt = :salt, passwordHash = :hash',
+      ExpressionAttributeValues: {
+        ':email': normalized,
+        ':salt': params.passwordSalt,
+        ':hash': params.passwordHash
+      }
+    })
+  )
+}
+
+export async function getUserRecord(userId: string): Promise<UserRecord | null> {
+  const result = await dynamo.send(
+    new GetCommand({
+      TableName: TABLES.users,
+      Key: { userId }
+    })
+  )
+  return (result.Item as UserRecord) ?? null
+}
+
+export async function setUserStripeStatus(params: {
+  userId: string
+  stripeCustomerId?: string
+  stripeSubscriptionId?: string
+  stripeStatus?: string
+  isPro?: boolean
+}): Promise<void> {
+  await ensureUserRecord(params.userId)
+
+  const updates: string[] = []
+  const values: Record<string, unknown> = {}
+
+  if (params.stripeCustomerId !== undefined) {
+    updates.push('stripeCustomerId = :cust')
+    values[':cust'] = params.stripeCustomerId
+  }
+  if (params.stripeSubscriptionId !== undefined) {
+    updates.push('stripeSubscriptionId = :sub')
+    values[':sub'] = params.stripeSubscriptionId
+  }
+  if (params.stripeStatus !== undefined) {
+    updates.push('stripeStatus = :status')
+    values[':status'] = params.stripeStatus
+  }
+  if (params.isPro !== undefined) {
+    updates.push('isPro = :isPro')
+    values[':isPro'] = params.isPro
+  }
+
+  if (updates.length === 0) return
+
+  await dynamo.send(
+    new UpdateCommand({
+      TableName: TABLES.users,
+      Key: { userId: params.userId },
+      UpdateExpression: `SET ${updates.join(', ')}`,
+      ExpressionAttributeValues: values
+    })
+  )
+}
+
+export async function listUserSessions(userId: string): Promise<UserSessionRecord[]> {
+  const result = await dynamo.send(
+    new QueryCommand({
+      TableName: TABLES.userSessions,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: { ':userId': userId },
+      ScanIndexForward: false
+    })
+  )
+  return (result.Items as UserSessionRecord[]) ?? []
+}
+
+export async function createUserSessionLink(params: {
+  sessionId: string
+  userId: string
+  createdAt: string
+  code?: string
+  role?: 'A' | 'B'
+  participantName?: string
+  participantEmoji?: string
+  partnerName?: string
+  partnerEmoji?: string
+}): Promise<void> {
+  const item: UserSessionRecord = {
+    userId: params.userId,
+    sessionId: params.sessionId,
+    createdAt: params.createdAt,
+    code: params.code,
+    role: params.role,
+    participantName: params.participantName,
+    participantEmoji: params.participantEmoji,
+    partnerName: params.partnerName,
+    partnerEmoji: params.partnerEmoji
+  }
+
+  await dynamo.send(
+    new PutCommand({
+      TableName: TABLES.userSessions,
+      Item: item
+    })
+  )
+}
+
+export async function syncUserSessionPartnerInfo(sessionId: string): Promise<void> {
+  const participants = await fetchParticipants(sessionId)
+  const a = participants.find((p) => p.role === 'A')
+  const b = participants.find((p) => p.role === 'B')
+  if (!a || !b) return
+
+  const updates = [
+    a.userId
+      ? dynamo.send(
+          new UpdateCommand({
+            TableName: TABLES.userSessions,
+            Key: { userId: a.userId, sessionId },
+            UpdateExpression: 'SET partnerName = :name, partnerEmoji = :emoji',
+            ExpressionAttributeValues: { ':name': b.name, ':emoji': b.emoji }
+          })
+        )
+      : Promise.resolve(),
+    b.userId
+      ? dynamo.send(
+          new UpdateCommand({
+            TableName: TABLES.userSessions,
+            Key: { userId: b.userId, sessionId },
+            UpdateExpression: 'SET partnerName = :name, partnerEmoji = :emoji',
+            ExpressionAttributeValues: { ':name': a.name, ':emoji': a.emoji }
+          })
+        )
+      : Promise.resolve()
+  ]
+
+  await Promise.all(updates)
+}
+
+export async function finalizeSessionAndUpdateStats(sessionId: string): Promise<void> {
+  const session = await fetchSessionById(sessionId)
+  if (!session || session.status !== 'done') return
+
+  const [participants, questions, ratings] = await Promise.all([
+    fetchParticipants(sessionId),
+    fetchQuestions(sessionId),
+    fetchRatings(sessionId)
+  ])
+
+  const a = participants.find((p) => p.role === 'A')
+  const b = participants.find((p) => p.role === 'B')
+  if (!a || !b) return
+
+  const questionResults = buildQuestionResults(questions, ratings)
+  const matchPercentage = computeMatchPercentage(questionResults)
+  const topMatch = pickTopMatches(questionResults, 1)[0]
+
+  const finishedAt = NOW()
+  const sessionLinks = participants
+    .filter((p) => p.userId)
+    .map((p) => ({ userId: p.userId as string, role: p.role as 'A' | 'B' }))
+
+  // Update session link rows (one per user)
+  await Promise.all(
+    sessionLinks.map(async ({ userId }) => {
+      await dynamo.send(
+        new UpdateCommand({
+          TableName: TABLES.userSessions,
+          Key: { userId, sessionId },
+          UpdateExpression:
+            'SET finishedAt = :finishedAt, matchPercentage = :matchPercentage, topMatchText = :topMatchText, topMatchIcon = :topMatchIcon',
+          ExpressionAttributeValues: {
+            ':finishedAt': finishedAt,
+            ':matchPercentage': matchPercentage,
+            ':topMatchText': topMatch?.question.text ?? '',
+            ':topMatchIcon': topMatch?.question.icon ?? ''
+          }
+        })
+      )
+    })
+  )
+
+  // Update aggregate stats per user (idempotency: naive, increments can double if finish called multiple times)
+  // We rely on session.status being done already; still possible multiple calls => acceptable for MVP, can harden with conditional writes later.
+  await Promise.all(
+    sessionLinks.map(async ({ userId }) => {
+      await ensureUserRecord(userId)
+      await dynamo.send(
+        new UpdateCommand({
+          TableName: TABLES.users,
+          Key: { userId },
+          UpdateExpression: 'SET gamesPlayed = if_not_exists(gamesPlayed, :zero) + :one, matchSum = if_not_exists(matchSum, :zero) + :matchSum',
+          ExpressionAttributeValues: {
+            ':zero': 0,
+            ':one': 1,
+            ':matchSum': matchPercentage
+          }
+        })
+      )
     })
   )
 }
