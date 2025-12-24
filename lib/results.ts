@@ -4,12 +4,14 @@ import { calculateGap } from './utils'
 export type QuestionResult = {
   question: QuestionRecord
   ratings: {
-    AtoA: number
-    AtoB: number
-    BtoA: number
-    BtoB: number
+    AtoA: number // A о себе
+    AtoB: number // A о партнере B
+    BtoA: number // B о партнере A
+    BtoB: number // B о себе
   }
-  avgGap: number
+  gapA: number // Насколько A видит себя иначе, чем B видит его (|AtoA - BtoA|)
+  gapB: number // Насколько B видит себя иначе, чем A видит её (|BtoB - AtoB|)
+  avgGap: number // Средний разрыв восприятия по этому вопросу
 }
 
 export function buildQuestionResults(
@@ -25,12 +27,15 @@ export function buildQuestionResults(
     const BtoA = qRatings.find((r) => r.raterRole === 'B' && r.targetRole === 'A')?.value ?? 0
     const BtoB = qRatings.find((r) => r.raterRole === 'B' && r.targetRole === 'B')?.value ?? 0
 
-    const gap = (calculateGap(AtoA, BtoA) + calculateGap(BtoB, AtoB)) / 2
+    const gapA = calculateGap(AtoA, BtoA)
+    const gapB = calculateGap(BtoB, AtoB)
 
     return {
       question,
       ratings: { AtoA, AtoB, BtoA, BtoB },
-      avgGap: gap
+      gapA,
+      gapB,
+      avgGap: (gapA + gapB) / 2
     }
   })
 }
