@@ -1,232 +1,158 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { QUESTION_PACKS, type QuestionPack } from '@/data/questionPacks'
 
-const STACK_COLORS = ['#1F313B', '#383852', '#784259', '#B94E56', '#BE4039', '#863536'] as const
-
-const STEPS = [
-  { icon: '🗝️', title: 'Создаёшь комнату', text: 'Один код, мгновенное подключение. Никто лишний.' },
-  { icon: '👀', title: 'Отвечаете вдвоём', text: 'Каждый оценивает себя и партнёра по тем же вопросам.' },
-  { icon: '📊', title: 'Сверяем образ', text: 'Система сопоставляет ответы — вы видите, где ожидания совпали, а где нет.' }
-] as const
-
-const FEATURES = [
-  { title: 'Без фильтров', text: 'Темы про страсть, брак, быт и дружбу.' },
-  { title: '5 минут на запуск', text: 'Одно касание — и можно играть с телефона.' },
-  { title: 'Честная аналитика', text: 'Сразу видно, где вы совпали, а где нет.' },
-  { title: 'Комната на двоих', text: 'Только ваш код, никакой регистрации.' }
-] as const
+// Твоя фирменная палитра
+const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536'] as const
 
 export default function HomePage() {
   const packs = Object.values(QUESTION_PACKS)
-  const stackPacks = packs.slice(0, STACK_COLORS.length)
-  const totalQuestions = packs.reduce((sum, pack) => sum + pack.questions.length, 0)
+  const stackPacks = packs.slice(0, 8)
+  const [lastCode, setLastCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLastCode(localStorage.getItem('kykm_last_code'))
+  }, [])
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#1F313B] text-white">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#1F313B] text-white font-sans">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(circle_at_top,#ff5f6d33,transparent_60%)]"
+        className="absolute inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] opacity-90"
       />
-      <div aria-hidden="true" className="absolute -left-24 top-24 h-64 w-64 rounded-full bg-[#BE4039]/30 blur-[140px]" />
-      <div aria-hidden="true" className="absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#383852]/40 blur-[160px]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10">
-        <header className="space-y-4 text-center">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
+        <header className="space-y-6 text-center pt-4">
           <div className="flex items-center justify-between">
-            <div className="text-xs uppercase tracking-[0.5em] text-white/60">18+ формат</div>
+            <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/40 font-black">18+ ФОРМАТ</p>
             <Link
               href="/account"
-              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/80"
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[0.6rem] font-black uppercase tracking-widest text-white/80 hover:bg-white/10 transition-all"
             >
               Аккаунт
             </Link>
           </div>
-          <h1 className="text-4xl font-semibold leading-tight text-white">
-            Knowing You, Knowing Me
-          </h1>
-          <p className="text-base text-white/80">
-            Смелая карточная игра для пар и друзей. Короткие раунды, честные ответы и мгновенное сравнение образов.
-          </p>
+          
+          <div className="space-y-2 pt-2 text-center">
+            <h1 className="text-5xl font-black leading-[0.85] tracking-tighter text-white italic uppercase inline-block">
+              Knowing You,<br/>
+              <span className="text-[#BE4039]">Knowing Me</span>
+            </h1>
+            <p className="text-base text-white/60 font-bold leading-tight pt-8">
+              Психологическая игра-зеркало для двоих.
+            </p>
+          </div>
         </header>
 
-        <div className="mt-8 space-y-3">
-          <Link
-            href="/room/create"
-            className="block w-full rounded-full bg-gradient-to-r from-[#BE4039] via-[#B94E56] to-[#863536] px-10 py-5 text-center text-lg font-semibold uppercase tracking-[0.2em] text-white shadow-[0_25px_45px_rgba(0,0,0,0.55)] transition-transform duration-200 hover:-translate-y-1"
-          >
-            Запустить новую игру →
-          </Link>
-          <p className="text-center text-xs text-white/60">
+        <div className="mt-12 space-y-4">
+          {lastCode ? (
+            <Link
+              href={`/room/${lastCode}`}
+              className="block w-full rounded-full bg-white text-gray-900 px-8 py-6 text-center text-xl font-black uppercase tracking-[0.1em] shadow-2xl transition-all active:scale-95"
+            >
+              Продолжить игру ⚡
+            </Link>
+          ) : (
+            <Link
+              href="/room/create"
+              className="block w-full rounded-full bg-[#BE4039] px-8 py-6 text-center text-xl font-black uppercase tracking-[0.1em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.4)] transition-all active:scale-95"
+            >
+              Начать игру →
+            </Link>
+          )}
+          
+          <p className="text-center text-[0.65rem] text-white/30 font-bold uppercase tracking-[0.2em]">
             Без регистрации · работает на телефоне
           </p>
         </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-3 text-left">
-          <StatBadge label="Темы" value={`${packs.length}`} />
-          <StatBadge label="Вопросов" value={`${totalQuestions}+`} />
-          <StatBadge label="Минуты" value="5-10" />
+        {/* ПРИНЦИП ИГРЫ + КОЛИЧЕСТВО ВОПРОСОВ (БЕЗ 64+) */}
+        <div className="mt-12 grid grid-cols-3 gap-3">
+          <StatBadge label="РАУНД" value="10 ВОПР." />
+          <StatBadge label="ПРИНЦИП" value="СЕБЯ И ЕЁ" />
+          <StatBadge label="ИТОГ" value="ЗЕРКАЛО" />
         </div>
 
-        <section className="mt-12 space-y-8">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-white/60">Moodboard</p>
-            <h2 className="text-2xl font-semibold">Темы для быстрого старта</h2>
+        <section className="mt-24 space-y-10">
+          <div className="px-2">
+            <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40 font-black mb-1">MOODBOARD</p>
+            <h2 className="text-3xl font-black text-white italic uppercase leading-none tracking-tighter">Темы для старта</h2>
           </div>
-          <CardStack packs={stackPacks} />
-          <PaletteLegend colors={STACK_COLORS} />
-        </section>
-
-        <section className="mt-12 rounded-[2.5rem] border border-white/10 bg-white/5 p-6 shadow-2xl ring-1 ring-white/10 backdrop-blur">
-          <div className="mb-6 text-center">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/60">Как начать</p>
-            <h2 className="text-2xl font-semibold text-white">Три шага до честного разговора</h2>
-          </div>
-          <div className="space-y-4">
-            {STEPS.map((step, index) => (
-              <StepCard key={step.title} step={step} index={index} />
+          
+          <div className="relative space-y-0 pb-20">
+            {stackPacks.map((pack, index) => (
+              <PackCard 
+                key={pack.id} 
+                pack={pack} 
+                index={index} 
+                color={STACK_COLORS[index % STACK_COLORS.length]} 
+              />
             ))}
           </div>
         </section>
 
-        <section className="mt-10 grid grid-cols-1 gap-3">
-          {FEATURES.map((feature) => (
-            <FeaturePill key={feature.title} feature={feature} />
-          ))}
-        </section>
-
-        <footer className="mt-10 text-center text-xs text-white/60">
-          Сделано для тех, кто говорит правду и любит смелые вечера.
+        <footer className="mt-auto text-center py-12 space-y-3">
+          <p className="text-[0.7rem] text-white/40 font-bold uppercase tracking-[0.15em] italic">
+            Сделано с помощью вайбкода в Варшаве
+          </p>
+          <p className="text-[0.5rem] text-white/10 font-black uppercase tracking-[0.4em]">
+            KNOWING YOU, KNOWING ME &copy; 2025
+          </p>
         </footer>
       </div>
     </div>
   )
 }
 
-function CardStack({ packs }: { packs: QuestionPack[] }) {
-  return (
-    <div className="relative space-y-0">
-      {packs.map((pack, index) => (
-        <PackCard key={pack.id} pack={pack} index={index} color={STACK_COLORS[index % STACK_COLORS.length]} />
-      ))}
-    </div>
-  )
-}
-
 function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; color: string }) {
-  const accent = lightenColor(color, 18)
-  const shadow = hexToRgba(color, 0.45)
-  const chips = pack.questions.slice(0, 3)
-
+  const isFirst = index === 0;
+  
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className={`block rounded-[2.5rem] px-6 py-6 text-white transition-all duration-500 ${
-        index === 0 ? '' : '-mt-8'
-      } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white`}
+      className={`block rounded-[2.5rem] px-8 py-10 text-white transition-all duration-500 ${
+        isFirst ? '' : '-mt-16'
+      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-15px] relative group overflow-hidden`}
       style={{
-        backgroundImage: `linear-gradient(135deg, ${color}, ${accent})`,
-        boxShadow: `0 30px 60px ${shadow}`,
-        zIndex: STACK_COLORS.length - index
+        backgroundColor: color,
+        zIndex: 10 + index
       }}
-      aria-label={`Начать игру с паком ${pack.name}`}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/70">{pack.subtitle}</p>
-          <h3 className="text-2xl font-semibold">{pack.name}</h3>
+      <div className="relative z-10">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/50 font-black">{pack.subtitle}</p>
+            <h3 className="text-3xl font-black leading-none italic uppercase tracking-tight">{pack.name}</h3>
+          </div>
+          <span className="text-6xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
         </div>
-        <span className="text-5xl">{pack.emoji}</span>
+        
+        <p className="mt-6 text-sm text-white/70 font-medium leading-snug pr-8">{pack.description}</p>
+        
+        <div className="mt-10 flex items-center justify-between">
+          <div className="flex gap-2">
+            {pack.questions.slice(0, 2).map((q) => (
+              <span key={q.text} className="text-[0.55rem] font-black uppercase tracking-widest text-white/30 bg-black/10 px-3 py-1 rounded-lg">
+                {q.icon} {q.text}
+              </span>
+            ))}
+          </div>
+          <span className="text-[0.6rem] font-black text-white/20 uppercase tracking-widest">{pack.questions.length} ВОПРОСОВ</span>
+        </div>
       </div>
-      <p className="mt-3 text-sm text-white/85">{pack.description}</p>
-      <div className="mt-4 flex flex-wrap gap-2 text-[0.7rem]">
-        {chips.map((question) => (
-          <span key={question.text} className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-white/90">
-            <span>{question.icon}</span>
-            {question.text}
-          </span>
-        ))}
-      </div>
-      <div className="mt-5 flex items-center justify-between text-xs text-white/70">
-        <span>{pack.questions.length} вопросов</span>
-        <span className="tracking-[0.35em]">{color.toUpperCase()}</span>
-      </div>
+      
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
     </Link>
-  )
-}
-
-function PaletteLegend({ colors }: { colors: readonly string[] }) {
-  return (
-    <div className="grid grid-cols-2 gap-3 text-center text-[0.65rem] uppercase tracking-[0.4em] text-white/60 sm:grid-cols-3">
-      {colors.map((color) => (
-        <div
-          key={color}
-          className="rounded-full border border-white/10 px-3 py-3"
-          style={{ background: 'rgba(255,255,255,0.04)' }}
-        >
-          {color}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function StepCard({ step, index }: { step: typeof STEPS[number]; index: number }) {
-  return (
-    <div className="flex items-start gap-4 rounded-[1.8rem] border border-white/10 bg-white/5 px-4 py-4 text-left backdrop-blur">
-      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15 text-xl font-semibold">
-        {index + 1 < 10 ? `0${index + 1}` : index + 1}
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{step.icon}</span>
-          <h3 className="text-lg font-semibold">{step.title}</h3>
-        </div>
-        <p className="mt-1 text-sm text-white/80">{step.text}</p>
-      </div>
-    </div>
-  )
-}
-
-function FeaturePill({ feature }: { feature: typeof FEATURES[number] }) {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-left backdrop-blur">
-      <p className="text-sm font-semibold text-white">{feature.title}</p>
-      <p className="text-xs text-white/70">{feature.text}</p>
-    </div>
   )
 }
 
 function StatBadge({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 px-4 py-3 text-left backdrop-blur">
-      <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/60">{label}</p>
-      <p className="text-2xl font-semibold text-white">{value}</p>
+    <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5 text-center shadow-inner backdrop-blur-sm">
+      <p className="text-[0.5rem] uppercase tracking-widest text-white/30 font-black mb-2">{label}</p>
+      <p className="text-[0.75rem] font-black text-white leading-none tracking-widest uppercase italic">{value}</p>
     </div>
   )
-}
-
-function hexToRgba(hex: string, alpha: number) {
-  const sanitized = hex.replace('#', '')
-  const bigint = parseInt(sanitized, 16)
-  const r = (bigint >> 16) & 255
-  const g = (bigint >> 8) & 255
-  const b = bigint & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
-function lightenColor(hex: string, percent: number) {
-  const sanitized = hex.replace('#', '')
-  const r = parseInt(sanitized.substring(0, 2), 16)
-  const g = parseInt(sanitized.substring(2, 4), 16)
-  const b = parseInt(sanitized.substring(4, 6), 16)
-
-  const adjustChannel = (channel: number) => {
-    const amount = Math.round(255 * (percent / 100))
-    return Math.max(0, Math.min(255, channel + amount))
-  }
-
-  const [nr, ng, nb] = [adjustChannel(r), adjustChannel(g), adjustChannel(b)]
-  return `#${[nr, ng, nb].map((value) => value.toString(16).padStart(2, '0')).join('')}`
 }

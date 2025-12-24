@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     const participants = await fetchParticipants(sessionId)
-    if (participants.length < 2) {
-      return NextResponse.json({ error: 'Need two players' }, { status: 400 })
+    if (participants.length < 1) {
+      return NextResponse.json({ error: 'Room is empty' }, { status: 400 })
     }
 
     await updateSessionStatus(sessionId, 'live')

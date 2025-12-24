@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Share } from '@capacitor/share'
-import { isCapacitor } from '@/lib/capacitor'
 import type { ParticipantRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
 import { formatCode } from '@/lib/utils'
+import { Share } from '@capacitor/share'
+import { isCapacitor } from '@/lib/capacitor'
+import Link from 'next/link'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫', '🔥', '💖', '🎯', '🦄']
 
@@ -26,20 +27,17 @@ export default function RoomPage() {
   const [joining, setJoining] = useState(false)
   const [pollingError, setPollingError] = useState<string | null>(null)
   const [origin, setOrigin] = useState('')
-  const [copiedInvite, setCopiedInvite] = useState(false)
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
-    const storedSessionId = localStorage.getItem(`session_${code}_session_id`)
-    if (storedRole) setMyRole(storedRole)
-    if (storedSessionId) setSessionId(storedSessionId)
-  }, [code])
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin)
+      const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
+      const storedSessionId = localStorage.getItem(`session_${code}_session_id`)
+      if (storedRole) setMyRole(storedRole)
+      if (storedSessionId) setSessionId(storedSessionId)
     }
-  }, [])
+  }, [code])
 
   const loadState = useCallback(async () => {
     try {
@@ -56,7 +54,11 @@ export default function RoomPage() {
       const data = await response.json()
       setParticipants(data.participants ?? [])
       setSessionId(data.session.id)
-      localStorage.setItem(`session_${code}_session_id`, data.session.id)
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`session_${code}_session_id`, data.session.id)
+      }
+      
       setPollingError(null)
 
       if (data.session.status === 'live') {
@@ -69,9 +71,11 @@ export default function RoomPage() {
         return
       }
 
-      const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
-      setMyRole(storedRole)
-      setViewState(storedRole ? 'lobby' : 'join')
+      if (typeof window !== 'undefined') {
+        const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
+        setMyRole(storedRole)
+        setViewState(storedRole ? 'lobby' : 'join')
+      }
     } catch (error) {
       console.error('Failed to load room state:', error)
       setPollingError('Не удаётся обновить комнату')
@@ -110,9 +114,12 @@ export default function RoomPage() {
         throw new Error(data?.error || 'Failed to join')
       }
 
-      localStorage.setItem(`session_${code}_role`, data.role)
-      localStorage.setItem(`session_${code}_participant_id`, data.participantId)
-      localStorage.setItem(`session_${code}_session_id`, data.sessionId)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`session_${code}_role`, data.role)
+        localStorage.setItem(`session_${code}_participant_id`, data.participantId)
+        localStorage.setItem(`session_${code}_session_id`, data.sessionId)
+        localStorage.setItem('kykm_last_code', code)
+      }
       setMyRole(data.role)
       setSessionId(data.sessionId)
       setViewState('lobby')
@@ -146,21 +153,17 @@ export default function RoomPage() {
     }
   }, [code, router, sessionId])
 
-  const handleCopyCode = useCallback(() => {
-    navigator.clipboard.writeText(code)
-  }, [code])
-
   const inviteUrl = useMemo(() => (origin ? `${origin}/room/${code}` : ''), [code, origin])
 
   const handleCopyInvite = useCallback(async () => {
     if (!inviteUrl) return
     try {
       await navigator.clipboard.writeText(inviteUrl)
-      setCopiedInvite(true)
-      window.setTimeout(() => setCopiedInvite(false), 1500)
+      setCopyStatus('copied')
+      setTimeout(() => setCopyStatus('idle'), 2000)
     } catch (error) {
       console.error('Failed to copy invite link:', error)
-      window.prompt('Скопируйте ссылку:', inviteUrl)
+      alert('Не удалось скопировать. Пожалуйста, скопируйте URL вручную.')
     }
   }, [inviteUrl])
 
@@ -196,53 +199,99 @@ export default function RoomPage() {
 
   if (viewState === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center px-4">
-        <div className="text-center text-gray-700">
+      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center px-4">
+        <div className="text-center text-white/40 animate-pulse">
           <div className="text-4xl mb-3">⏳</div>
-          <p>{pollingError || 'Ищем комнату...'}</p>
+          <p className="text-sm uppercase tracking-widest font-black italic">{pollingError || 'Ищем комнату...'}</p>
         </div>
       </div>
     )
   }
 
-  if (viewState === 'join') {
-    const roomFull = participants.length >= 2
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-8 px-4">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Комната</p>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Присоединиться 🎮</h1>
-            <div className="text-2xl font-mono font-bold text-purple-600 mb-2">{formatCode(code)}</div>
-            {pollingError && <p className="text-sm text-red-500">{pollingError}</p>}
-          </div>
+  return (
+    <div className="min-h-screen bg-[#1F313B] text-white py-12 px-6 overflow-x-hidden">
+      <div 
+        aria-hidden="true" 
+        className="fixed inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] pointer-events-none opacity-90" 
+      />
+      <div className="relative z-10 max-w-md mx-auto space-y-10">
+        <header className="text-center space-y-4">
+          <p className="text-[0.65rem] uppercase tracking-[0.5em] text-white/40 font-bold italic">КОМНАТА</p>
+          <h1 className="text-4xl font-black leading-tight tracking-tight text-white italic uppercase">
+            {viewState === 'join' ? 'Присоединиться' : 'Лобби v2.2 🎯'}
+          </h1>
+          
+          {viewState === 'join' ? (
+            <div className="text-3xl font-bold text-white/90 font-mono mt-6 bg-white/5 py-4 px-8 rounded-2xl inline-block border border-white/10 shadow-inner">
+              {formatCode(code)}
+            </div>
+          ) : (
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <div className="flex items-center gap-4 bg-white/5 px-8 py-5 rounded-[2rem] border border-white/10 shadow-inner backdrop-blur-sm">
+                <span className="text-[0.65rem] uppercase tracking-widest text-white/40 font-black">КОД:</span>
+                <span className="text-3xl font-bold font-mono text-white tracking-widest italic">{formatCode(code)}</span>
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(code);
+                      setCopyStatus('copied');
+                      setTimeout(() => setCopyStatus('idle'), 2000);
+                    }}
+                    className="p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all text-xl shadow-lg relative"
+                    title="Копировать код"
+                  >
+                    📋
+                    {copyStatus === 'copied' && (
+                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-gray-900 text-[0.6rem] font-bold px-2 py-1 rounded shadow-xl animate-bounce">OK!</div>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleInviteShare}
+                    className="p-3 rounded-xl bg-[#BE4039] hover:bg-[#BE4039]/80 transition-all text-xl shadow-lg shadow-red-950/20"
+                    title="Поделиться ссылкой"
+                  >
+                    📤
+                  </button>
+                </div>
+              </div>
+              {inviteUrl && (
+                <button
+                  onClick={handleCopyInvite}
+                  className="text-[0.65rem] font-bold text-white/40 hover:text-white uppercase tracking-[0.3em] transition-all italic h-8"
+                >
+                  {copyStatus === 'copied' ? 'ССЫЛКА СКОПИРОВАНА ✅' : 'КОПИРОВАТЬ ССЫЛКУ-ПРИГЛАШЕНИЕ 🔗'}
+                </button>
+              )}
+            </div>
+          )}
+          {pollingError && <p className="mt-4 text-sm text-[#BE4039] font-bold italic uppercase tracking-widest">{pollingError}</p>}
+        </header>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ваше имя</label>
+        {viewState === 'join' ? (
+          <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 backdrop-blur-sm shadow-2xl">
+            <div className="space-y-3">
+              <label className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-bold ml-2">ВАШЕ ИМЯ</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Например, Ася"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                placeholder="Твоё имя"
+                className="w-full px-6 py-5 rounded-[1.5rem] border-2 border-white/5 bg-white/5 text-white font-bold focus:border-white/40 focus:bg-white/10 outline-none transition-all text-lg shadow-inner"
                 maxLength={20}
-                disabled={roomFull}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Эмодзи-настроение</label>
-              <div className="grid grid-cols-8 gap-2">
+            <div className="space-y-4">
+              <label className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-bold ml-2">ЭМОДЗИ-ОБРАЗ</label>
+              <div className="grid grid-cols-8 gap-3">
                 {EMOJIS.map((icon) => (
                   <button
-                    type="button"
                     key={icon}
+                    type="button"
                     onClick={() => setEmoji(icon)}
-                    disabled={roomFull}
-                    className={`text-2xl p-2 rounded-xl transition-all ${
-                      emoji === icon ? 'bg-purple-100 scale-110 shadow' : 'bg-gray-100 hover:bg-gray-200'
-                    } ${roomFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`flex items-center justify-center rounded-xl aspect-square text-2xl transition-all ${
+                      emoji === icon ? 'bg-white/20 scale-125 shadow-lg' : 'bg-white/5 hover:bg-white/10 opacity-60 hover:opacity-100'
+                    }`}
                   >
                     {icon}
                   </button>
@@ -250,91 +299,54 @@ export default function RoomPage() {
               </div>
             </div>
 
-            <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
-              <p className="font-semibold text-gray-800 mb-1">Предпросмотр</p>
-              <div className="flex items-center gap-3 text-lg font-semibold text-gray-900">
-                <span className="text-3xl">{emoji}</span>
-                <span>{name || 'Ваше имя'}</span>
+            <button
+              onClick={handleJoin}
+              disabled={joining || !name.trim()}
+              className="w-full rounded-full bg-[#BE4039] py-6 text-xl font-bold uppercase tracking-[0.2em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.3)] transition-transform active:scale-95 disabled:opacity-40 disabled:shadow-none"
+            >
+              {joining ? 'ВХОДИМ...' : 'ВОЙТИ В ИГРУ'}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-10">
+            <div className="rounded-[2.5rem] bg-white/5 border border-white/10 p-8 shadow-2xl backdrop-blur-sm space-y-6">
+              <h2 className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-bold ml-2 text-center">УЧАСТНИКИ ({participants.length}/2)</h2>
+              <div className="space-y-4">
+                <ParticipantCard participant={participantA} label="ИГРОК 1" isYou={myRole === 'A'} />
+                <ParticipantCard participant={participantB} label="ИГРОК 2" isYou={myRole === 'B'} />
               </div>
             </div>
 
-            <button
-              onClick={handleJoin}
-              disabled={joining || !name.trim() || roomFull}
-              className="w-full rounded-full bg-gradient-to-r from-purple-600 to-pink-500 py-4 text-white font-semibold shadow-lg transition hover:opacity-90 disabled:opacity-40"
-            >
-              {roomFull ? 'Комната заполнена' : joining ? 'Подключаемся...' : 'Войти в игру'}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+            <div className="space-y-6 pb-12">
+              {!isReady && (
+                <div className="rounded-[2rem] border-2 border-[#BE4039]/20 bg-[#BE4039]/5 p-6 text-center shadow-lg backdrop-blur-sm">
+                  <p className="font-bold text-[#BE4039] text-sm uppercase tracking-widest italic">Ждём партнёра</p>
+                  <p className="text-xs text-white/40 mt-2 font-medium leading-relaxed">Вы можете начать игру в одиночку, партнер присоединится по коду позже.</p>
+                </div>
+              )}
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.4em] text-gray-500">Комната</p>
-          <h1 className="text-3xl font-bold text-gray-900 mt-2">Лобби 🎯</h1>
-          <div className="mt-4 inline-flex items-center gap-3 rounded-2xl bg-white px-6 py-3 shadow">
-            <div className="text-sm text-gray-500">Код:</div>
-            <div className="text-2xl font-mono font-semibold text-purple-600">{formatCode(code)}</div>
-            <button
-              onClick={handleCopyCode}
-              className="text-sm rounded-full border border-purple-100 px-3 py-1 text-purple-600"
-            >
-              📋
-            </button>
-            <button
-              onClick={handleInviteShare}
-              className="text-sm rounded-full border border-purple-100 px-3 py-1 text-purple-600"
-              title="Поделиться ссылкой"
-            >
-              📤
-            </button>
-          </div>
-          {inviteUrl && (
-            <div className="mt-3 flex flex-col items-center gap-2">
-              <button
-                onClick={handleCopyInvite}
-                className="text-xs rounded-full border border-gray-200 bg-white px-4 py-2 text-gray-700 shadow-sm"
-              >
-                {copiedInvite ? 'Ссылка скопирована ✅' : 'Копировать ссылку-приглашение 🔗'}
-              </button>
+              {myRole === 'A' && (
+                <button
+                  onClick={handleStart}
+                  className="w-full rounded-full bg-[#BE4039] py-6 text-xl font-bold uppercase tracking-[0.2em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.3)] transition-all active:scale-95"
+                >
+                  НАЧАТЬ ИГРУ {isReady ? '' : '(1/2)'}
+                </button>
+              )}
+
+              {isReady && myRole === 'B' && (
+                <div className="rounded-[2rem] border-2 border-emerald-500/20 bg-emerald-500/5 p-6 text-center shadow-lg backdrop-blur-sm">
+                  <p className="font-bold text-emerald-500 text-sm uppercase tracking-widest italic">Всё готово</p>
+                  <p className="text-xs text-white/40 mt-2 font-medium leading-relaxed">Организатор запускает игру, не закрывайте страницу.</p>
+                </div>
+              )}
+              
+              <div className="text-center pt-4">
+                <Link href="/" className="text-[0.6rem] font-bold text-white/20 hover:text-white/40 uppercase tracking-[0.4em] transition-all">
+                  ← ВЕРНУТЬСЯ НА ГЛАВНУЮ
+                </Link>
+              </div>
             </div>
-          )}
-          {pollingError && <p className="mt-2 text-sm text-red-500">{pollingError}</p>}
-        </div>
-
-        <div className="rounded-3xl bg-white p-6 shadow-xl">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Участники ({participants.length}/2)</h2>
-          <div className="space-y-3">
-            <ParticipantCard participant={participantA} label="Игрок 1" isYou={myRole === 'A'} />
-            <ParticipantCard participant={participantB} label="Игрок 2" isYou={myRole === 'B'} />
-          </div>
-        </div>
-
-        {!isReady && (
-          <div className="rounded-3xl border border-yellow-200 bg-yellow-50 p-5 text-center text-yellow-900">
-            <p className="font-semibold">Ждём второго игрока</p>
-            <p className="text-sm text-yellow-800 mt-1">Поделитесь кодом — комната живёт пока вы здесь.</p>
-          </div>
-        )}
-
-        {isReady && myRole === 'A' && (
-          <button
-            onClick={handleStart}
-            className="w-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 py-4 text-lg font-semibold text-white shadow-xl"
-          >
-            Начать игру
-          </button>
-        )}
-
-        {isReady && myRole === 'B' && (
-          <div className="rounded-3xl border border-green-200 bg-green-50 p-5 text-center text-green-900">
-            <p className="font-semibold">Всё готово</p>
-            <p className="text-sm mt-1">Организатор запускает игру, не закрывайте страницу.</p>
           </div>
         )}
       </div>
@@ -353,30 +365,30 @@ function ParticipantCard({
 }) {
   if (!participant) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-gray-200 p-4 text-center text-gray-400">
-        <div className="text-3xl mb-1">👤</div>
-        <div className="text-sm">{label} ждём...</div>
+      <div className="rounded-[1.5rem] border-2 border-dashed border-white/5 bg-white/2 p-6 text-center opacity-30 shadow-inner">
+        <div className="text-4xl mb-2 grayscale">👤</div>
+        <div className="text-[0.6rem] font-bold uppercase tracking-widest">{label} ЖДЁМ...</div>
       </div>
     )
   }
 
   return (
     <div
-      className={`rounded-2xl border-2 p-4 ${
-        isYou ? 'border-purple-200 bg-purple-50' : 'border-gray-100 bg-gray-50'
+      className={`rounded-[1.5rem] border-2 p-6 transition-all shadow-xl ${
+        isYou ? 'border-[#BE4039] bg-[#BE4039]/10' : 'border-white/10 bg-white/5'
       }`}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">{participant.emoji}</span>
-          <div>
-            <p className="font-semibold text-gray-900">{participant.name}</p>
-            <p className="text-xs uppercase tracking-[0.35em] text-gray-500">{label}</p>
+        <div className="flex items-center gap-5">
+          <span className="text-5xl drop-shadow-2xl">{participant.emoji}</span>
+          <div className="space-y-1">
+            <p className="text-lg font-bold text-white leading-tight italic uppercase tracking-tight">{participant.name}</p>
+            <p className="text-[0.6rem] uppercase tracking-[0.35em] text-white/40 font-bold">{label}</p>
           </div>
         </div>
         {isYou && (
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-purple-600 shadow">
-            это вы
+          <span className="rounded-full bg-white/10 border border-white/10 px-4 py-2 text-[0.55rem] font-black text-[#BE4039] uppercase tracking-widest shadow-sm">
+            ЭТО ВЫ
           </span>
         )}
       </div>
