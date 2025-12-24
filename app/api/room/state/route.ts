@@ -4,10 +4,12 @@ import { getRoomStateByCode } from '@/lib/sessionStore'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get('code')?.trim()
-  if (!code) {
+  const rawCode = request.nextUrl.searchParams.get('code')?.trim()
+  if (!rawCode) {
     return NextResponse.json({ error: 'Missing code' }, { status: 400 })
   }
+  // Normalize code: remove dashes and spaces
+  const code = rawCode.replace(/[-\s]/g, '')
 
   const includeParam = request.nextUrl.searchParams.get('include') || ''
   const includeTokens = includeParam
@@ -44,4 +46,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to load room' }, { status: 500 })
   }
 }
-
