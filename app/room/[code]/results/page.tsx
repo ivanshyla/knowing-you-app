@@ -298,6 +298,7 @@ export default function ResultsPage() {
             },
             avgGap: topMatches[0].avgGap
           }}
+          questionResults={questionResults}
           onClose={() => setShowShareCard(false)}
         />
       )}
