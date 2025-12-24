@@ -227,6 +227,28 @@ export default function ResultsPage() {
           </SectionBlock>
         </div>
 
+        {/* Детальная разбивка по всем вопросам */}
+        <div className="rounded-[2.5rem] bg-white/2 border border-white/5 p-10 space-y-8 shadow-xl backdrop-blur-sm">
+          <div className="space-y-2">
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter">📋 Все вопросы</h3>
+            <p className="text-[0.6rem] text-white/30 uppercase tracking-[0.2em] font-black">Детальное сравнение оценок</p>
+          </div>
+          
+          <div className="space-y-6">
+            {questionResults.map((result) => (
+              <DetailedQuestionCard
+                key={result.question.questionId}
+                question={result.question}
+                ratings={result.ratings}
+                gapA={result.gapA}
+                gapB={result.gapB}
+                participantA={participantA}
+                participantB={participantB}
+              />
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-[3rem] bg-white/5 border border-white/10 p-12 shadow-2xl backdrop-blur-md space-y-10">
           <div className="text-center space-y-4">
             <h3 className="text-2xl font-black italic uppercase tracking-tighter">Поделиться</h3>
@@ -334,6 +356,102 @@ function ResultRow({
         </div>
         {badge && <div className="text-4xl drop-shadow-2xl">{badge}</div>}
       </div>
+    </div>
+  )
+}
+
+function DetailedQuestionCard({
+  question,
+  ratings,
+  gapA,
+  gapB,
+  participantA,
+  participantB
+}: {
+  question: QuestionRecord
+  ratings: { AtoA: number; AtoB: number; BtoA: number; BtoB: number }
+  gapA: number
+  gapB: number
+  participantA: ParticipantRecord
+  participantB: ParticipantRecord
+}) {
+  const maxGap = Math.max(gapA, gapB)
+  const hasSignificantGap = maxGap >= 3
+  
+  return (
+    <div className={`rounded-[2rem] border-2 p-6 transition-all ${
+      hasSignificantGap 
+        ? 'border-[#BE4039]/30 bg-[#BE4039]/5' 
+        : 'border-white/10 bg-white/5'
+    }`}>
+      {/* Заголовок вопроса */}
+      <div className="flex items-center gap-4 mb-6">
+        <span className="text-4xl">{question.icon}</span>
+        <h4 className="font-black text-lg italic uppercase tracking-tight flex-1">{question.text}</h4>
+        {hasSignificantGap && <span className="text-2xl">⚠️</span>}
+      </div>
+      
+      {/* Сетка оценок */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Блок для участника A */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-2xl">{participantA.emoji}</span>
+            <span className="text-sm font-bold uppercase tracking-wide text-white/60">{participantA.name}</span>
+          </div>
+          
+          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">Сам о себе</div>
+            <div className="text-3xl font-black text-white">{ratings.AtoA}</div>
+          </div>
+          
+          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">{participantB.name} о нём</div>
+            <div className={`text-3xl font-black ${gapA >= 3 ? 'text-[#BE4039]' : 'text-white'}`}>
+              {ratings.BtoA}
+              {gapA >= 2 && (
+                <span className="text-sm ml-2 text-white/40">
+                  ({ratings.BtoA > ratings.AtoA ? '+' : ''}{ratings.BtoA - ratings.AtoA})
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Блок для участника B */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-2xl">{participantB.emoji}</span>
+            <span className="text-sm font-bold uppercase tracking-wide text-white/60">{participantB.name}</span>
+          </div>
+          
+          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">Сам о себе</div>
+            <div className="text-3xl font-black text-white">{ratings.BtoB}</div>
+          </div>
+          
+          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
+            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">{participantA.name} о нём</div>
+            <div className={`text-3xl font-black ${gapB >= 3 ? 'text-[#BE4039]' : 'text-white'}`}>
+              {ratings.AtoB}
+              {gapB >= 2 && (
+                <span className="text-sm ml-2 text-white/40">
+                  ({ratings.AtoB > ratings.BtoB ? '+' : ''}{ratings.AtoB - ratings.BtoB})
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Индикатор разрыва */}
+      {hasSignificantGap && (
+        <div className="mt-4 pt-4 border-t border-white/10 text-center">
+          <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[#BE4039]">
+            Разрыв восприятия: {maxGap.toFixed(1)}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
