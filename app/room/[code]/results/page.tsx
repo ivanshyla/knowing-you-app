@@ -1,15 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/apiClient'
-import { Share } from '@capacitor/share'
-import { isCapacitor } from '@/lib/capacitor'
+import html2canvas from 'html2canvas'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
-import { getGapMessage, getRandomMessage, RESULT_MESSAGES } from '@/lib/utils'
-import ShareCard from '@/components/ShareCard'
-import { buildQuestionResults, computeMatchPercentage, pickTopDifferences, pickTopMatches } from '@/lib/results'
+import { buildQuestionResults, computeMatchPercentage } from '@/lib/results'
 
 export default function ResultsPage() {
   const params = useParams()
@@ -21,10 +18,7 @@ export default function ResultsPage() {
   const [participants, setParticipants] = useState<ParticipantRecord[]>([])
   const [ratings, setRatings] = useState<RatingRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [showShareCard, setShowShareCard] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [origin, setOrigin] = useState('')
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -56,90 +50,33 @@ export default function ResultsPage() {
     load()
   }, [code, router])
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin)
-    }
-  }, [])
-
   const participantA = participants.find((p) => p.role === 'A')
   const participantB = participants.find((p) => p.role === 'B')
 
   const questionResults = useMemo(() => buildQuestionResults(questions, ratings), [questions, ratings])
+  const matchPercentage = useMemo(() => computeMatchPercentage(questionResults), [questionResults])
 
-  const matchPercentage = useMemo(() => {
-    return computeMatchPercentage(questionResults)
-  }, [questionResults])
-
-  const topMatches = useMemo(() => pickTopMatches(questionResults, 3), [questionResults])
-  const topDifferences = useMemo(() => pickTopDifferences(questionResults, 3), [questionResults])
-
-  const surprises = useMemo(() => {
-    return questionResults
-      .filter(r => (participantA?.role === 'A' ? r.ratings.BtoA > r.ratings.AtoA : r.ratings.AtoB > r.ratings.BtoB))
-      .sort((a, b) => (participantA?.role === 'A' ? b.ratings.BtoA - b.ratings.AtoA : b.ratings.AtoB - b.ratings.BtoB))
-      .slice(0, 3)
-  }, [questionResults, participantA])
-
-  const blindSpots = useMemo(() => {
-    return [...questionResults].sort((a, b) => Math.max(b.gapA, b.gapB) - Math.max(a.gapA, a.gapB)).slice(0, 3)
-  }, [questionResults])
-
-  const shareUrl = useMemo(() => {
-    if (!session || !origin) return ''
-    return `${origin}/share/${session.id}`
-  }, [origin, session])
-
-  const copyShareLink = async () => {
-    if (!shareUrl) return
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
-    } catch (error) {
-      console.error('Failed to copy share link:', error)
-      window.prompt('Скопируйте ссылку:', shareUrl)
-    }
-  }
-
-  const shareResult = async () => {
-    if (!shareUrl) return
-    try {
-      if (isCapacitor()) {
-        await Share.share({
-          title: 'Knowing You, Knowing Me — результат',
-          text: 'Посмотри наш результат 👇',
-          url: shareUrl,
-          dialogTitle: 'Поделиться результатом'
-        })
-        return
-      }
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Knowing You, Knowing Me — результат',
-          text: 'Посмотри наш результат 👇',
-          url: shareUrl
-        })
-        return
-      }
-    } catch (error) {
-      console.warn('Share cancelled/failed:', error)
-    }
-    await copyShareLink()
-  }
-
-  const message = useMemo(() => {
-    if (matchPercentage >= 70) return getRandomMessage(RESULT_MESSAGES.highMatch)
-    if (matchPercentage >= 40) return getRandomMessage(RESULT_MESSAGES.mediumMatch)
-    return getRandomMessage(RESULT_MESSAGES.lowMatch)
-  }, [matchPercentage])
+  // Insights
+  const sortedByGap = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap), [questionResults])
+  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3), [questionResults])
+  const biggestGaps = useMemo(() => sortedByGap.slice(0, 3), [sortedByGap])
+  
+  // Where partner rated higher than self
+  const surprisesA = useMemo(() => 
+    questionResults.filter(r => r.ratings.BtoA > r.ratings.AtoA).sort((a, b) => (b.ratings.BtoA - b.ratings.AtoA) - (a.ratings.BtoA - a.ratings.AtoA)).slice(0, 2),
+    [questionResults]
+  )
+  const surprisesB = useMemo(() => 
+    questionResults.filter(r => r.ratings.AtoB > r.ratings.BtoB).sort((a, b) => (b.ratings.AtoB - b.ratings.BtoB) - (a.ratings.AtoB - a.ratings.BtoB)).slice(0, 2),
+    [questionResults]
+  )
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
         <div className="text-center text-white/40 animate-pulse">
           <div className="text-4xl mb-3">📊</div>
-          <p className="text-[0.65rem] uppercase font-black tracking-widest italic">{errorMessage || 'Считаем совпадения...'}</p>
+          <p className="text-[0.65rem] uppercase font-black tracking-widest italic">{errorMessage || 'Загружаем результаты...'}</p>
         </div>
       </div>
     )
@@ -147,312 +84,430 @@ export default function ResultsPage() {
 
   if (!participantA || !participantB) {
     return (
-      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center px-4 text-center">
+      <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4 text-center">
         <div className="space-y-6">
-          <div className="text-7xl grayscale opacity-30 drop-shadow-2xl">🙈</div>
+          <div className="text-7xl grayscale opacity-30">🙈</div>
           <p className="text-white/60 font-bold text-lg">Участники не найдены.</p>
-          <Link href="/" className="inline-block text-[#BE4039] underline uppercase tracking-[0.3em] font-black text-xs transition-all hover:opacity-80">На главную</Link>
+          <Link href="/" className="inline-block text-[#e94560] underline uppercase tracking-[0.3em] font-black text-xs">На главную</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#1F313B] text-white py-12 px-6 overflow-x-hidden">
-      <div 
-        aria-hidden="true" 
-        className="fixed inset-0 bg-gradient-to-b from-[#BE4039]/20 via-[#383852]/40 to-[#1F313B] pointer-events-none" 
-      />
-      <div className="relative z-10 max-w-2xl mx-auto space-y-10 pb-12">
-        <div className="text-center space-y-2">
-          <p className="text-[0.65rem] uppercase tracking-[0.5em] text-white/40 font-bold italic">ИТОГИ</p>
-          <h1 className="text-4xl font-black leading-tight tracking-tight text-white italic uppercase">Результаты 🎉</h1>
-          <p className="text-white/60 font-medium px-8 leading-relaxed mt-4">{message}</p>
-        </div>
-
-        <div className="rounded-[3rem] bg-white/5 border border-white/10 p-12 text-center shadow-2xl backdrop-blur-md">
-          <div className="text-8xl mb-8 drop-shadow-2xl">{matchPercentage >= 70 ? '💕' : matchPercentage >= 40 ? '😊' : '🤔'}</div>
-          <div className="text-8xl font-black text-white italic leading-none tracking-tighter">
-            {matchPercentage}%
-          </div>
-          <p className="mt-6 text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-black">совпадение образов</p>
-        </div>
-
-        <div className="rounded-[2.5rem] bg-white/5 border border-white/10 p-10 shadow-xl backdrop-blur-sm flex flex-col gap-10 md:flex-row md:items-center md:justify-around shadow-inner">
-          <ParticipantPill name={participantA.name} emoji={participantA.emoji} />
-          <div className="text-5xl text-white/10 text-center italic font-black">×</div>
-          <ParticipantPill name={participantB.name} emoji={participantB.emoji} />
-        </div>
-
-        {surprises.length > 0 && (
-          <div className="rounded-[2.5rem] bg-gradient-to-br from-[#BE4039] via-[#B94E56] to-[#784259] p-10 text-white shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
-            <h3 className="text-2xl font-black italic mb-2 text-center uppercase tracking-tighter">Сюрприз ✨</h3>
-            <p className="text-xs text-white/70 font-bold uppercase tracking-[0.2em] mb-8 text-center">Где тебя ценят выше, чем ты сам</p>
-            <div className="grid gap-4">
-              {surprises.map(s => (
-                <div key={s.question.questionId} className="flex items-center gap-5 bg-white/10 rounded-[1.5rem] p-5 border border-white/10 shadow-lg backdrop-blur-sm">
-                  <span className="text-4xl drop-shadow-lg">{s.question.icon}</span>
-                  <span className="font-black text-lg italic">{s.question.text}</span>
-                </div>
-              ))}
+    <div className="min-h-screen bg-[#0d0d0d] text-white">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0d0d0d] py-16 px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/30 font-bold mb-4">Психологическое зеркало</p>
+          
+          <div className="flex justify-center items-center gap-6 mb-6">
+            <div className="text-center">
+              <div className="text-6xl mb-2">{participantA.emoji}</div>
+              <div className="text-sm font-black uppercase">{participantA.name}</div>
+            </div>
+            <div className="text-4xl text-white/10">×</div>
+            <div className="text-center">
+              <div className="text-6xl mb-2">{participantB.emoji}</div>
+              <div className="text-sm font-black uppercase">{participantB.name}</div>
             </div>
           </div>
-        )}
 
-        <div className="grid gap-8">
-          <SectionBlock title="🎯 Совпадения" description="Где ваши образы совпали идеально">
-            {topMatches.map((result: any, idx: number) => (
-              <ResultRow
-                key={result.question.questionId}
-                badge={idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
-                icon={result.question.icon}
-                question={result.question.text}
-                description={`${getGapMessage(result.avgGap)} · разница ${result.avgGap.toFixed(1)}`}
-                tone="positive"
-              />
-            ))}
-          </SectionBlock>
-
-          <SectionBlock title="👁️ Различия" description="Где ваше восприятие разошлось">
-            {topDifferences.map((result: any) => (
-              <ResultRow
-                key={result.question.questionId}
-                icon={result.question.icon}
-                question={result.question.text}
-                description={`Разрыв восприятия: ${result.avgGap.toFixed(1)}`}
-                tone="warning"
-              />
-            ))}
-          </SectionBlock>
-        </div>
-
-        {/* Детальная разбивка по всем вопросам */}
-        <div className="rounded-[2.5rem] bg-white/2 border border-white/5 p-10 space-y-8 shadow-xl backdrop-blur-sm">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter">📋 Все вопросы</h3>
-            <p className="text-[0.6rem] text-white/30 uppercase tracking-[0.2em] font-black">Детальное сравнение оценок</p>
+          <div className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4] italic">
+            {matchPercentage}%
           </div>
+          <p className="text-xs text-white/40 uppercase tracking-widest mt-2">совпадение образов</p>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 py-12 space-y-16">
+        
+        {/* ===== SECTION 1: ALL RESULTS ===== */}
+        <section>
+          <h2 className="text-2xl font-black italic uppercase tracking-tight mb-2">📋 Все ответы</h2>
+          <p className="text-sm text-white/40 mb-8">Полная разбивка по каждому вопросу</p>
           
-          <div className="space-y-6">
-            {questionResults.map((result) => (
-              <DetailedQuestionCard
-                key={result.question.questionId}
-                question={result.question}
-                ratings={result.ratings}
-                gapA={result.gapA}
-                gapB={result.gapB}
-                participantA={participantA}
-                participantB={participantB}
-              />
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-4 px-2 text-white/40 font-bold uppercase text-xs">Вопрос</th>
+                  <th className="text-center py-4 px-2 text-[#e94560] font-bold uppercase text-xs" colSpan={2}>{participantA.name}</th>
+                  <th className="text-center py-4 px-2 text-[#4ecdc4] font-bold uppercase text-xs" colSpan={2}>{participantB.name}</th>
+                  <th className="text-center py-4 px-2 text-white/40 font-bold uppercase text-xs">Разрыв</th>
+                </tr>
+                <tr className="border-b border-white/5 text-[0.6rem] text-white/30">
+                  <th></th>
+                  <th className="py-2">о себе</th>
+                  <th className="py-2">партнёр</th>
+                  <th className="py-2">о себе</th>
+                  <th className="py-2">партнёр</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {questionResults.map((result) => {
+                  const hasGap = result.avgGap >= 3
+                  return (
+                    <tr key={result.question.questionId} className={`border-b border-white/5 ${hasGap ? 'bg-[#e94560]/5' : ''}`}>
+                      <td className="py-4 px-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{result.question.icon}</span>
+                          <span className="font-bold">{result.question.text}</span>
+                        </div>
+                      </td>
+                      <td className="text-center py-4 px-2">
+                        <span className="text-xl font-black">{result.ratings.AtoA}</span>
+                      </td>
+                      <td className="text-center py-4 px-2">
+                        <span className={`text-xl font-black ${result.gapA >= 3 ? 'text-[#e94560]' : 'text-white/60'}`}>
+                          {result.ratings.BtoA}
+                          {result.gapA >= 2 && (
+                            <span className="text-xs ml-1 text-white/30">
+                              ({result.ratings.BtoA > result.ratings.AtoA ? '+' : ''}{result.ratings.BtoA - result.ratings.AtoA})
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                      <td className="text-center py-4 px-2">
+                        <span className="text-xl font-black">{result.ratings.BtoB}</span>
+                      </td>
+                      <td className="text-center py-4 px-2">
+                        <span className={`text-xl font-black ${result.gapB >= 3 ? 'text-[#4ecdc4]' : 'text-white/60'}`}>
+                          {result.ratings.AtoB}
+                          {result.gapB >= 2 && (
+                            <span className="text-xs ml-1 text-white/30">
+                              ({result.ratings.AtoB > result.ratings.BtoB ? '+' : ''}{result.ratings.AtoB - result.ratings.BtoB})
+                            </span>
+                          )}
+                        </span>
+                      </td>
+                      <td className="text-center py-4 px-2">
+                        {hasGap ? (
+                          <span className="bg-[#e94560]/20 text-[#e94560] px-3 py-1 rounded-full text-xs font-bold">
+                            {result.avgGap.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-white/20 text-xs">{result.avgGap.toFixed(1)}</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-[3rem] bg-white/5 border border-white/10 p-12 shadow-2xl backdrop-blur-md space-y-10">
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter">Поделиться</h3>
-            <p className="text-sm text-white/40 font-bold uppercase tracking-widest">Ведёт на публичную страницу</p>
-          </div>
-          <div className="grid gap-5">
-            <button
-              onClick={shareResult}
-              disabled={!shareUrl}
-              className="w-full rounded-full bg-[#BE4039] py-6 text-xl font-black uppercase tracking-[0.15em] text-white shadow-xl shadow-red-950/50 transition-all active:scale-95 disabled:opacity-40"
-            >
-              ПОДЕЛИТЬСЯ ССЫЛКОЙ 📤
-            </button>
-            <button
-              onClick={copyShareLink}
-              disabled={!shareUrl}
-              className="w-full rounded-full border-2 border-white/10 bg-white/5 py-6 text-sm font-black uppercase tracking-widest text-white transition-all active:scale-95 disabled:opacity-40"
-            >
-              {copied ? 'СКОПИРОВАНА ✅' : 'КОПИРОВАТЬ ССЫЛКУ 🔗'}
-            </button>
-            <button
-              onClick={() => setShowShareCard(true)}
-              className="w-full rounded-full bg-white text-gray-900 py-6 text-sm font-black uppercase tracking-widest shadow-2xl shadow-white/10 transition-all active:scale-95"
-            >
-              СОЗДАТЬ КАРТИНКУ 📸
-            </button>
-          </div>
-        </div>
+        {/* ===== SECTION 2: INSIGHTS ===== */}
+        <section>
+          <h2 className="text-2xl font-black italic uppercase tracking-tight mb-2">🔍 Инсайты</h2>
+          <p className="text-sm text-white/40 mb-8">Что мы узнали</p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Best Matches */}
+            <div className="bg-gradient-to-br from-[#4ecdc4]/10 to-transparent rounded-3xl p-6 border border-[#4ecdc4]/20">
+              <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                <span className="text-2xl">✨</span> Где совпали
+              </h3>
+              <div className="space-y-3">
+                {topMatches.map((m) => (
+                  <div key={m.question.questionId} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                    <span className="text-2xl">{m.question.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-bold">{m.question.text}</div>
+                      <div className="text-xs text-white/40">Разница: {m.avgGap.toFixed(1)}</div>
+                    </div>
+                    <span className="text-2xl">🎯</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        <div className="text-center pb-12">
-          <Link href="/" className="text-[0.65rem] font-black text-white/20 hover:text-white/40 uppercase tracking-[0.4em] transition-all">
-            ИГРАТЬ СНОВА
+            {/* Biggest Gaps */}
+            <div className="bg-gradient-to-br from-[#e94560]/10 to-transparent rounded-3xl p-6 border border-[#e94560]/20">
+              <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                <span className="text-2xl">⚡</span> Где разошлись
+              </h3>
+              <div className="space-y-3">
+                {biggestGaps.map((m) => (
+                  <div key={m.question.questionId} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                    <span className="text-2xl">{m.question.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-bold">{m.question.text}</div>
+                      <div className="text-xs text-white/40">Разрыв: {m.avgGap.toFixed(1)}</div>
+                    </div>
+                    <span className="text-2xl">🔥</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Surprises for A */}
+            {surprisesA.length > 0 && (
+              <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-3xl p-6 border border-purple-500/20">
+                <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🎁</span> {participantA.name} недооценивает себя
+                </h3>
+                <div className="space-y-3">
+                  {surprisesA.map((s) => (
+                    <div key={s.question.questionId} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                      <span className="text-2xl">{s.question.icon}</span>
+                      <div className="flex-1">
+                        <div className="font-bold">{s.question.text}</div>
+                        <div className="text-xs text-white/40">
+                          Сам: {s.ratings.AtoA} → Партнёр видит: {s.ratings.BtoA}
+                        </div>
+                      </div>
+                      <span className="text-green-400 font-bold">+{s.ratings.BtoA - s.ratings.AtoA}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Surprises for B */}
+            {surprisesB.length > 0 && (
+              <div className="bg-gradient-to-br from-amber-500/10 to-transparent rounded-3xl p-6 border border-amber-500/20">
+                <h3 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🎁</span> {participantB.name} недооценивает себя
+                </h3>
+                <div className="space-y-3">
+                  {surprisesB.map((s) => (
+                    <div key={s.question.questionId} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+                      <span className="text-2xl">{s.question.icon}</span>
+                      <div className="flex-1">
+                        <div className="font-bold">{s.question.text}</div>
+                        <div className="text-xs text-white/40">
+                          Сам: {s.ratings.BtoB} → Партнёр видит: {s.ratings.AtoB}
+                        </div>
+                      </div>
+                      <span className="text-green-400 font-bold">+{s.ratings.AtoB - s.ratings.BtoB}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ===== SECTION 3: SHARE CARDS ===== */}
+        <section>
+          <h2 className="text-2xl font-black italic uppercase tracking-tight mb-2">📤 Поделиться</h2>
+          <p className="text-sm text-white/40 mb-8">Скачай карточку и отправь в соцсети</p>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Card 1: Main Result */}
+            <ShareableCard
+              id="main"
+              title="Главный результат"
+            >
+              <div className="w-full aspect-square bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-8 flex flex-col justify-between items-center text-center">
+                <div>
+                  <h1 className="text-lg font-black italic text-white/80">Психологическое Зеркало</h1>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-5xl">{participantA.emoji}</div>
+                    <div className="text-xs font-bold uppercase mt-2 text-white">{participantA.name}</div>
+                  </div>
+                  <div className="text-3xl text-white/20">×</div>
+                  <div className="text-center">
+                    <div className="text-5xl">{participantB.emoji}</div>
+                    <div className="text-xs font-bold uppercase mt-2 text-white">{participantB.name}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
+                    {matchPercentage}%
+                  </div>
+                  <div className="text-[0.5rem] uppercase tracking-widest text-white/30 mt-1">совпадение</div>
+                </div>
+                <div className="text-[0.5rem] uppercase tracking-widest text-white/20">knowing-you.app</div>
+              </div>
+            </ShareableCard>
+
+            {/* Card 2: Top Insight */}
+            <ShareableCard
+              id="insight"
+              title="Главный инсайт"
+            >
+              <div className="w-full aspect-square bg-gradient-to-br from-[#e94560] to-[#4ecdc4] p-8 flex flex-col justify-between text-white">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{participantA.emoji}</span>
+                  <span className="text-xl text-white/50">×</span>
+                  <span className="text-3xl">{participantB.emoji}</span>
+                  <div className="ml-auto bg-white/20 rounded-full px-3 py-1 text-sm font-bold">{matchPercentage}%</div>
+                </div>
+                
+                <div className="text-center space-y-4">
+                  {biggestGaps[0] && (
+                    <>
+                      <div className="text-6xl">{biggestGaps[0].question.icon}</div>
+                      <div className="text-2xl font-black italic uppercase">{biggestGaps[0].question.text}</div>
+                      <div className="text-sm text-white/80">Самый большой разрыв восприятия</div>
+                    </>
+                  )}
+                </div>
+
+                <div className="text-center">
+                  <div className="text-xs uppercase tracking-widest text-white/50">Психологическое Зеркало</div>
+                </div>
+              </div>
+            </ShareableCard>
+
+            {/* Card 3: Comparison Bars */}
+            <ShareableCard
+              id="bars"
+              title="Сравнение оценок"
+            >
+              <div className="w-full aspect-[4/5] bg-[#0d0d0d] p-6 flex flex-col text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{participantA.emoji}</span>
+                    <span className="text-lg text-white/20">×</span>
+                    <span className="text-2xl">{participantB.emoji}</span>
+                  </div>
+                  <div className="text-2xl font-black text-[#e94560]">{matchPercentage}%</div>
+                </div>
+                
+                <div className="flex-1 space-y-3">
+                  {questionResults.slice(0, 5).map((r) => (
+                    <div key={r.question.questionId} className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span>{r.question.icon}</span>
+                        <span className="text-white/60">{r.question.text}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#e94560] to-[#ff6b6b]"
+                            style={{ width: `${r.ratings.AtoA * 10}%` }}
+                          />
+                        </div>
+                        <div className="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#4ecdc4] to-[#44a08d]"
+                            style={{ width: `${r.ratings.BtoB * 10}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-center gap-4 pt-4 text-[0.5rem] text-white/30">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#e94560]" />
+                    <span>{participantA.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#4ecdc4]" />
+                    <span>{participantB.name}</span>
+                  </div>
+                </div>
+              </div>
+            </ShareableCard>
+
+            {/* Card 4: Story format */}
+            <ShareableCard
+              id="story"
+              title="Для сторис"
+            >
+              <div className="w-full aspect-[9/16] bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-6 flex flex-col justify-between text-white text-center">
+                <div>
+                  <p className="text-[0.5rem] uppercase tracking-widest text-white/30">Knowing You, Knowing Me</p>
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="flex justify-center items-center gap-4">
+                    <div className="text-5xl">{participantA.emoji}</div>
+                    <div className="text-2xl text-white/20">💕</div>
+                    <div className="text-5xl">{participantB.emoji}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
+                      {matchPercentage}%
+                    </div>
+                    <div className="text-xs uppercase tracking-widest text-white/40 mt-2">совпадение</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-sm font-bold text-white/60">Лучший матч:</div>
+                    {topMatches[0] && (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-3xl">{topMatches[0].question.icon}</span>
+                        <span className="font-bold">{topMatches[0].question.text}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="text-[0.5rem] uppercase tracking-widest text-white/20">knowing-you.app</div>
+              </div>
+            </ShareableCard>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <div className="text-center py-12">
+          <Link href="/" className="text-sm font-bold text-white/20 hover:text-white/40 uppercase tracking-widest transition-all">
+            ← Играть снова
           </Link>
         </div>
       </div>
-
-      {showShareCard && topMatches[0] && (
-        <ShareCard
-          participantA={participantA}
-          participantB={participantB}
-          matchPercentage={matchPercentage}
-          shareUrl={shareUrl || undefined}
-          topMatch={{
-            question: {
-              text: topMatches[0].question.text,
-              icon: topMatches[0].question.icon ?? '❓'
-            },
-            avgGap: topMatches[0].avgGap
-          }}
-          questionResults={questionResults}
-          onClose={() => setShowShareCard(false)}
-        />
-      )}
     </div>
   )
 }
 
-function SectionBlock({ title, description, children }: { title: string, description: string, children: React.ReactNode }) {
+// Shareable Card Component with download button
+function ShareableCard({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return
+
+    setDownloading(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      })
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.download = `knowing-you-${id}.png`
+          link.href = url
+          link.click()
+          URL.revokeObjectURL(url)
+        }
+        setDownloading(false)
+      })
+    } catch (error) {
+      console.error('Error generating image:', error)
+      setDownloading(false)
+    }
+  }
+
   return (
-    <div className="rounded-[2.5rem] bg-white/2 border border-white/5 p-10 space-y-8 shadow-xl backdrop-blur-sm">
-      <div className="space-y-2">
-        <h3 className="text-2xl font-black italic uppercase tracking-tighter">{title}</h3>
-        <p className="text-[0.6rem] text-white/30 uppercase tracking-[0.2em] font-black">{description}</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-white/60">{title}</h3>
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+        >
+          {downloading ? '...' : '📥 Скачать'}
+        </button>
       </div>
-      <div className="space-y-4">
+      <div ref={cardRef} className="rounded-2xl overflow-hidden shadow-2xl border border-white/10">
         {children}
       </div>
-    </div>
-  )
-}
-
-function ParticipantPill({ name, emoji }: { name: string; emoji: string }) {
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="text-7xl drop-shadow-2xl">{emoji}</div>
-      <p className="text-2xl font-black text-white italic tracking-tighter uppercase">{name}</p>
-    </div>
-  )
-}
-
-function ResultRow({
-  icon,
-  question,
-  description,
-  badge,
-  tone
-}: {
-  icon: string
-  question: string
-  description: string
-  badge?: string
-  tone: 'positive' | 'warning'
-}) {
-  const toneClasses =
-    tone === 'positive'
-      ? 'border-[#BE4039]/20 bg-[#BE4039]/5 text-white'
-      : 'border-white/10 bg-white/5 text-white/80'
-
-  return (
-    <div className={`rounded-[2rem] border-2 ${toneClasses} p-6 shadow-xl backdrop-blur-sm transition-all hover:scale-[1.02]`}>
-      <div className="flex items-center gap-5">
-        <div className="text-5xl drop-shadow-lg">{icon}</div>
-        <div className="flex-1 min-w-0">
-          <p className="font-black text-lg leading-tight truncate italic uppercase tracking-tight">{question}</p>
-          <p className="text-[0.65rem] font-bold uppercase tracking-widest text-white/30 mt-2">{description}</p>
-        </div>
-        {badge && <div className="text-4xl drop-shadow-2xl">{badge}</div>}
-      </div>
-    </div>
-  )
-}
-
-function DetailedQuestionCard({
-  question,
-  ratings,
-  gapA,
-  gapB,
-  participantA,
-  participantB
-}: {
-  question: QuestionRecord
-  ratings: { AtoA: number; AtoB: number; BtoA: number; BtoB: number }
-  gapA: number
-  gapB: number
-  participantA: ParticipantRecord
-  participantB: ParticipantRecord
-}) {
-  const maxGap = Math.max(gapA, gapB)
-  const hasSignificantGap = maxGap >= 3
-  
-  return (
-    <div className={`rounded-[2rem] border-2 p-6 transition-all ${
-      hasSignificantGap 
-        ? 'border-[#BE4039]/30 bg-[#BE4039]/5' 
-        : 'border-white/10 bg-white/5'
-    }`}>
-      {/* Заголовок вопроса */}
-      <div className="flex items-center gap-4 mb-6">
-        <span className="text-4xl">{question.icon}</span>
-        <h4 className="font-black text-lg italic uppercase tracking-tight flex-1">{question.text}</h4>
-        {hasSignificantGap && <span className="text-2xl">⚠️</span>}
-      </div>
-      
-      {/* Сетка оценок */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Блок для участника A */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">{participantA.emoji}</span>
-            <span className="text-sm font-bold uppercase tracking-wide text-white/60">{participantA.name}</span>
-          </div>
-          
-          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
-            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">Сам о себе</div>
-            <div className="text-3xl font-black text-white">{ratings.AtoA}</div>
-          </div>
-          
-          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
-            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">{participantB.name} о нём</div>
-            <div className={`text-3xl font-black ${gapA >= 3 ? 'text-[#BE4039]' : 'text-white'}`}>
-              {ratings.BtoA}
-              {gapA >= 2 && (
-                <span className="text-sm ml-2 text-white/40">
-                  ({ratings.BtoA > ratings.AtoA ? '+' : ''}{ratings.BtoA - ratings.AtoA})
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Блок для участника B */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">{participantB.emoji}</span>
-            <span className="text-sm font-bold uppercase tracking-wide text-white/60">{participantB.name}</span>
-          </div>
-          
-          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
-            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">Сам о себе</div>
-            <div className="text-3xl font-black text-white">{ratings.BtoB}</div>
-          </div>
-          
-          <div className="rounded-xl bg-white/5 p-4 border border-white/10">
-            <div className="text-[0.6rem] text-white/40 uppercase tracking-widest font-bold mb-1">{participantA.name} о нём</div>
-            <div className={`text-3xl font-black ${gapB >= 3 ? 'text-[#BE4039]' : 'text-white'}`}>
-              {ratings.AtoB}
-              {gapB >= 2 && (
-                <span className="text-sm ml-2 text-white/40">
-                  ({ratings.AtoB > ratings.BtoB ? '+' : ''}{ratings.AtoB - ratings.BtoB})
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Индикатор разрыва */}
-      {hasSignificantGap && (
-        <div className="mt-4 pt-4 border-t border-white/10 text-center">
-          <span className="text-[0.6rem] font-bold uppercase tracking-widest text-[#BE4039]">
-            Разрыв восприятия: {maxGap.toFixed(1)}
-          </span>
-        </div>
-      )}
     </div>
   )
 }
