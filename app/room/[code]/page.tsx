@@ -156,16 +156,29 @@ export default function RoomPage() {
   const inviteUrl = useMemo(() => (origin ? `${origin}/room/${code}` : ''), [code, origin])
 
   const handleCopyInvite = useCallback(async () => {
-    if (!inviteUrl) return
+    const url = inviteUrl || `${window.location.origin}/room/${code}`
+    if (!url) return
     try {
-      await navigator.clipboard.writeText(inviteUrl)
-      setCopyStatus('copied')
-      setTimeout(() => setCopyStatus('idle'), 2000)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+      } else {
+        const textarea = document.createElement("textarea")
+        textarea.value = url
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+      }
+      setCopyStatus("copied")
+      setTimeout(() => setCopyStatus("idle"), 2500)
     } catch (error) {
-      console.error('Failed to copy invite link:', error)
-      alert('Не удалось скопировать. Пожалуйста, скопируйте URL вручную.')
+      console.error("Failed to copy:", error)
+      window.prompt("Скопируйте ссылку:", url)
     }
-  }, [inviteUrl])
+  }, [inviteUrl, code])
 
   const handleInviteShare = useCallback(async () => {
     if (!inviteUrl) return
@@ -257,9 +270,9 @@ export default function RoomPage() {
               {inviteUrl && (
                 <button
                   onClick={handleCopyInvite}
-                  className="text-[0.65rem] font-bold text-white/40 hover:text-white uppercase tracking-[0.3em] transition-all italic h-8"
+                  className="w-full mt-4 py-4 px-6 rounded-2xl bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] text-white font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-900/30"
                 >
-                  {copyStatus === 'copied' ? 'ССЫЛКА СКОПИРОВАНА ✅' : 'КОПИРОВАТЬ ССЫЛКУ-ПРИГЛАШЕНИЕ 🔗'}
+                  {copyStatus === 'copied' ? '✅ СКОПИРОВАНО!' : '🔗 КОПИРОВАТЬ ССЫЛКУ'}
                 </button>
               )}
             </div>
