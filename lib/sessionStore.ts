@@ -584,3 +584,52 @@ export async function addGamesToUser(userId: string, count: number): Promise<voi
   )
   console.log(`[addGamesToUser] Added ${count} games to user ${userId}`)
 }
+
+// Custom question packs
+export async function saveCustomPack(params: {
+  userId: string
+  name: string
+  questions: Array<{ text: string; icon: string }>
+}): Promise<string> {
+  const packId = `custom_${params.userId}_${Date.now()}`
+  
+  await dynamo.send(
+    new PutCommand({
+      TableName: TABLES.users,
+      Item: {
+        PK: `PACK#${packId}`,
+        SK: 'META',
+        packId,
+        userId: params.userId,
+        name: params.name,
+        questions: params.questions,
+        createdAt: NOW()
+      }
+    })
+  )
+  
+  return packId
+}
+
+export async function getCustomPack(packId: string): Promise<{
+  packId: string
+  userId: string
+  name: string
+  questions: Array<{ text: string; icon: string }>
+} | null> {
+  const result = await dynamo.send(
+    new GetCommand({
+      TableName: TABLES.users,
+      Key: { PK: `PACK#${packId}`, SK: 'META' }
+    })
+  )
+  
+  if (!result.Item) return null
+  
+  return {
+    packId: result.Item.packId,
+    userId: result.Item.userId,
+    name: result.Item.name,
+    questions: result.Item.questions
+  }
+}
