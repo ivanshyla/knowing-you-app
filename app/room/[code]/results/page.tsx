@@ -1,38 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/apiClient'
 import html2canvas from 'html2canvas'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 import { buildQuestionResults, computeMatchPercentage } from '@/lib/results'
-
-// Animated counter hook
-function useAnimatedCounter(end: number, duration: number = 2000, start: number = 0) {
-  const [count, setCount] = useState(start)
-  const [isAnimating, setIsAnimating] = useState(false)
-
-  const animate = useCallback(() => {
-    setIsAnimating(true)
-    const startTime = Date.now()
-    const tick = () => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      // Easing function
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.round(start + (end - start) * eased))
-      if (progress < 1) {
-        requestAnimationFrame(tick)
-      } else {
-        setIsAnimating(false)
-      }
-    }
-    requestAnimationFrame(tick)
-  }, [end, duration, start])
-
-  return { count, animate, isAnimating }
-}
 
 export default function ResultsPage() {
   const params = useParams()
@@ -44,80 +18,52 @@ export default function ResultsPage() {
   const [participants, setParticipants] = useState<ParticipantRecord[]>([])
   const [ratings, setRatings] = useState<RatingRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  
-  // Wrapped-style slides
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [slideAnimating, setSlideAnimating] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     const load = async () => {
       try {
         const queryParams = new URLSearchParams({ code, include: 'questions,ratings' })
         const response = await apiFetch(`/api/room/state?${queryParams.toString()}`, { cache: 'no-store' })
-
-        if (!response.ok) {
-          throw new Error('Комната не найдена')
-        }
-
+        if (!response.ok) throw new Error('Not found')
         const data = await response.json()
         if (data.session.status !== 'done') {
           router.push(`/room/${code}`)
           return
         }
-
         setSession(data.session)
         setQuestions(data.questions ?? [])
         setParticipants(data.participants ?? [])
         setRatings(data.ratings ?? [])
         setLoading(false)
       } catch (error) {
-        console.error('Failed to load results:', error)
-        setErrorMessage('Не удалось загрузить результат.')
+        console.error('Failed to load:', error)
+        setLoading(false)
       }
     }
-
     load()
   }, [code, router])
 
   const participantA = participants.find((p) => p.role === 'A')
   const participantB = participants.find((p) => p.role === 'B')
-
   const questionResults = useMemo(() => buildQuestionResults(questions, ratings), [questions, ratings])
   const matchPercentage = useMemo(() => computeMatchPercentage(questionResults), [questionResults])
 
   // Insights
-  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3), [questionResults])
-  const biggestGaps = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 3), [questionResults])
-  const surprisesA = useMemo(() => 
-    questionResults.filter(r => r.ratings.BtoA > r.ratings.AtoA).sort((a, b) => (b.ratings.BtoA - b.ratings.AtoA) - (a.ratings.BtoA - a.ratings.AtoA)).slice(0, 2),
-    [questionResults]
-  )
+  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 2), [questionResults])
+  const biggestGaps = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 2), [questionResults])
 
-  const nextSlide = () => {
-    if (slideAnimating) return
-    setSlideAnimating(true)
-    setTimeout(() => {
-      setCurrentSlide(prev => Math.min(prev + 1, 5))
-      setSlideAnimating(false)
-    }, 300)
-  }
-
-  const prevSlide = () => {
-    if (slideAnimating) return
-    setSlideAnimating(true)
-    setTimeout(() => {
-      setCurrentSlide(prev => Math.max(prev - 1, 0))
-      setSlideAnimating(false)
-    }, 300)
-  }
+  const totalSlides = questionResults.length + 3 // questions + insights + final
+  const isInsightsSlide = currentIndex === questionResults.length
+  const isFinalSlide = currentIndex === questionResults.length + 1
+  const isAllResultsSlide = currentIndex === questionResults.length + 2
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center text-white/40 animate-pulse">
-          <div className="text-6xl mb-4 animate-bounce">✨</div>
-          <p className="text-sm uppercase tracking-widest font-bold">{errorMessage || 'Подготовка...'}</p>
+        <div className="text-white/40 animate-pulse text-center">
+          <div className="text-5xl mb-4">📊</div>
+          <p className="text-sm uppercase tracking-widest">Загружаем...</p>
         </div>
       </div>
     )
@@ -125,435 +71,381 @@ export default function ResultsPage() {
 
   if (!participantA || !participantB) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-center text-white">
-        <div className="space-y-6">
-          <div className="text-7xl">🙈</div>
-          <p className="text-white/60">Участники не найдены.</p>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white text-center p-8">
+        <div>
+          <div className="text-6xl mb-4">🙈</div>
+          <p className="text-white/60 mb-4">Участники не найдены</p>
           <Link href="/" className="text-[#e94560] underline">На главную</Link>
         </div>
       </div>
     )
   }
 
-  const slides = [
-    // Slide 0: Intro
-    <IntroSlide key="intro" participantA={participantA} participantB={participantB} onNext={nextSlide} />,
-    // Slide 1: Match percentage reveal
-    <MatchRevealSlide key="match" matchPercentage={matchPercentage} participantA={participantA} participantB={participantB} onNext={nextSlide} onPrev={prevSlide} />,
-    // Slide 2: Best matches
-    <BestMatchesSlide key="best" topMatches={topMatches} onNext={nextSlide} onPrev={prevSlide} />,
-    // Slide 3: Biggest gaps
-    <BiggestGapsSlide key="gaps" biggestGaps={biggestGaps} onNext={nextSlide} onPrev={prevSlide} />,
-    // Slide 4: Surprises
-    <SurprisesSlide key="surprises" surprisesA={surprisesA} participantA={participantA} participantB={participantB} onNext={nextSlide} onPrev={prevSlide} />,
-    // Slide 5: Final + Share
-    <FinalSlide key="final" matchPercentage={matchPercentage} participantA={participantA} participantB={participantB} questionResults={questionResults} topMatches={topMatches} onPrev={prevSlide} />,
-  ]
+  const currentResult = questionResults[currentIndex]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
-      {/* Progress dots */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex gap-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentSlide(i)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              i === currentSlide ? 'bg-white w-8' : 'bg-white/20 hover:bg-white/40'
-            }`}
-          />
-        ))}
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+      {/* Progress bar */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
+        <div 
+          className="h-full bg-gradient-to-r from-[#e94560] to-[#4ecdc4] transition-all duration-300"
+          style={{ width: `${((currentIndex + 1) / totalSlides) * 100}%` }}
+        />
       </div>
 
-      {/* Slide container */}
-      <div 
-        className={`transition-all duration-500 ease-out ${slideAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
-      >
-        {slides[currentSlide]}
-      </div>
-    </div>
-  )
-}
-
-// ===== SLIDE COMPONENTS =====
-
-function IntroSlide({ participantA, participantB, onNext }: { participantA: ParticipantRecord; participantB: ParticipantRecord; onNext: () => void }) {
-  const [step, setStep] = useState(0)
-
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setStep(1), 500),
-      setTimeout(() => setStep(2), 1200),
-      setTimeout(() => setStep(3), 2000),
-    ]
-    return () => timers.forEach(clearTimeout)
-  }, [])
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
-      <div className="text-center space-y-12">
-        <div className={`transition-all duration-1000 ${step >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <p className="text-sm uppercase tracking-[0.5em] text-white/40 mb-4">Knowing You, Knowing Me</p>
-          <h1 className="text-4xl md:text-6xl font-black italic">Ваши результаты готовы</h1>
-        </div>
-
-        <div className={`flex items-center justify-center gap-8 transition-all duration-1000 delay-300 ${step >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-          <div className="text-center animate-float">
-            <div className="text-7xl md:text-8xl mb-3">{participantA.emoji}</div>
-            <div className="text-lg font-bold">{participantA.name}</div>
-          </div>
-          <div className="text-4xl text-white/20 animate-pulse">💕</div>
-          <div className="text-center animate-float" style={{ animationDelay: '0.5s' }}>
-            <div className="text-7xl md:text-8xl mb-3">{participantB.emoji}</div>
-            <div className="text-lg font-bold">{participantB.name}</div>
-          </div>
-        </div>
-
-        <button
-          onClick={onNext}
-          className={`px-12 py-5 rounded-full bg-white text-black font-black uppercase tracking-widest text-lg transition-all duration-500 hover:scale-105 active:scale-95 ${step >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-        >
-          Показать →
-        </button>
+      {/* Slide counter */}
+      <div className="fixed top-4 right-4 text-xs text-white/30 font-mono z-50">
+        {currentIndex + 1} / {totalSlides}
       </div>
 
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
-    </div>
-  )
-}
+      <div className="min-h-screen flex flex-col">
+        {/* Current slide content */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          {currentResult && !isInsightsSlide && !isFinalSlide && !isAllResultsSlide && (
+            <QuestionSlide
+              result={currentResult}
+              participantA={participantA}
+              participantB={participantB}
+              questionNumber={currentIndex + 1}
+              totalQuestions={questionResults.length}
+            />
+          )}
 
-function MatchRevealSlide({ matchPercentage, participantA, participantB, onNext, onPrev }: { matchPercentage: number; participantA: ParticipantRecord; participantB: ParticipantRecord; onNext: () => void; onPrev: () => void }) {
-  const { count, animate } = useAnimatedCounter(matchPercentage, 2500)
-  const [revealed, setRevealed] = useState(false)
+          {isInsightsSlide && (
+            <InsightsSlide
+              topMatches={topMatches}
+              biggestGaps={biggestGaps}
+              participantA={participantA}
+              participantB={participantB}
+            />
+          )}
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRevealed(true)
-      animate()
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [animate])
+          {isFinalSlide && (
+            <FinalSlide
+              matchPercentage={matchPercentage}
+              participantA={participantA}
+              participantB={participantB}
+              questionResults={questionResults}
+            />
+          )}
 
-  const emoji = matchPercentage >= 70 ? '💕' : matchPercentage >= 50 ? '😊' : '🤔'
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#e94560]/20 via-[#0a0a0a] to-[#4ecdc4]/20 relative overflow-hidden">
-      {/* Animated background circles */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute w-96 h-96 bg-[#e94560]/10 rounded-full blur-3xl -top-48 -left-48 animate-pulse" />
-        <div className="absolute w-96 h-96 bg-[#4ecdc4]/10 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-
-      <div className="relative z-10 text-center space-y-8">
-        <p className={`text-sm uppercase tracking-[0.3em] text-white/40 transition-all duration-1000 ${revealed ? 'opacity-100' : 'opacity-0'}`}>
-          Совпадение образов
-        </p>
-
-        <div className={`transition-all duration-1000 ${revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
-          <div className="text-[12rem] md:text-[16rem] font-black leading-none text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
-            {count}%
-          </div>
+          {isAllResultsSlide && (
+            <AllResultsSlide
+              questionResults={questionResults}
+              participantA={participantA}
+              participantB={participantB}
+              matchPercentage={matchPercentage}
+            />
+          )}
         </div>
 
-        <div className={`text-8xl transition-all duration-500 delay-1000 ${revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}>
-          {emoji}
-        </div>
-
-        <div className="flex items-center justify-center gap-4 pt-8">
-          <button onClick={onPrev} className="px-6 py-3 rounded-full bg-white/10 text-white/60 font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all">
-            ← Назад
-          </button>
-          <button onClick={onNext} className="px-8 py-4 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all">
-            Дальше →
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function BestMatchesSlide({ topMatches, onNext, onPrev }: { topMatches: any[]; onNext: () => void; onPrev: () => void }) {
-  const [visibleItems, setVisibleItems] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setVisibleItems(prev => Math.min(prev + 1, topMatches.length))
-    }, 400)
-    return () => clearInterval(timer)
-  }, [topMatches.length])
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#4ecdc4]/20 via-[#0a0a0a] to-[#0a0a0a]">
-      <div className="max-w-lg w-full text-center space-y-12">
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-[#4ecdc4] mb-2">✨ Лучшие совпадения</p>
-          <h2 className="text-3xl md:text-4xl font-black italic">Вы понимаете друг друга</h2>
-        </div>
-
-        <div className="space-y-4">
-          {topMatches.map((match, i) => (
-            <div
-              key={match.question.questionId}
-              className={`flex items-center gap-4 bg-white/5 rounded-2xl p-6 border border-white/10 transition-all duration-500 ${
-                i < visibleItems ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
-              }`}
-              style={{ transitionDelay: `${i * 100}ms` }}
+        {/* Navigation */}
+        <div className="p-6 flex justify-center gap-4">
+          {currentIndex > 0 && (
+            <button
+              onClick={() => setCurrentIndex(i => i - 1)}
+              className="px-8 py-4 rounded-full bg-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all"
             >
-              <span className="text-5xl">{match.question.icon}</span>
-              <div className="flex-1 text-left">
-                <div className="text-xl font-bold">{match.question.text}</div>
-                <div className="text-sm text-white/40">Разница: {match.avgGap.toFixed(1)}</div>
-              </div>
-              <span className="text-3xl">🎯</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <button onClick={onPrev} className="px-6 py-3 rounded-full bg-white/10 text-white/60 font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all">
-            ← Назад
-          </button>
-          <button onClick={onNext} className="px-8 py-4 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all">
-            Дальше →
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function BiggestGapsSlide({ biggestGaps, onNext, onPrev }: { biggestGaps: any[]; onNext: () => void; onPrev: () => void }) {
-  const [visibleItems, setVisibleItems] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setVisibleItems(prev => Math.min(prev + 1, biggestGaps.length))
-    }, 400)
-    return () => clearInterval(timer)
-  }, [biggestGaps.length])
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#e94560]/20 via-[#0a0a0a] to-[#0a0a0a]">
-      <div className="max-w-lg w-full text-center space-y-12">
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-[#e94560] mb-2">⚡ Зоны роста</p>
-          <h2 className="text-3xl md:text-4xl font-black italic">Где вы видите по-разному</h2>
-        </div>
-
-        <div className="space-y-4">
-          {biggestGaps.map((gap, i) => (
-            <div
-              key={gap.question.questionId}
-              className={`flex items-center gap-4 bg-[#e94560]/10 rounded-2xl p-6 border border-[#e94560]/20 transition-all duration-500 ${
-                i < visibleItems ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
-              }`}
-              style={{ transitionDelay: `${i * 100}ms` }}
+              ← Назад
+            </button>
+          )}
+          {currentIndex < totalSlides - 1 ? (
+            <button
+              onClick={() => setCurrentIndex(i => i + 1)}
+              className="px-8 py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-all"
             >
-              <span className="text-5xl">{gap.question.icon}</span>
-              <div className="flex-1 text-left">
-                <div className="text-xl font-bold">{gap.question.text}</div>
-                <div className="text-sm text-white/40">Разрыв: {gap.avgGap.toFixed(1)}</div>
-              </div>
-              <span className="text-3xl">🔥</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <button onClick={onPrev} className="px-6 py-3 rounded-full bg-white/10 text-white/60 font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all">
-            ← Назад
-          </button>
-          <button onClick={onNext} className="px-8 py-4 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all">
-            Дальше →
-          </button>
+              Дальше →
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="px-8 py-4 rounded-full bg-gradient-to-r from-[#e94560] to-[#4ecdc4] text-white font-bold uppercase tracking-widest text-sm hover:scale-105 transition-all"
+            >
+              🔄 Играть ещё
+            </Link>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function SurprisesSlide({ surprisesA, participantA, participantB, onNext, onPrev }: { surprisesA: any[]; participantA: ParticipantRecord; participantB: ParticipantRecord; onNext: () => void; onPrev: () => void }) {
-  const [revealed, setRevealed] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setRevealed(true), 500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-500/20 via-[#0a0a0a] to-[#0a0a0a]">
-      <div className="max-w-lg w-full text-center space-y-12">
-        <div className={`transition-all duration-1000 ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <p className="text-sm uppercase tracking-[0.3em] text-purple-400 mb-2">🎁 Сюрприз</p>
-          <h2 className="text-3xl md:text-4xl font-black italic">
-            {participantB.name} видит в {participantA.name} больше
-          </h2>
-        </div>
-
-        {surprisesA.length > 0 ? (
-          <div className="space-y-4">
-            {surprisesA.map((s, i) => (
-              <div
-                key={s.question.questionId}
-                className={`bg-purple-500/10 rounded-2xl p-6 border border-purple-500/20 transition-all duration-700 ${
-                  revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-                }`}
-                style={{ transitionDelay: `${i * 200 + 500}ms` }}
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-5xl">{s.question.icon}</span>
-                  <div className="flex-1 text-left">
-                    <div className="text-xl font-bold">{s.question.text}</div>
-                    <div className="text-sm text-white/40">
-                      {participantA.name} думает: {s.ratings.AtoA} → {participantB.name} видит: {s.ratings.BtoA}
-                    </div>
-                  </div>
-                  <div className="text-3xl font-black text-green-400">+{s.ratings.BtoA - s.ratings.AtoA}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className={`text-white/40 transition-all duration-1000 ${revealed ? 'opacity-100' : 'opacity-0'}`}>
-            Нет значительных сюрпризов
-          </div>
-        )}
-
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <button onClick={onPrev} className="px-6 py-3 rounded-full bg-white/10 text-white/60 font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all">
-            ← Назад
-          </button>
-          <button onClick={onNext} className="px-8 py-4 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all">
-            Финал →
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function FinalSlide({ matchPercentage, participantA, participantB, questionResults, topMatches, onPrev }: { matchPercentage: number; participantA: ParticipantRecord; participantB: ParticipantRecord; questionResults: any[]; topMatches: any[]; onPrev: () => void }) {
+// Question slide with ratings comparison
+function QuestionSlide({ result, participantA, participantB, questionNumber, totalQuestions }: any) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const [downloading, setDownloading] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    setShowConfetti(true)
-    const timer = setTimeout(() => setShowConfetti(false), 3000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  const handleDownload = async () => {
+  const handleShare = async () => {
     if (!cardRef.current) return
-    setDownloading(true)
+    setSaving(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: '#0a0a0a', scale: 2 })
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.download = `kykm-${questionNumber}.png`
+          link.href = url
+          link.click()
+          URL.revokeObjectURL(url)
+        }
+        setSaving(false)
+      })
+    } catch (e) {
+      setSaving(false)
+    }
+  }
+
+  const { AtoA, AtoB, BtoA, BtoB } = result.ratings
+
+  return (
+    <div className="w-full max-w-md space-y-6">
+      {/* Shareable card */}
+      <div ref={cardRef} className="bg-[#0a0a0a] p-8 rounded-3xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4">{result.question.icon}</div>
+          <h2 className="text-2xl font-black italic uppercase">{result.question.text}</h2>
+          <p className="text-xs text-white/30 mt-2 uppercase tracking-widest">Вопрос {questionNumber} из {totalQuestions}</p>
+        </div>
+
+        {/* Ratings visualization */}
+        <div className="space-y-6">
+          {/* A's perspective */}
+          <div className="bg-white/5 rounded-2xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-2xl">{participantA.emoji}</span>
+              <span className="font-bold">{participantA.name}</span>
+            </div>
+            <div className="space-y-2">
+              <RatingBar label="о себе" value={AtoA} color="#e94560" />
+              <RatingBar label={`о ${participantB.name}`} value={AtoB} color="#e94560" opacity={0.5} />
+            </div>
+          </div>
+
+          {/* B's perspective */}
+          <div className="bg-white/5 rounded-2xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-2xl">{participantB.emoji}</span>
+              <span className="font-bold">{participantB.name}</span>
+            </div>
+            <div className="space-y-2">
+              <RatingBar label="о себе" value={BtoB} color="#4ecdc4" />
+              <RatingBar label={`о ${participantA.name}`} value={BtoA} color="#4ecdc4" opacity={0.5} />
+            </div>
+          </div>
+
+          {/* Gap indicator */}
+          {result.avgGap >= 2 && (
+            <div className="text-center py-2">
+              <span className="text-xs uppercase tracking-widest text-[#e94560]">
+                ⚡ Разрыв восприятия: {result.avgGap.toFixed(1)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Logo */}
+        <div className="text-center mt-6 text-[0.5rem] uppercase tracking-widest text-white/20">
+          knowing-you.app
+        </div>
+      </div>
+
+      {/* Share button */}
+      <button
+        onClick={handleShare}
+        disabled={saving}
+        className="w-full py-3 rounded-full bg-white/10 text-white/60 text-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50"
+      >
+        {saving ? '...' : '📤 Сохранить картинку'}
+      </button>
+    </div>
+  )
+}
+
+function RatingBar({ label, value, color, opacity = 1 }: { label: string; value: number; color: string; opacity?: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-white/50 w-24">{label}</span>
+      <div className="flex-1 h-6 bg-white/10 rounded-full overflow-hidden">
+        <div 
+          className="h-full rounded-full transition-all duration-500"
+          style={{ 
+            width: `${value * 10}%`, 
+            backgroundColor: color,
+            opacity 
+          }}
+        />
+      </div>
+      <span className="text-lg font-black w-8 text-right">{value}</span>
+    </div>
+  )
+}
+
+function InsightsSlide({ topMatches, biggestGaps, participantA, participantB }: any) {
+  return (
+    <div className="w-full max-w-md space-y-8 text-center">
+      <h2 className="text-3xl font-black italic uppercase">🔍 Инсайты</h2>
+      
+      <div className="space-y-4">
+        <div className="bg-[#4ecdc4]/10 border border-[#4ecdc4]/30 rounded-2xl p-6">
+          <h3 className="text-sm uppercase tracking-widest text-[#4ecdc4] mb-4">✨ Где совпали</h3>
+          {topMatches.map((m: any) => (
+            <div key={m.question.questionId} className="flex items-center gap-3 py-2">
+              <span className="text-3xl">{m.question.icon}</span>
+              <span className="font-bold">{m.question.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#e94560]/10 border border-[#e94560]/30 rounded-2xl p-6">
+          <h3 className="text-sm uppercase tracking-widest text-[#e94560] mb-4">⚡ Где разошлись</h3>
+          {biggestGaps.map((m: any) => (
+            <div key={m.question.questionId} className="flex items-center gap-3 py-2">
+              <span className="text-3xl">{m.question.icon}</span>
+              <span className="font-bold">{m.question.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FinalSlide({ matchPercentage, participantA, participantB, questionResults }: any) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [saving, setSaving] = useState(false)
+
+  const handleShare = async () => {
+    if (!cardRef.current) return
+    setSaving(true)
     try {
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 })
       canvas.toBlob((blob) => {
         if (blob) {
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
-          link.download = 'knowing-you-result.png'
+          link.download = 'kykm-result.png'
           link.href = url
           link.click()
           URL.revokeObjectURL(url)
         }
-        setDownloading(false)
+        setSaving(false)
       })
-    } catch (error) {
-      console.error(error)
-      setDownloading(false)
+    } catch (e) {
+      setSaving(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#e94560]/10 via-[#0a0a0a] to-[#4ecdc4]/10 relative overflow-hidden">
-      {/* Confetti effect */}
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-3 h-3 animate-confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: ['#e94560', '#4ecdc4', '#f39c12', '#9b59b6', '#3498db'][i % 5],
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="text-center space-y-8 max-w-2xl">
-        <h2 className="text-4xl md:text-5xl font-black italic">🎉 Готово!</h2>
-
-        {/* Shareable Card */}
-        <div ref={cardRef} className="rounded-3xl overflow-hidden shadow-2xl">
-          <div className="w-full aspect-square bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-10 flex flex-col justify-between items-center text-center">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/40">Психологическое Зеркало</p>
-            </div>
-            <div className="flex items-center gap-8">
-              <div>
-                <div className="text-6xl">{participantA.emoji}</div>
-                <div className="text-sm font-bold mt-2">{participantA.name}</div>
-              </div>
-              <div className="text-3xl text-white/20">×</div>
-              <div>
-                <div className="text-6xl">{participantB.emoji}</div>
-                <div className="text-sm font-bold mt-2">{participantB.name}</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
-                {matchPercentage}%
-              </div>
-              <div className="text-xs uppercase tracking-widest text-white/30 mt-2">совпадение</div>
-            </div>
-            <div className="text-[0.6rem] uppercase tracking-widest text-white/20">knowing-you.app</div>
+    <div className="w-full max-w-md space-y-6">
+      <div ref={cardRef} className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-10 rounded-3xl text-center">
+        <p className="text-xs uppercase tracking-widest text-white/40 mb-6">Психологическое зеркало</p>
+        
+        <div className="flex justify-center items-center gap-6 mb-6">
+          <div>
+            <div className="text-5xl">{participantA.emoji}</div>
+            <div className="text-sm font-bold mt-2">{participantA.name}</div>
+          </div>
+          <div className="text-2xl text-white/20">💕</div>
+          <div>
+            <div className="text-5xl">{participantB.emoji}</div>
+            <div className="text-sm font-bold mt-2">{participantB.name}</div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap justify-center gap-4">
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className="px-8 py-4 rounded-full bg-white text-black font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
-          >
-            {downloading ? 'Создаём...' : '📥 Скачать картинку'}
-          </button>
-          <Link
-            href="/"
-            className="px-8 py-4 rounded-full bg-white/10 text-white font-bold uppercase tracking-widest hover:bg-white/20 transition-all"
-          >
-            🔄 Играть ещё
-          </Link>
+        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
+          {matchPercentage}%
         </div>
+        <p className="text-xs uppercase tracking-widest text-white/40 mt-2">совпадение</p>
 
-        <button onClick={onPrev} className="text-white/40 text-sm hover:text-white/60 transition-all">
-          ← Назад к слайдам
-        </button>
+        <div className="text-[0.5rem] uppercase tracking-widest text-white/20 mt-8">
+          knowing-you.app
+        </div>
       </div>
 
-      <style jsx>{`
-        @keyframes confetti {
-          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      <button
+        onClick={handleShare}
+        disabled={saving}
+        className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
+      >
+        {saving ? '...' : '📥 Скачать картинку'}
+      </button>
+    </div>
+  )
+}
+
+function AllResultsSlide({ questionResults, participantA, participantB, matchPercentage }: any) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [saving, setSaving] = useState(false)
+
+  const handleShare = async () => {
+    if (!cardRef.current) return
+    setSaving(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: '#0a0a0a', scale: 2 })
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.download = 'kykm-all-results.png'
+          link.href = url
+          link.click()
+          URL.revokeObjectURL(url)
         }
-        .animate-confetti {
-          animation: confetti 3s linear forwards;
-        }
-      `}</style>
+        setSaving(false)
+      })
+    } catch (e) {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="w-full max-w-lg space-y-6">
+      <div ref={cardRef} className="bg-[#0a0a0a] p-6 rounded-3xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{participantA.emoji}</span>
+            <span className="text-sm font-bold">{participantA.name}</span>
+          </div>
+          <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
+            {matchPercentage}%
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold">{participantB.name}</span>
+            <span className="text-2xl">{participantB.emoji}</span>
+          </div>
+        </div>
+
+        {/* All questions */}
+        <div className="space-y-3">
+          {questionResults.map((r: any) => (
+            <div key={r.question.questionId} className="flex items-center gap-2 text-sm">
+              <span className="text-lg">{r.question.icon}</span>
+              <span className="flex-1 text-white/70 truncate">{r.question.text}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[#e94560] font-bold">{r.ratings.AtoA}</span>
+                <span className="text-white/20">/</span>
+                <span className="text-[#4ecdc4] font-bold">{r.ratings.BtoB}</span>
+              </div>
+              {r.avgGap >= 2 && <span className="text-[#e94560] text-xs">⚡</span>}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-6 text-[0.5rem] uppercase tracking-widest text-white/20">
+          knowing-you.app
+        </div>
+      </div>
+
+      <button
+        onClick={handleShare}
+        disabled={saving}
+        className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
+      >
+        {saving ? '...' : '📥 Скачать все результаты'}
+      </button>
     </div>
   )
 }
