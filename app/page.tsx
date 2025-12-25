@@ -26,7 +26,7 @@ export default function HomePage() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
         <header className="space-y-6 text-center pt-4">
           <div className="flex items-center justify-between">
-            <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/40 font-black">18+ ФОРМАТ</p>
+            <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/40 font-black">18+ ФОРМАТ</p><Link href="/account" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[0.6rem] font-black uppercase tracking-widest text-white/80 hover:bg-white/10 transition-all">🎮</Link>
             <Link
               href="/account"
               className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[0.6rem] font-black uppercase tracking-widest text-white/80 hover:bg-white/10 transition-all"

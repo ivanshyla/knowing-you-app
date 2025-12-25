@@ -237,6 +237,7 @@ export async function ensureUserRecord(userId: string): Promise<UserRecord> {
     createdAt: NOW(),
     isPro: false,
     gamesPlayed: 0,
+    gamesPurchased: 0,
     matchSum: 0
   }
 
@@ -566,3 +567,20 @@ function chunk<T>(list: T[], size: number): T[][] {
   return result
 }
 
+
+// Add purchased games to user balance
+export async function addGamesToUser(userId: string, count: number): Promise<void> {
+  await ensureUserRecord(userId)
+  await dynamo.send(
+    new UpdateCommand({
+      TableName: TABLES.users,
+      Key: { userId },
+      UpdateExpression: 'SET gamesPurchased = if_not_exists(gamesPurchased, :zero) + :count',
+      ExpressionAttributeValues: {
+        ':zero': 0,
+        ':count': count
+      }
+    })
+  )
+  console.log(`[addGamesToUser] Added ${count} games to user ${userId}`)
+}
