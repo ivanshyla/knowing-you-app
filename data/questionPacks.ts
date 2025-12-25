@@ -54,10 +54,10 @@ export const QUESTION_PACKS: Record<string, QuestionPack> = {
 
   intimacy: {
     id: 'intimacy',
-    name: 'Интима',
+    name: 'Страсть',
     emoji: '🫦',
-    subtitle: 'Секс & страсть',
-    description: 'Как вы представляете друг друга в постели',
+    subtitle: 'Близость',
+    description: 'Насколько вы чувствуете друг друга',
     questions: [
       { text: 'Инициатива', icon: '🔥', category: 'intimacy' },
       { text: 'Фантазия', icon: '💭', category: 'intimacy' },
