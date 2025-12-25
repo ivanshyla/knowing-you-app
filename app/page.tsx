@@ -134,12 +134,12 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
         <div className="mt-10 flex items-center justify-between">
           <div className="flex gap-2">
             {pack.questions.slice(0, 2).map((q) => (
-              <span key={q.text} className="text-[0.55rem] font-black uppercase tracking-widest text-white/30 bg-black/10 px-3 py-1 rounded-lg">
+              <span key={q.text} className="text-[0.55rem] font-black uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-lg">
                 {q.icon} {q.text}
               </span>
             ))}
           </div>
-          <span className="text-[0.6rem] font-black text-white/20 uppercase tracking-widest">{pack.questions.length} ВОПРОСОВ</span>
+          <span className="text-[0.6rem] font-black text-white bg-black/40 uppercase tracking-widest">{pack.questions.length} ВОПРОСОВ</span>
         </div>
       </div>
       
