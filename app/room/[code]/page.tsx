@@ -231,7 +231,7 @@ export default function RoomPage() {
         <header className="text-center space-y-4">
           <p className="text-[0.65rem] uppercase tracking-[0.5em] text-white/40 font-bold italic">КОМНАТА</p>
           <h1 className="text-4xl font-black leading-tight tracking-tight text-white italic uppercase">
-            {viewState === 'join' ? 'Присоединиться' : 'Лобби v2.2 🎯'}
+            {viewState === 'join' ? 'Присоединиться' : 'Лобби'}
           </h1>
           
           {viewState === 'join' ? (
@@ -338,7 +338,7 @@ export default function RoomPage() {
                 </div>
               )}
 
-              {myRole === 'A' && (
+              {myRole && (
                 <button
                   onClick={handleStart}
                   className="w-full rounded-full bg-[#BE4039] py-6 text-xl font-bold uppercase tracking-[0.2em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.3)] transition-all active:scale-95"
@@ -347,12 +347,6 @@ export default function RoomPage() {
                 </button>
               )}
 
-              {isReady && myRole === 'B' && (
-                <div className="rounded-[2rem] border-2 border-emerald-500/20 bg-emerald-500/5 p-6 text-center shadow-lg backdrop-blur-sm">
-                  <p className="font-bold text-emerald-500 text-sm uppercase tracking-widest italic">Всё готово</p>
-                  <p className="text-xs text-white/40 mt-2 font-medium leading-relaxed">Организатор запускает игру, не закрывайте страницу.</p>
-                </div>
-              )}
               
               <div className="text-center pt-4">
                 <Link href="/" className="text-[0.6rem] font-bold text-white/20 hover:text-white/40 uppercase tracking-[0.4em] transition-all">
