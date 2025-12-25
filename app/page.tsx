@@ -114,7 +114,7 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
       href={`/room/create?pack=${pack.id}`}
       className={`block rounded-[2.5rem] px-8 py-10 text-white transition-all duration-500 ${
         isFirst ? '' : '-mt-16'
-      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-15px] relative group overflow-hidden`}
+      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-50px] hover:z-50 relative group overflow-hidden`}
       style={{
         backgroundColor: color,
         zIndex: 10 + index
