@@ -8,6 +8,30 @@ import html2canvas from 'html2canvas'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 import { buildQuestionResults, computeMatchPercentage } from '@/lib/results'
 
+
+// Share helper
+async function shareImage(cardRef: React.RefObject<HTMLDivElement | null>, filename: string, setSaving: (v: boolean) => void) {
+  if (!cardRef.current) return
+  setSaving(true)
+  try {
+    const canvas = await html2canvas(cardRef.current, { backgroundColor: '#0a0a0a', scale: 2 })
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve))
+    if (!blob) { setSaving(false); return }
+    const file = new File([blob], filename, { type: 'image/png' })
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Knowing You, Knowing Me', text: 'Мой результат 🪞' })
+    } else {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.download = filename
+      link.href = url
+      link.click()
+      URL.revokeObjectURL(url)
+    }
+  } catch (e) { console.error('Share failed:', e) }
+  setSaving(false)
+}
+
 export default function ResultsPage() {
   const params = useParams()
   const router = useRouter()
@@ -175,7 +199,7 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleShare = async () => {
+  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
     if (!cardRef.current) return
     setSaving(true)
     try {
@@ -257,7 +281,7 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
         disabled={saving}
         className="w-full py-3 rounded-full bg-white/10 text-white/60 text-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📤 Сохранить картинку'}
+        {saving ? '...' : '📤 Поделиться'}
       </button>
     </div>
   )
@@ -316,7 +340,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleShare = async () => {
+  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
     if (!cardRef.current) return
     setSaving(true)
     try {
@@ -369,7 +393,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
         disabled={saving}
         className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📥 Скачать картинку'}
+        {saving ? '...' : '📤 Поделиться'}
       </button>
     </div>
   )
@@ -379,7 +403,7 @@ function AllResultsSlide({ questionResults, participantA, participantB, matchPer
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleShare = async () => {
+  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
     if (!cardRef.current) return
     setSaving(true)
     try {
@@ -444,7 +468,7 @@ function AllResultsSlide({ questionResults, participantA, participantB, matchPer
         disabled={saving}
         className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📥 Скачать все результаты'}
+        {saving ? '...' : '📤 Поделиться'}
       </button>
     </div>
   )
