@@ -11,13 +11,143 @@
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "A psychological mirror for couples",
+    "tagline": "A psychological mirror for two",
     "description": "Rate yourself and your partner on 8 qualities. Discover how your self-perception differs from how they see you.",
     "stats": {
       "questions": "8 Q's",
       "both": "SELF & THEM",
       "mirror": "MIRROR"
     },
-    "footer": "Made with vibecode in Warsaw"
+    "footer": "Made with vibecode in Warsaw",
+    "noReg": "No registration · works on phone"
+  },
+  "howToPlay": {
+    "step1": "Rate yourself and partner on 10 questions",
+    "step2": "Partner does the same about you",
+    "step3": "Compare your \"mirrors\" — where do perceptions differ?"
+  },
+  "packs": {
+    "romantic": {
+      "name": "Romance",
+      "subtitle": "For couples",
+      "description": "Discover how you see each other in a relationship"
+    },
+    "everyday": {
+      "name": "Daily Life",
+      "subtitle": "Living together",
+      "description": "How do you handle everyday life?"
+    },
+    "intimacy": {
+      "name": "Intimacy",
+      "subtitle": "Passion & Sex",
+      "description": "How do you imagine each other in bed?"
+    },
+    "character": {
+      "name": "Character",
+      "subtitle": "Personality",
+      "description": "What kind of person are you really?"
+    },
+    "friends": {
+      "name": "Friendship",
+      "subtitle": "For friends",
+      "description": "How well do you know each other?"
+    },
+    "office": {
+      "name": "Colleagues",
+      "subtitle": "At work",
+      "description": "How do you see each other at work?"
+    },
+    "sport": {
+      "name": "Sports",
+      "subtitle": "For the team",
+      "description": "Rate each other's skills"
+    },
+    "parents": {
+      "name": "Parents",
+      "subtitle": "Family",
+      "description": "Play with mom or dad — discover how they see you"
+    }
+  },
+  "questions": {
+    "romantic": {
+      "romanticism": "Romanticism",
+      "passion": "Passion",
+      "attention": "Attention",
+      "tenderness": "Tenderness",
+      "trust": "Trust",
+      "jealousy": "Jealousy",
+      "spontaneity": "Spontaneity",
+      "emotionality": "Emotionality"
+    },
+    "everyday": {
+      "cleanliness": "Cleanliness",
+      "cooking": "Cooking",
+      "punctuality": "Punctuality",
+      "organization": "Organization",
+      "laziness": "Laziness",
+      "frugality": "Frugality",
+      "generosity": "Generosity",
+      "stubbornness": "Stubbornness"
+    },
+    "intimacy": {
+      "initiative": "Initiative",
+      "fantasy": "Fantasy",
+      "sensuality": "Sensuality",
+      "experiments": "Experiments",
+      "pace": "Pace",
+      "communication": "Communication",
+      "confidence": "Confidence",
+      "aftercare": "Aftercare"
+    },
+    "character": {
+      "humor": "Sense of humor",
+      "confidence": "Confidence",
+      "kindness": "Kindness",
+      "honesty": "Honesty",
+      "ambition": "Ambition",
+      "sociability": "Sociability",
+      "patience": "Patience",
+      "creativity": "Creativity"
+    },
+    "friends": {
+      "reliability": "Reliability",
+      "fun": "Fun",
+      "support": "Support",
+      "openness": "Openness",
+      "energy": "Energy",
+      "caring": "Caring",
+      "adventure": "Adventure",
+      "wisdom": "Wisdom"
+    },
+    "office": {
+      "deadlines": "Deadlines",
+      "teamwork": "Teamwork",
+      "initiative": "Initiative",
+      "transparency": "Transparency",
+      "responsibility": "Responsibility",
+      "stress": "Stress resistance",
+      "creativity": "Creativity",
+      "mentoring": "Mentoring"
+    },
+    "sport": {
+      "speed": "Speed",
+      "strength": "Strength",
+      "endurance": "Endurance",
+      "technique": "Technique",
+      "teamwork": "Teamwork",
+      "leadership": "Leadership",
+      "motivation": "Motivation",
+      "competitiveness": "Competitiveness"
+    },
+    "parents": {
+      "caring": "Caring for loved ones",
+      "independence": "Independence",
+      "gratitude": "Gratitude",
+      "honesty": "Honesty",
+      "ambition": "Ambition",
+      "patience": "Patience",
+      "humor": "Sense of humor",
+      "responsibility": "Responsibility"
+    }
   }
 }

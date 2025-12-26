@@ -11,13 +11,143 @@
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "Психологическое зеркало для пар",
+    "tagline": "Психологическое зеркало для двоих",
     "description": "Оцени себя и партнёра по 8 качествам. Узнай разницу между самовосприятием и тем, как тебя видят.",
     "stats": {
       "questions": "8 ВОПР.",
       "both": "СЕБЯ И ЕЁ",
       "mirror": "ЗЕРКАЛО"
     },
-    "footer": "Сделано с помощью вайбкода в Варшаве"
+    "footer": "Сделано с помощью вайбкода в Варшаве",
+    "noReg": "Без регистрации · работает на телефоне"
+  },
+  "howToPlay": {
+    "step1": "Оцени себя и партнёра по 10 вопросам",
+    "step2": "Партнёр делает то же самое о тебе",
+    "step3": "Сравните ваши «зеркала» — где расходятся восприятия?"
+  },
+  "packs": {
+    "romantic": {
+      "name": "Романтика",
+      "subtitle": "Для пар",
+      "description": "Узнайте, как вы видите друг друга в отношениях"
+    },
+    "everyday": {
+      "name": "Бытовуха",
+      "subtitle": "Совместная жизнь",
+      "description": "Как вы справляетесь с повседневностью"
+    },
+    "intimacy": {
+      "name": "Интима",
+      "subtitle": "Секс & страсть",
+      "description": "Как вы представляете друг друга в постели"
+    },
+    "character": {
+      "name": "Характер",
+      "subtitle": "Личность",
+      "description": "Какой ты человек на самом деле"
+    },
+    "friends": {
+      "name": "Дружба",
+      "subtitle": "Для друзей",
+      "description": "Насколько хорошо вы знаете друг друга"
+    },
+    "office": {
+      "name": "Коллеги",
+      "subtitle": "В офисе",
+      "description": "Как вы видите друг друга на работе"
+    },
+    "sport": {
+      "name": "Спорт",
+      "subtitle": "Для команды",
+      "description": "Оцените навыки друг друга"
+    },
+    "parents": {
+      "name": "Родители",
+      "subtitle": "Семья",
+      "description": "Поиграйте с мамой или папой — узнайте как они вас видят"
+    }
+  },
+  "questions": {
+    "romantic": {
+      "romanticism": "Романтичность",
+      "passion": "Страстность",
+      "attention": "Внимательность",
+      "tenderness": "Нежность",
+      "trust": "Доверие",
+      "jealousy": "Ревнивость",
+      "spontaneity": "Спонтанность",
+      "emotionality": "Эмоциональность"
+    },
+    "everyday": {
+      "cleanliness": "Чистоплотность",
+      "cooking": "Готовка",
+      "punctuality": "Пунктуальность",
+      "organization": "Организованность",
+      "laziness": "Лень",
+      "frugality": "Экономность",
+      "generosity": "Щедрость",
+      "stubbornness": "Упрямство"
+    },
+    "intimacy": {
+      "initiative": "Инициатива",
+      "fantasy": "Фантазия",
+      "sensuality": "Чувственность",
+      "experiments": "Эксперименты",
+      "pace": "Темп",
+      "communication": "Коммуникация",
+      "confidence": "Уверенность",
+      "aftercare": "Забота после"
+    },
+    "character": {
+      "humor": "Чувство юмора",
+      "confidence": "Уверенность",
+      "kindness": "Доброта",
+      "honesty": "Честность",
+      "ambition": "Амбициозность",
+      "sociability": "Общительность",
+      "patience": "Терпеливость",
+      "creativity": "Креативность"
+    },
+    "friends": {
+      "reliability": "Надёжность",
+      "fun": "Веселье",
+      "support": "Поддержка",
+      "openness": "Откровенность",
+      "energy": "Активность",
+      "caring": "Заботливость",
+      "adventure": "Авантюризм",
+      "wisdom": "Мудрость"
+    },
+    "office": {
+      "deadlines": "Дедлайны",
+      "teamwork": "Командность",
+      "initiative": "Инициативность",
+      "transparency": "Прозрачность",
+      "responsibility": "Ответственность",
+      "stress": "Стрессоустойчивость",
+      "creativity": "Креативность",
+      "mentoring": "Наставничество"
+    },
+    "sport": {
+      "speed": "Скорость",
+      "strength": "Сила",
+      "endurance": "Выносливость",
+      "technique": "Техника",
+      "teamwork": "Командность",
+      "leadership": "Лидерство",
+      "motivation": "Мотивация",
+      "competitiveness": "Конкурентность"
+    },
+    "parents": {
+      "caring": "Забота о близких",
+      "independence": "Самостоятельность",
+      "gratitude": "Благодарность",
+      "honesty": "Честность",
+      "ambition": "Амбициозность",
+      "patience": "Терпение",
+      "humor": "Чувство юмора",
+      "responsibility": "Ответственность"
+    }
   }
 }
