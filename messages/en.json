@@ -1,0 +1,23 @@
+{
+  "common": {
+    "play": "Play",
+    "continue": "Continue Game",
+    "back": "Back to Home",
+    "copied": "Copied!",
+    "share": "Share",
+    "loading": "Loading...",
+    "account": "Account"
+  },
+  "home": {
+    "title": "Knowing You,",
+    "subtitle": "Knowing Me",
+    "tagline": "A psychological mirror for couples",
+    "description": "Rate yourself and your partner on 8 qualities. Discover how your self-perception differs from how they see you.",
+    "stats": {
+      "questions": "8 Q's",
+      "both": "SELF & THEM",
+      "mirror": "MIRROR"
+    },
+    "footer": "Made with vibecode in Warsaw"
+  }
+}

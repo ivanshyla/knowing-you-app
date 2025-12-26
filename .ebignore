@@ -15,3 +15,19 @@ android/
 out/
 deploy/
 
+node_modules/
+
+# Next.js
+# We need to allow the standalone build
+# But we don't want the huge cache/build files
+.next/*
+!.next/standalone/
+
+# Others
+.git/
+.turbo/
+ios/
+android/
+out/
+deploy/
+
