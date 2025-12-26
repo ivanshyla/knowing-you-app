@@ -2,12 +2,15 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { QUESTION_PACKS, type QuestionPack } from '@/data/questionPacks'
 
 // Твоя фирменная палитра
 const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536'] as const
 
 export default function HomePage() {
+  const t = useTranslations()
   const packs = Object.values(QUESTION_PACKS)
   const stackPacks = packs.slice(0, 8)
   const [lastCode, setLastCode] = useState<string | null>(null)
@@ -70,9 +73,9 @@ export default function HomePage() {
 
         {/* ПРИНЦИП ИГРЫ + КОЛИЧЕСТВО ВОПРОСОВ (БЕЗ 64+) */}
         <div className="mt-12 grid grid-cols-3 gap-3">
-          <StatBadge label="РАУНД" value="10 ВОПР." />
-          <StatBadge label="ПРИНЦИП" value="СЕБЯ И ЕЁ" />
-          <StatBadge label="ИТОГ" value="ЗЕРКАЛО" />
+          <StatBadge label="ROUND" value={t('home.stats.questions')} />
+          <StatBadge label="PRINCIPLE" value={t('home.stats.both')} />
+          <StatBadge label="RESULT" value={t('home.stats.mirror')} />
         </div>
 
         <section className="mt-24 space-y-10">
