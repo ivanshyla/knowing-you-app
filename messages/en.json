@@ -3,151 +3,118 @@
     "play": "Play",
     "continue": "Continue Game",
     "back": "Back to Home",
+    "copy": "Copy",
     "copied": "Copied!",
     "share": "Share",
+    "save": "Save",
     "loading": "Loading...",
-    "account": "Account"
+    "error": "Error",
+    "account": "Account",
+    "createPack": "Create Your Pack"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "A psychological mirror for two",
+    "tagline": "A psychological mirror for couples",
     "description": "Rate yourself and your partner on 8 qualities. Discover how your self-perception differs from how they see you.",
     "stats": {
       "questions": "8 Q's",
-      "both": "SELF & THEM",
+      "both": "SELF & THEM", 
       "mirror": "MIRROR"
     },
     "footer": "Made with vibecode in Warsaw",
-    "noReg": "No registration · works on phone"
-  },
-  "howToPlay": {
-    "step1": "Rate yourself and partner on 10 questions",
-    "step2": "Partner does the same about you",
-    "step3": "Compare your \"mirrors\" — where do perceptions differ?"
+    "choosePack": "Choose a pack"
   },
   "packs": {
     "romantic": {
       "name": "Romance",
-      "subtitle": "For couples",
-      "description": "Discover how you see each other in a relationship"
+      "subtitle": "For Couples",
+      "description": "How do you see each other in a romantic relationship?"
     },
     "everyday": {
       "name": "Daily Life",
-      "subtitle": "Living together",
-      "description": "How do you handle everyday life?"
+      "subtitle": "Everyday",
+      "description": "How do you handle daily routines together?"
     },
     "intimacy": {
-      "name": "Intimacy",
-      "subtitle": "Passion & Sex",
-      "description": "How do you imagine each other in bed?"
+      "name": "Passion",
+      "subtitle": "Intimate",
+      "description": "Explore your physical and emotional connection"
     },
     "character": {
       "name": "Character",
       "subtitle": "Personality",
-      "description": "What kind of person are you really?"
+      "description": "Discover each other's core personality traits"
     },
     "friends": {
-      "name": "Friendship",
-      "subtitle": "For friends",
-      "description": "How well do you know each other?"
+      "name": "Friends",
+      "subtitle": "Friendship", 
+      "description": "How do your friends really see you?"
     },
     "office": {
-      "name": "Colleagues",
-      "subtitle": "At work",
-      "description": "How do you see each other at work?"
+      "name": "Office",
+      "subtitle": "Work",
+      "description": "How does your team perceive you at work?"
     },
     "sport": {
       "name": "Sports",
-      "subtitle": "For the team",
-      "description": "Rate each other's skills"
+      "subtitle": "Athletic",
+      "description": "Your sports habits and fitness attitudes"
     },
-    "parents": {
+    "club": {
       "name": "Parents",
       "subtitle": "Family",
       "description": "Play with mom or dad — discover how they see you"
     }
   },
-  "questions": {
-    "romantic": {
-      "romanticism": "Romanticism",
-      "passion": "Passion",
-      "attention": "Attention",
-      "tenderness": "Tenderness",
-      "trust": "Trust",
-      "jealousy": "Jealousy",
-      "spontaneity": "Spontaneity",
-      "emotionality": "Emotionality"
-    },
-    "everyday": {
-      "cleanliness": "Cleanliness",
-      "cooking": "Cooking",
-      "punctuality": "Punctuality",
-      "organization": "Organization",
-      "laziness": "Laziness",
-      "frugality": "Frugality",
-      "generosity": "Generosity",
-      "stubbornness": "Stubbornness"
-    },
-    "intimacy": {
-      "initiative": "Initiative",
-      "fantasy": "Fantasy",
-      "sensuality": "Sensuality",
-      "experiments": "Experiments",
-      "pace": "Pace",
-      "communication": "Communication",
-      "confidence": "Confidence",
-      "aftercare": "Aftercare"
-    },
-    "character": {
-      "humor": "Sense of humor",
-      "confidence": "Confidence",
-      "kindness": "Kindness",
-      "honesty": "Honesty",
-      "ambition": "Ambition",
-      "sociability": "Sociability",
-      "patience": "Patience",
-      "creativity": "Creativity"
-    },
-    "friends": {
-      "reliability": "Reliability",
-      "fun": "Fun",
-      "support": "Support",
-      "openness": "Openness",
-      "energy": "Energy",
-      "caring": "Caring",
-      "adventure": "Adventure",
-      "wisdom": "Wisdom"
-    },
-    "office": {
-      "deadlines": "Deadlines",
-      "teamwork": "Teamwork",
-      "initiative": "Initiative",
-      "transparency": "Transparency",
-      "responsibility": "Responsibility",
-      "stress": "Stress resistance",
-      "creativity": "Creativity",
-      "mentoring": "Mentoring"
-    },
-    "sport": {
-      "speed": "Speed",
-      "strength": "Strength",
-      "endurance": "Endurance",
-      "technique": "Technique",
-      "teamwork": "Teamwork",
-      "leadership": "Leadership",
-      "motivation": "Motivation",
-      "competitiveness": "Competitiveness"
-    },
-    "parents": {
-      "caring": "Caring for loved ones",
-      "independence": "Independence",
-      "gratitude": "Gratitude",
-      "honesty": "Honesty",
-      "ambition": "Ambition",
-      "patience": "Patience",
-      "humor": "Sense of humor",
-      "responsibility": "Responsibility"
-    }
+  "create": {
+    "title": "Create Room",
+    "yourName": "Your name",
+    "namePlaceholder": "Your name",
+    "startGame": "Create Room",
+    "questions": "Questions in this pack:"
+  },
+  "lobby": {
+    "title": "Lobby",
+    "code": "Room Code",
+    "waitingPartner": "Waiting for partner...",
+    "copyInvite": "Copy Invite Link",
+    "shareInvite": "Share Invite",
+    "startGame": "Start Game",
+    "startAlone": "Start (partner can join later)",
+    "players": "Players"
+  },
+  "game": {
+    "question": "Question",
+    "of": "of",
+    "rateYourself": "How much is this about YOU?",
+    "ratePartner": "How much is this about your PARTNER?",
+    "next": "Next",
+    "finish": "Finish",
+    "waitingPartner": "Done! Waiting for partner...",
+    "partnerStillPlaying": "Your partner is still answering questions"
+  },
+  "results": {
+    "title": "Results",
+    "loading": "Loading results...",
+    "error": "Failed to load results",
+    "matchScore": "Match Score",
+    "allQuestions": "All Questions",
+    "insights": "Insights",
+    "topMatches": "Top Matches",
+    "topDifferences": "Biggest Gaps",
+    "shareCard": "Share",
+    "you": "You",
+    "them": "Them",
+    "self": "Self",
+    "fromPartner": "From partner"
+  },
+  "account": {
+    "title": "Account",
+    "gamesPlayed": "Games played",
+    "gamesPurchased": "Games purchased",
+    "freeGames": "Free games left",
+    "buyGames": "Buy 10 Games — $1",
+    "pro": "PRO"
   }
 }
