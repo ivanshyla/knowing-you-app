@@ -1,54 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserIdFromRequest } from '@/lib/auth'
+import { ensureUserRecord, getUserRecord, setUserStripeStatus } from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-const PRICE_10_GAMES = 100 // $1.00 in cents
+function requireEnv(name: string): string {
+  const v = process.env[name]
+  if (!v) throw new Error(`Missing env: ${name}`)
+  return v
+}
+
+async function stripeFetch(path: string, body: URLSearchParams) {
+  const key = requireEnv('STRIPE_SECRET_KEY')
+  const res = await fetch(`https://api.stripe.com/v1${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  })
+  const data = await res.json()
+  if (!res.ok) {
+    const msg = data?.error?.message || 'Stripe error'
+    throw new Error(msg)
+  }
+  return data
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const stripeKey = process.env.STRIPE_SECRET_KEY
-    if (!stripeKey) {
-      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
-    }
-
     const userId = getUserIdFromRequest(request)
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const Stripe = (await import('stripe')).default
-    const stripe = new Stripe(stripeKey, { apiVersion: '2025-12-15.clover' })
+    const appBaseUrl = requireEnv('APP_BASE_URL').replace(/\/+$/, '')
+    const priceId = requireEnv('STRIPE_PRICE_ID')
 
-    const origin = request.headers.get('origin') || 'http://localhost:3000'
+    await ensureUserRecord(userId)
+    const user = await getUserRecord(userId)
+    const email = user?.email
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: '10 игр — Knowing You, Knowing Me',
-              description: 'Пакет из 10 игр',
-            },
-            unit_amount: PRICE_10_GAMES,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${origin}/account?success=1`,
-      cancel_url: `${origin}/account?canceled=1`,
-      metadata: {
-        userId,
-        package: '10_games',
-      },
-    })
+    let customerId = user?.stripeCustomerId
+    if (!customerId) {
+      const created = await stripeFetch(
+        '/customers',
+        new URLSearchParams({
+          ...(email ? { email } : {}),
+          'metadata[userId]': userId
+        })
+      )
+      customerId = created.id
+      await setUserStripeStatus({ userId, stripeCustomerId: customerId })
+    }
+    if (!customerId) {
+      throw new Error('Unable to create Stripe customer')
+    }
+
+    const sessionParams = new URLSearchParams()
+    sessionParams.set('mode', 'subscription')
+    sessionParams.set('customer', customerId)
+    sessionParams.set('line_items[0][price]', priceId)
+    sessionParams.set('line_items[0][quantity]', '1')
+    sessionParams.set('success_url', `${appBaseUrl}/account?checkout=success`)
+    sessionParams.set('cancel_url', `${appBaseUrl}/account?checkout=cancel`)
+    sessionParams.set('client_reference_id', userId)
+    sessionParams.set('subscription_data[metadata][userId]', userId)
+
+    const session = await stripeFetch('/checkout/sessions', sessionParams)
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
-    console.error('Stripe checkout error:', error)
-    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Checkout error:', error)
+    return NextResponse.json({ error: error?.message || 'Failed to start checkout' }, { status: 500 })
   }
 }
+

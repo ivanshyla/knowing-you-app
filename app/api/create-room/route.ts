@@ -4,31 +4,19 @@ import { createSessionRecord, createUserSessionLink, ensureUserRecord } from '@/
 
 export const dynamic = 'force-dynamic'
 
-// 2 games free, then need to buy
-const FREE_GAMES_LIMIT = 2
-
 export async function POST(request: NextRequest) {
-  console.log('[create-room] v5 - 2 free games')
   try {
     let userId = getUserIdFromRequest(request)
     let shouldSetCookie = false
     if (!userId) {
       userId = createUserId()
-      console.log('[create-room] New user:', userId)
+      shouldSetCookie = true
     }
 
     const user = await ensureUserRecord(userId)
-    const gamesPurchased = (user as any).gamesPurchased || 0
-    const gamesRemaining = FREE_GAMES_LIMIT - user.gamesPlayed + gamesPurchased
-    
-    console.log('[create-room] User stats:', { userId, gamesPlayed: user.gamesPlayed, gamesPurchased, gamesRemaining })
-
-    // Paywall: 2 free games, then purchase
-    if (!user.isPro && gamesRemaining <= 0) {
-      return NextResponse.json({ 
-        error: 'Лимит исчерпан. Купите игры.',
-        gamesRemaining: 0
-      }, { status: 402 })
+    // Paywall: 1 игра бесплатно, дальше только PRO
+    if (!user.isPro && user.gamesPlayed >= 1) {
+      return NextResponse.json({ error: 'Subscription required' }, { status: 402 })
     }
 
     const body = await request.json()
@@ -57,15 +45,13 @@ export async function POST(request: NextRequest) {
       participantEmoji: creatorEmoji
     })
 
-    console.log('[create-room] Created:', { code, sessionId })
-
     const response = NextResponse.json({ code, sessionId, participantId })
     if (shouldSetCookie) {
       response.cookies.set(USER_COOKIE, userId, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 })
     }
     return response
   } catch (error) {
-    console.error('[create-room] Error:', error)
+    console.error('Error creating room:', error)
     return NextResponse.json({ error: 'Failed to create room' }, { status: 500 })
   }
 }

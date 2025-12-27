@@ -37,7 +37,8 @@ const TABLES = {
   ratings: process.env.AWS_DDB_RATINGS_TABLE || 'kykm_ratings',
   users: process.env.AWS_DDB_USERS_TABLE || 'kykm_users',
   userSessions: process.env.AWS_DDB_USER_SESSIONS_TABLE || 'kykm_user_sessions',
-  userEmails: process.env.AWS_DDB_USER_EMAILS_TABLE || 'kykm_user_emails'
+  userEmails: process.env.AWS_DDB_USER_EMAILS_TABLE || 'kykm_user_emails',
+  customPacks: process.env.AWS_DDB_CUSTOM_PACKS_TABLE || 'kykm_custom_packs'
 }
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }), {
@@ -237,7 +238,6 @@ export async function ensureUserRecord(userId: string): Promise<UserRecord> {
     createdAt: NOW(),
     isPro: false,
     gamesPlayed: 0,
-    gamesPurchased: 0,
     matchSum: 0
   }
 
@@ -567,69 +567,23 @@ function chunk<T>(list: T[], size: number): T[][] {
   return result
 }
 
-
-// Add purchased games to user balance
-export async function addGamesToUser(userId: string, count: number): Promise<void> {
-  await ensureUserRecord(userId)
-  await dynamo.send(
-    new UpdateCommand({
-      TableName: TABLES.users,
-      Key: { userId },
-      UpdateExpression: 'SET gamesPurchased = if_not_exists(gamesPurchased, :zero) + :count',
-      ExpressionAttributeValues: {
-        ':zero': 0,
-        ':count': count
-      }
-    })
-  )
-  console.log(`[addGamesToUser] Added ${count} games to user ${userId}`)
-}
-
-// Custom question packs
 export async function saveCustomPack(params: {
   userId: string
   name: string
   questions: Array<{ text: string; icon: string }>
 }): Promise<string> {
-  const packId = `custom_${params.userId}_${Date.now()}`
-  
+  const packId = randomUUID()
   await dynamo.send(
     new PutCommand({
-      TableName: TABLES.users,
+      TableName: TABLES.customPacks,
       Item: {
-        PK: `PACK#${packId}`,
-        SK: 'META',
         packId,
         userId: params.userId,
         name: params.name,
         questions: params.questions,
-        createdAt: NOW()
+        createdAt: new Date().toISOString()
       }
     })
   )
-  
   return packId
-}
-
-export async function getCustomPack(packId: string): Promise<{
-  packId: string
-  userId: string
-  name: string
-  questions: Array<{ text: string; icon: string }>
-} | null> {
-  const result = await dynamo.send(
-    new GetCommand({
-      TableName: TABLES.users,
-      Key: { PK: `PACK#${packId}`, SK: 'META' }
-    })
-  )
-  
-  if (!result.Item) return null
-  
-  return {
-    packId: result.Item.packId,
-    userId: result.Item.userId,
-    name: result.Item.name,
-    questions: result.Item.questions
-  }
 }

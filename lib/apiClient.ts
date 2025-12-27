@@ -6,8 +6,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ? `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`
     : endpoint;
 
-  // In Capacitor, we might need to handle cookies differently or use CapHttp
-  // For now, standard fetch works if CORS is configured on the server
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -18,4 +16,3 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   return response;
 }
-

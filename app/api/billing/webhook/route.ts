@@ -1,45 +1,111 @@
+import { createHmac, timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { addGamesToUser } from '@/lib/sessionStore'
+import { setUserStripeStatus } from '@/lib/sessionStore'
 
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+function getStripeSigHeader(request: NextRequest): string {
+  const v = request.headers.get('stripe-signature')
+  if (!v) throw new Error('Missing stripe-signature header')
+  return v
+}
+
+function verifyStripeSignature(payload: string, header: string, secret: string): boolean {
+  // Stripe-Signature: t=...,v1=...,v1=...
+  const parts = header.split(',').map((p) => p.trim())
+  const timestamp = parts.find((p) => p.startsWith('t='))?.slice(2)
+  const signatures = parts.filter((p) => p.startsWith('v1=')).map((p) => p.slice(3))
+
+  if (!timestamp || signatures.length === 0) return false
+
+  const signedPayload = `${timestamp}.${payload}`
+  const expected = createHmac('sha256', secret).update(signedPayload, 'utf8').digest('hex')
+
+  return signatures.some((sig) => {
+    const a = Buffer.from(sig, 'hex')
+    const b = Buffer.from(expected, 'hex')
+    if (a.length !== b.length) return false
+    return timingSafeEqual(a, b)
+  })
+}
+
+function isProStatus(status: string | null | undefined): boolean {
+  return status === 'active' || status === 'trialing'
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const stripeKey = process.env.STRIPE_SECRET_KEY
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-    
-    if (!stripeKey || !webhookSecret) {
-      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    const secret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!secret) {
+      return NextResponse.json({ error: 'Missing STRIPE_WEBHOOK_SECRET' }, { status: 500 })
     }
 
-    const Stripe = (await import('stripe')).default
-    const stripe = new Stripe(stripeKey, { apiVersion: '2025-12-15.clover' })
+    const sigHeader = getStripeSigHeader(request)
+    const payload = await request.text()
 
-    const body = await request.text()
-    const signature = request.headers.get('stripe-signature') || ''
-
-    let event
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message)
+    if (!verifyStripeSignature(payload, sigHeader, secret)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object
-      const userId = session.metadata?.userId
-      const pkg = session.metadata?.package
+    const event = JSON.parse(payload)
+    const type = String(event?.type || '')
+    const dataObject = event?.data?.object ?? null
 
-      if (userId && pkg === '10_games') {
-        await addGamesToUser(userId, 10)
-        console.log(`Added 10 games to user ${userId}`)
-      }
+    // We rely on metadata.userId (set during checkout session creation)
+    const metadataUserId =
+      (dataObject?.metadata?.userId as string | undefined) ||
+      (dataObject?.subscription_details?.metadata?.userId as string | undefined) ||
+      (dataObject?.client_reference_id as string | undefined)
+
+    if (!metadataUserId) {
+      return NextResponse.json({ received: true, skipped: true })
+    }
+
+    if (type === 'checkout.session.completed') {
+      const customerId = dataObject?.customer as string | undefined
+      const subscriptionId = dataObject?.subscription as string | undefined
+      await setUserStripeStatus({
+        userId: metadataUserId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        stripeStatus: 'active',
+        isPro: true
+      })
+    }
+
+    if (type === 'customer.subscription.updated' || type === 'customer.subscription.created') {
+      const status = dataObject?.status as string | undefined
+      const subscriptionId = dataObject?.id as string | undefined
+      const customerId = dataObject?.customer as string | undefined
+      await setUserStripeStatus({
+        userId: metadataUserId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        stripeStatus: status,
+        isPro: isProStatus(status)
+      })
+    }
+
+    if (type === 'customer.subscription.deleted') {
+      const status = dataObject?.status as string | undefined
+      const subscriptionId = dataObject?.id as string | undefined
+      const customerId = dataObject?.customer as string | undefined
+      await setUserStripeStatus({
+        userId: metadataUserId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        stripeStatus: status ?? 'canceled',
+        isPro: false
+      })
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('Webhook error:', error)
-    return NextResponse.json({ error: 'Webhook failed' }, { status: 500 })
+    console.error('Stripe webhook error:', error)
+    return NextResponse.json({ error: 'Webhook error' }, { status: 500 })
   }
 }
+
+
+

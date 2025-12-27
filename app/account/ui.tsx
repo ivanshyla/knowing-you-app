@@ -182,5 +182,3 @@ export default function AccountClient({ user }: AccountClientProps) {
 }
 
 
-
-

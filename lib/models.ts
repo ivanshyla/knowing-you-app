@@ -51,7 +51,6 @@ export type UserRecord = {
   passwordHash?: string
   isPro: boolean
   gamesPlayed: number
-  gamesPurchased: number
   matchSum: number
   stripeCustomerId?: string
   stripeSubscriptionId?: string
@@ -73,4 +72,3 @@ export type UserSessionRecord = {
   topMatchIcon?: string
   finishedAt?: string
 }
-
