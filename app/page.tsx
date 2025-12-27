@@ -10,7 +10,7 @@ import { QUESTION_PACKS, type QuestionPack } from '@/data/questionPacks'
 const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536'] as const
 
 export default function HomePage() {
-  const t = useTranslations()
+  // Translations ready for future use
   const packs = Object.values(QUESTION_PACKS)
   const stackPacks = packs.slice(0, 8)
   const [lastCode, setLastCode] = useState<string | null>(null)
@@ -29,7 +29,7 @@ export default function HomePage() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
         <header className="space-y-6 text-center pt-4">
           <div className="flex items-center justify-between">
-            <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/40 font-black">18+ ФОРМАТ</p>
+            <LanguageSwitcher />
             <Link
               href="/account"
               className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[0.6rem] font-black uppercase tracking-widest text-white/80 hover:bg-white/10 transition-all"
@@ -71,14 +71,23 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* ПРИНЦИП ИГРЫ + КОЛИЧЕСТВО ВОПРОСОВ (БЕЗ 64+) */}
-        <div className="mt-12 grid grid-cols-3 gap-3">
-          <StatBadge label="ROUND" value={t('home.stats.questions')} />
-          <StatBadge label="PRINCIPLE" value={t('home.stats.both')} />
-          <StatBadge label="RESULT" value={t('home.stats.mirror')} />
+        {/* КАК ИГРАТЬ */}
+        <div className="mt-10 space-y-3">
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
+            <span className="text-2xl">1️⃣</span>
+            <p className="text-sm text-white/70 font-medium">Оцени себя и партнёра по 8 качествам</p>
+          </div>
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
+            <span className="text-2xl">2️⃣</span>
+            <p className="text-sm text-white/70 font-medium">Партнёр делает то же самое о тебе</p>
+          </div>
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
+            <span className="text-2xl">🪞</span>
+            <p className="text-sm text-white/70 font-medium">Сравните «зеркала» — где расходитесь?</p>
+          </div>
         </div>
 
-        <section className="mt-24 space-y-10">
+        <section className="mt-16 space-y-10">
           <div className="px-2">
             <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40 font-black mb-1">MOODBOARD</p>
             <h2 className="text-3xl font-black text-white italic uppercase leading-none tracking-tighter">Темы для старта</h2>
@@ -151,11 +160,3 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
   )
 }
 
-function StatBadge({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-5 text-center shadow-inner backdrop-blur-sm">
-      <p className="text-[0.5rem] uppercase tracking-widest text-white/30 font-black mb-2">{label}</p>
-      <p className="text-[0.75rem] font-black text-white leading-none tracking-widest uppercase italic">{value}</p>
-    </div>
-  )
-}
