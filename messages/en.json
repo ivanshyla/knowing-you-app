@@ -2,7 +2,7 @@
   "common": {
     "play": "Play",
     "continue": "Continue Game",
-    "back": "Back to Home",
+    "back": "Back",
     "copy": "Copy",
     "copied": "Copied!",
     "share": "Share",
@@ -16,14 +16,8 @@
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
     "tagline": "A psychological mirror for couples",
-    "description": "Rate yourself and your partner on 8 qualities. Discover how your self-perception differs from how they see you.",
-    "stats": {
-      "questions": "8 Q's",
-      "both": "SELF & THEM", 
-      "mirror": "MIRROR"
-    },
-    "footer": "Made with vibecode in Warsaw",
-    "choosePack": "Choose a pack"
+    "choosePack": "Choose a pack",
+    "footer": "Made with vibecode in Warsaw"
   },
   "packs": {
     "romantic": {
@@ -48,7 +42,7 @@
     },
     "friends": {
       "name": "Friends",
-      "subtitle": "Friendship", 
+      "subtitle": "Friendship",
       "description": "How do your friends really see you?"
     },
     "office": {
@@ -67,54 +61,12 @@
       "description": "Play with mom or dad — discover how they see you"
     }
   },
-  "create": {
-    "title": "Create Room",
-    "yourName": "Your name",
-    "namePlaceholder": "Your name",
-    "startGame": "Create Room",
-    "questions": "Questions in this pack:"
-  },
-  "lobby": {
-    "title": "Lobby",
-    "code": "Room Code",
-    "waitingPartner": "Waiting for partner...",
-    "copyInvite": "Copy Invite Link",
-    "shareInvite": "Share Invite",
-    "startGame": "Start Game",
-    "startAlone": "Start (partner can join later)",
-    "players": "Players"
-  },
-  "game": {
-    "question": "Question",
-    "of": "of",
-    "rateYourself": "How much is this about YOU?",
-    "ratePartner": "How much is this about your PARTNER?",
-    "next": "Next",
-    "finish": "Finish",
-    "waitingPartner": "Done! Waiting for partner...",
-    "partnerStillPlaying": "Your partner is still answering questions"
-  },
   "results": {
     "title": "Results",
-    "loading": "Loading results...",
-    "error": "Failed to load results",
-    "matchScore": "Match Score",
-    "allQuestions": "All Questions",
-    "insights": "Insights",
-    "topMatches": "Top Matches",
-    "topDifferences": "Biggest Gaps",
-    "shareCard": "Share",
-    "you": "You",
-    "them": "Them",
-    "self": "Self",
-    "fromPartner": "From partner"
+    "matchScore": "Match Score"
   },
   "account": {
     "title": "Account",
-    "gamesPlayed": "Games played",
-    "gamesPurchased": "Games purchased",
-    "freeGames": "Free games left",
-    "buyGames": "Buy 10 Games — $1",
-    "pro": "PRO"
+    "gamesPlayed": "Games played"
   }
 }

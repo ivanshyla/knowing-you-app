@@ -6,12 +6,12 @@ import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { QUESTION_PACKS, type QuestionPack } from '@/data/questionPacks'
 
-const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852'] as const
+const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536', '#4A3728', '#2D4A3E'] as const
 
 export default function HomePage() {
   const t = useTranslations()
   const packs = Object.values(QUESTION_PACKS)
-  const stackPacks = packs.slice(0, 4)
+  const stackPacks = packs.slice(0, 8)
   const [lastCode, setLastCode] = useState<string | null>(null)
 
   useEffect(() => {
@@ -58,12 +58,12 @@ export default function HomePage() {
           )}
         </div>
 
-        <section className="mt-12 flex-1">
+        <section className="mt-10 flex-1">
           <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40 font-black mb-1">PACKS</p>
-          <h2 className="text-2xl font-black text-white italic uppercase mb-6">{t('home.choosePack')}</h2>
+          <h2 className="text-2xl font-black text-white italic uppercase mb-4">{t('home.choosePack')}</h2>
           
           {/* Stacked cards */}
-          <div className="relative pb-20">
+          <div className="relative pb-16">
             {stackPacks.map((pack, index) => (
               <PackCard 
                 key={pack.id} 
@@ -76,18 +76,18 @@ export default function HomePage() {
             {/* Create Your Pack */}
             <Link
               href="/packs/create"
-              className="relative block rounded-[2rem] p-5 border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/5 transition-all"
-              style={{ marginTop: '-2rem', zIndex: 6 }}
+              className="relative block rounded-[2rem] p-4 border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/5 transition-all"
+              style={{ marginTop: '-2.5rem', zIndex: 2 }}
             >
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-xl">✨</span>
-                <span className="text-base font-bold text-white/70 uppercase">{t('common.createPack')}</span>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg">✨</span>
+                <span className="text-sm font-bold text-white/60 uppercase">{t('common.createPack')}</span>
               </div>
             </Link>
           </div>
         </section>
 
-        <footer className="pt-6 text-center">
+        <footer className="pt-4 text-center">
           <p className="text-[0.5rem] text-white/20 uppercase tracking-widest">{t('home.footer')}</p>
         </footer>
       </div>
@@ -97,7 +97,8 @@ export default function HomePage() {
 
 function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; color: string }) {
   const t = useTranslations()
-  const packKey = pack.id as 'romantic' | 'everyday' | 'intimacy' | 'character'
+  const packKeys = ['romantic', 'everyday', 'intimacy', 'character', 'friends', 'office', 'sport', 'club'] as const
+  const packKey = packKeys.includes(pack.id as any) ? pack.id : 'romantic'
   
   let name, subtitle, description
   try {
@@ -106,31 +107,31 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
     description = t(`packs.${packKey}.description`)
   } catch {
     name = pack.name
-    subtitle = pack.subtitle
+    subtitle = pack.subtitle || ''
     description = pack.description
   }
 
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className="group relative block rounded-[2rem] p-6 transition-all duration-300 ease-out hover:-translate-y-4"
+      className="group relative block rounded-[2rem] p-5 transition-all duration-300 ease-out hover:-translate-y-6"
       style={{ 
         backgroundColor: color,
-        marginTop: index === 0 ? 0 : '-2.5rem',
+        marginTop: index === 0 ? 0 : '-3rem',
         zIndex: 10 - index,
       }}
     >
-      <div className="flex items-start gap-4">
-        <div className="flex-1">
-          <p className="text-[0.6rem] uppercase tracking-[0.25em] text-white/60 font-bold">{subtitle}</p>
-          <h3 className="mt-1 text-2xl font-black text-white italic uppercase tracking-tight leading-none">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 pr-4">
+          <p className="text-[0.5rem] uppercase tracking-[0.3em] text-white/50 font-black">{subtitle}</p>
+          <h3 className="text-xl font-black text-white italic uppercase tracking-tight leading-tight">
             {name}
           </h3>
-          <p className="mt-2 text-sm text-white/70 leading-snug">
+          <p className="mt-1 text-xs text-white/60 leading-snug">
             {description}
           </p>
         </div>
-        <span className="text-4xl">{pack.emoji}</span>
+        <span className="text-3xl flex-shrink-0">{pack.emoji}</span>
       </div>
     </Link>
   )
