@@ -1,30 +1,24 @@
 'use client'
 
 import { useLocale } from 'next-intl'
-import { locales, setLocaleCookie, type Locale } from '@/lib/i18n'
+import { locales, localeLabels, setLocaleCookie, type Locale } from '@/lib/i18n'
 
 export function LanguageSwitcher() {
   const currentLocale = useLocale() as Locale
 
-  const handleChange = (newLocale: Locale) => {
-    if (newLocale !== currentLocale) {
-      setLocaleCookie(newLocale)
-    }
-  }
-
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
       {locales.map((locale) => (
         <button
           key={locale}
-          onClick={() => handleChange(locale)}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+          onClick={() => locale !== currentLocale && setLocaleCookie(locale)}
+          className={`px-2 py-1 rounded text-xs font-bold transition-all ${
             currentLocale === locale
               ? 'bg-white/20 text-white'
-              : 'text-white/50 hover:text-white/80 hover:bg-white/10'
+              : 'text-white/40 hover:text-white/70'
           }`}
         >
-          {locale === 'en' ? '🇬🇧' : '🇷🇺'}
+          {localeLabels[locale]}
         </button>
       ))}
     </div>

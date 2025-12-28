@@ -1,0 +1,30 @@
+{
+  "common": {
+    "play": "Грати",
+    "continue": "Продовжити гру",
+    "back": "На головну",
+    "copy": "Копіювати",
+    "copied": "Скопійовано!",
+    "share": "Поділитися",
+    "save": "Зберегти",
+    "loading": "Завантаження...",
+    "error": "Помилка",
+    "account": "Акаунт",
+    "createPack": "Створи пак"
+  },
+  "home": {
+    "title": "Knowing You,",
+    "subtitle": "Knowing Me",
+    "tagline": "Психологічне дзеркало для пар",
+    "choosePack": "Обери пак",
+    "footer": "Made with vibecode in Warsaw"
+  },
+  "packs": {
+    "romantic": { "name": "Романтика", "subtitle": "Для пар", "description": "Як ви бачите одне одного?" },
+    "everyday": { "name": "Побут", "subtitle": "Щодень", "description": "Як ви справляєтесь з побутом?" },
+    "intimacy": { "name": "Пристрасть", "subtitle": "Інтимне", "description": "Дослідіть ваш зв'язок" },
+    "character": { "name": "Характер", "subtitle": "Особистість", "description": "Відкрийте риси характеру" }
+  },
+  "results": { "title": "Результати", "matchScore": "Співпадіння" },
+  "account": { "title": "Акаунт", "gamesPlayed": "Зіграно ігор" }
+}

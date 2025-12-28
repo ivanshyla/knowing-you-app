@@ -1,0 +1,30 @@
+{
+  "common": {
+    "play": "Graj",
+    "continue": "Kontynuuj grę",
+    "back": "Strona główna",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano!",
+    "share": "Udostępnij",
+    "save": "Zapisz",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "account": "Konto",
+    "createPack": "Stwórz pakiet"
+  },
+  "home": {
+    "title": "Knowing You,",
+    "subtitle": "Knowing Me",
+    "tagline": "Psychologiczne lustro dla par",
+    "choosePack": "Wybierz pakiet",
+    "footer": "Made with vibecode in Warsaw"
+  },
+  "packs": {
+    "romantic": { "name": "Romantyzm", "subtitle": "Dla par", "description": "Jak się widzicie w związku?" },
+    "everyday": { "name": "Codzienność", "subtitle": "Dzień po dniu", "description": "Jak radzicie sobie z codziennością?" },
+    "intimacy": { "name": "Namiętność", "subtitle": "Intymność", "description": "Odkryjcie swoją więź" },
+    "character": { "name": "Charakter", "subtitle": "Osobowość", "description": "Odkryjcie główne cechy" }
+  },
+  "results": { "title": "Wyniki", "matchScore": "Dopasowanie" },
+  "account": { "title": "Konto", "gamesPlayed": "Rozegrane gry" }
+}

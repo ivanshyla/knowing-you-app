@@ -1,0 +1,30 @@
+{
+  "common": {
+    "play": "Гуляць",
+    "continue": "Працягнуць",
+    "back": "На галоўную",
+    "copy": "Капіяваць",
+    "copied": "Скапіявана!",
+    "share": "Падзяліцца",
+    "save": "Захаваць",
+    "loading": "Загрузка...",
+    "error": "Памылка",
+    "account": "Акаўнт",
+    "createPack": "Стварыць пак"
+  },
+  "home": {
+    "title": "Knowing You,",
+    "subtitle": "Knowing Me",
+    "tagline": "Псіхалагічнае люстэрка для пар",
+    "choosePack": "Абяры пак",
+    "footer": "Made with vibecode in Warsaw"
+  },
+  "packs": {
+    "romantic": { "name": "Рамантыка", "subtitle": "Для пар", "description": "Як вы бачыце адзін аднаго?" },
+    "everyday": { "name": "Побыт", "subtitle": "Кожны дзень", "description": "Як вы спраўляецеся з бытам?" },
+    "intimacy": { "name": "Страсць", "subtitle": "Інтымнае", "description": "Даследуйце вашу сувязь" },
+    "character": { "name": "Характар", "subtitle": "Асоба", "description": "Адкрыйце рысы характару" }
+  },
+  "results": { "title": "Вынікі", "matchScore": "Супадзенне" },
+  "account": { "title": "Акаўнт", "gamesPlayed": "Згуляна гульняў" }
+}
