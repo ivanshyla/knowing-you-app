@@ -11,7 +11,7 @@ const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#6
 export default function HomePage() {
   const t = useTranslations()
   const packs = Object.values(QUESTION_PACKS)
-  const stackPacks = packs.slice(0, 8)
+  const stackPacks = packs.slice(0, 4)
   const [lastCode, setLastCode] = useState<string | null>(null)
 
   useEffect(() => {
