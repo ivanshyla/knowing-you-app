@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { QUESTION_PACKS, type QuestionPack } from '@/data/questionPacks'
 
-const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536'] as const
+const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852'] as const
 
 export default function HomePage() {
   const t = useTranslations()
@@ -21,139 +21,99 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#1F313B] overflow-hidden select-none">
-      {/* Gradient overlay */}
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-[#1F313B] via-[#1F313B]/90 to-[#383852]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
-        <header className="space-y-6 text-center pt-4">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-8">
+        <header className="space-y-4 text-center pt-2">
           <div className="flex items-center justify-between">
             <LanguageSwitcher />
-            <Link
-              href="/account"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[0.6rem] font-black uppercase tracking-widest text-white/80 hover:bg-white/10 transition-all"
-            >
+            <Link href="/account" className="text-xs text-white/50 hover:text-white">
               {t('common.account')}
             </Link>
           </div>
           
-          {/* Title */}
-          <div className="space-y-2">
-            <h1 className="text-[2.3rem] leading-[0.85] font-black text-white italic uppercase tracking-tighter drop-shadow-2xl">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">
               {t('home.title')}<br />{t('home.subtitle')}
             </h1>
-            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-white/40 font-black">
-              {t('home.tagline')}
-            </p>
+            <p className="text-xs text-white/40">{t('home.tagline')}</p>
           </div>
         </header>
 
-        {/* CTA */}
-        <div className="mt-10 space-y-4">
+        <div className="mt-8">
           {lastCode ? (
             <Link
               href={`/room/${lastCode}`}
-              className="block w-full rounded-full bg-white text-gray-900 px-8 py-6 text-center text-xl font-black uppercase tracking-[0.1em] shadow-2xl transition-all active:scale-95"
+              className="block w-full rounded-full bg-white text-gray-900 py-5 text-center text-lg font-black uppercase"
             >
               {t('common.continue')} ⚡
             </Link>
           ) : (
             <Link
               href="/room/create"
-              className="block w-full rounded-full bg-[#BE4039] px-8 py-6 text-center text-xl font-black uppercase tracking-[0.1em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.4)] transition-all active:scale-95"
+              className="block w-full rounded-full bg-[#BE4039] py-5 text-center text-lg font-black uppercase text-white"
             >
               {t('common.play')} →
             </Link>
           )}
-          
-          <p className="text-center text-[0.65rem] text-white/30 font-bold uppercase tracking-[0.2em]">
-            No registration · Works on phone
-          </p>
         </div>
 
-        {/* How to play */}
-        <div className="mt-10 space-y-3">
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">1</div>
-            <p className="text-sm text-white/70 font-medium">Rate yourself and partner on 8 qualities</p>
-          </div>
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">2</div>
-            <p className="text-sm text-white/70 font-medium">Partner does the same about you</p>
-          </div>
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">3</div>
-            <p className="text-sm text-white/70 font-medium">Compare mirrors — where do you differ?</p>
-          </div>
-        </div>
-
-        <section className="mt-16 space-y-10">
-          <div className="px-2">
-            <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40 font-black mb-1">PACKS</p>
-            <h2 className="text-3xl font-black text-white italic uppercase leading-none tracking-tighter">{t('home.choosePack')}</h2>
-          </div>
+        <section className="mt-10 flex-1">
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-2">PACKS</p>
+          <h2 className="text-xl font-black text-white italic uppercase mb-6">{t('home.choosePack')}</h2>
           
-          <div className="relative space-y-0 pb-20">
+          <div className="space-y-3">
             {stackPacks.map((pack, index) => (
               <PackCard 
                 key={pack.id} 
                 pack={pack} 
-                index={index} 
                 color={STACK_COLORS[index % STACK_COLORS.length]} 
               />
             ))}
+            
+            <Link
+              href="/packs/create"
+              className="block rounded-2xl border-2 border-dashed border-white/30 p-4 text-center hover:border-white/50 hover:bg-white/5 transition-all"
+            >
+              <span className="text-white/60 font-medium">✨ {t('common.createPack')}</span>
+            </Link>
           </div>
         </section>
 
-        {/* Create own pack */}
-        <div className="mt-4 text-center">
-          <Link 
-            href="/packs/create" 
-            className="text-white/50 hover:text-white text-sm underline"
-          >
-            ✨ {t('common.createPack')}
-          </Link>
-        </div>
-
-        <footer className="mt-auto pt-16 text-center">
-          <p className="text-[0.5rem] text-white/20 font-bold uppercase tracking-[0.2em]">
-            {t('home.footer')}
-          </p>
+        <footer className="pt-8 text-center">
+          <p className="text-[0.5rem] text-white/20 uppercase tracking-widest">{t('home.footer')}</p>
         </footer>
       </div>
     </main>
   )
 }
 
-function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; color: string }) {
+function PackCard({ pack, color }: { pack: QuestionPack; color: string }) {
   const t = useTranslations()
-  const packKey = pack.id as 'couple' | 'friends' | 'work' | 'parents'
-  const name = t(`packs.${packKey}.name`)
-  const subtitle = t(`packs.${packKey}.subtitle`)
-  const description = t(`packs.${packKey}.description`)
+  const packKey = pack.id as 'romantic' | 'everyday' | 'intimacy' | 'character'
+  
+  let name, description
+  try {
+    name = t(`packs.${packKey}.name`)
+    description = t(`packs.${packKey}.description`)
+  } catch {
+    name = pack.name
+    description = pack.description
+  }
 
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className="group relative block rounded-[2rem] p-6 transition-all duration-300 ease-out hover:-translate-y-2"
-      style={{ 
-        backgroundColor: color,
-        marginTop: index === 0 ? 0 : '-3rem',
-        zIndex: 10 - index,
-      }}
+      className="block rounded-2xl p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+      style={{ backgroundColor: color }}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-4">
+        <span className="text-3xl">{pack.emoji}</span>
         <div className="flex-1">
-          <p className="text-[0.5rem] uppercase tracking-[0.3em] text-white/50 font-black">{subtitle}</p>
-          <h3 className="mt-1 text-2xl font-black text-white italic uppercase tracking-tight leading-none">
-            {name}
-          </h3>
-          <p className="mt-2 text-xs text-white/60 leading-relaxed">
-            {description}
-          </p>
+          <h3 className="text-lg font-black text-white uppercase">{name}</h3>
+          <p className="text-sm text-white/70">{description}</p>
         </div>
-        <span className="text-4xl drop-shadow-lg">{pack.emoji}</span>
       </div>
-
     </Link>
   )
 }
