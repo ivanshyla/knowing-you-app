@@ -73,15 +73,15 @@ export default function HomePage() {
         {/* How to play */}
         <div className="mt-10 space-y-3">
           <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">1️⃣</span>
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">1</div>
             <p className="text-sm text-white/70 font-medium">Rate yourself and partner on 8 qualities</p>
           </div>
           <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">2️⃣</span>
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">2</div>
             <p className="text-sm text-white/70 font-medium">Partner does the same about you</p>
           </div>
           <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">🪞</span>
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">3</div>
             <p className="text-sm text-white/70 font-medium">Compare mirrors — where do you differ?</p>
           </div>
         </div>
