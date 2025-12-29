@@ -115,7 +115,7 @@ export default function HomePage() {
             {/* Create Your Own Pack */}
             <Link
               href="/packs/create"
-              className="block rounded-[2.5rem] px-8 py-8 text-white transition-all duration-500 -mt-16 shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-50px] hover:z-50 relative group border-2 border-dashed border-white/30 hover:border-white/60"
+              className="block rounded-[2.5rem] px-8 py-6 text-white transition-all duration-500 mt-4 shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-10px] hover:z-50 relative group border-2 border-dashed border-white/30 hover:border-white/60"
               style={{
                 backgroundColor: '#1F313B',
                 zIndex: 18
