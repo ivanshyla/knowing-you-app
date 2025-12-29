@@ -172,17 +172,6 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
         </div>
         
         <p className="mt-6 text-sm text-white/70 font-medium leading-snug pr-8">{description}</p>
-        
-        <div className="mt-10 flex items-center justify-between">
-          <div className="flex gap-2">
-            {pack.questions.slice(0, 2).map((q) => (
-              <span key={q.text} className="text-[0.55rem] font-black uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-lg">
-                {q.icon} {q.text}
-              </span>
-            ))}
-          </div>
-          <span className="text-[0.6rem] font-black text-white bg-black/40 uppercase tracking-widest px-3 py-1 rounded-lg">{pack.questions.length} {t('common.questions')}</span>
-        </div>
       </div>
       
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
