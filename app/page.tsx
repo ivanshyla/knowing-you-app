@@ -73,16 +73,25 @@ export default function HomePage() {
 
         {/* КАК ИГРАТЬ */}
         <div className="mt-10 space-y-3">
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">1️⃣</span>
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10 group hover:bg-white/10 transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#BE4039] to-[#8B2E2A] flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+              1
+            </div>
             <p className="text-sm text-white/70 font-medium">{t('home.step1')}</p>
           </div>
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">2️⃣</span>
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10 group hover:bg-white/10 transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#784259] to-[#5a3145] flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+              2
+            </div>
             <p className="text-sm text-white/70 font-medium">{t('home.step2')}</p>
           </div>
-          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10">
-            <span className="text-2xl">🪞</span>
+          <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10 group hover:bg-white/10 transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#383852] to-[#252536] flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent animate-pulse" />
+              <svg className="w-5 h-5 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
             <p className="text-sm text-white/70 font-medium">{t('home.step3')}</p>
           </div>
         </div>
