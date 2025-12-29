@@ -163,8 +163,8 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className={`block rounded-[2.5rem] px-8 py-10 text-white transition-all duration-500 ${
-        isFirst ? '' : '-mt-16'
+      className={`block rounded-[2.5rem] px-8 py-8 text-white transition-all duration-500 ${
+        isFirst ? '' : '-mt-12'
       } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-50px] hover:z-50 relative group overflow-hidden`}
       style={{
         backgroundColor: color,
@@ -179,8 +179,6 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
           </div>
           <span className="text-6xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
         </div>
-        
-        <p className="mt-6 text-sm text-white/70 font-medium leading-snug pr-8">{description}</p>
       </div>
       
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
