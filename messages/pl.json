@@ -10,21 +10,112 @@
     "loading": "Ładowanie...",
     "error": "Błąd",
     "account": "Konto",
-    "createPack": "Stwórz pakiet"
+    "createPack": "Stwórz swój pakiet",
+    "questions": "pytań"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "Psychologiczne lustro dla par",
-    "choosePack": "Wybierz pakiet",
-    "footer": "Made with vibecode in Warsaw"
+    "tagline": "Psychologiczne lustro dla par.",
+    "noRegistration": "Bez rejestracji · Działa na telefonie",
+    "step1": "Oceń siebie i partnera w 8 kategoriach",
+    "step2": "Partner robi to samo o tobie",
+    "step3": "Porównaj \"lustra\" — gdzie się różnicie?",
+    "moodboard": "Moodboard",
+    "choosePack": "Tematy na start",
+    "madeWith": "Zrobione z vibecode w Warszawie",
+    "footer": "KNOWING YOU, KNOWING ME © 2025"
   },
   "packs": {
-    "romantic": { "name": "Romantyzm", "subtitle": "Dla par", "description": "Jak się widzicie w związku?" },
-    "everyday": { "name": "Codzienność", "subtitle": "Dzień po dniu", "description": "Jak radzicie sobie z codziennością?" },
-    "intimacy": { "name": "Namiętność", "subtitle": "Intymność", "description": "Odkryjcie swoją więź" },
-    "character": { "name": "Charakter", "subtitle": "Osobowość", "description": "Odkryjcie główne cechy" }
+    "romantic": {
+      "name": "Romantyzm",
+      "subtitle": "Dla par",
+      "description": "Jak się widzicie w romantycznym związku?"
+    },
+    "everyday": {
+      "name": "Codzienność",
+      "subtitle": "Dzień po dniu",
+      "description": "Jak radzicie sobie z codziennymi obowiązkami?"
+    },
+    "intimacy": {
+      "name": "Namiętność",
+      "subtitle": "Intymność",
+      "description": "Odkryjcie swoją fizyczną i emocjonalną więź"
+    },
+    "character": {
+      "name": "Charakter",
+      "subtitle": "Osobowość",
+      "description": "Odkryjcie główne cechy charakteru"
+    },
+    "friends": {
+      "name": "Przyjaciele",
+      "subtitle": "Przyjaźń",
+      "description": "Jak naprawdę widzą cię przyjaciele?"
+    },
+    "office": {
+      "name": "Biuro",
+      "subtitle": "Praca",
+      "description": "Jak postrzega cię zespół w pracy?"
+    },
+    "sport": {
+      "name": "Sport",
+      "subtitle": "Aktywność",
+      "description": "Twoje nawyki sportowe i podejście do fitnessu"
+    },
+    "club": {
+      "name": "Rodzice",
+      "subtitle": "Rodzina",
+      "description": "Zagraj z mamą lub tatą — dowiedz się jak cię widzą"
+    }
   },
-  "results": { "title": "Wyniki", "matchScore": "Dopasowanie" },
-  "account": { "title": "Konto", "gamesPlayed": "Rozegrane gry" }
+  "create": {
+    "title": "Utwórz pokój",
+    "yourName": "Twoje imię",
+    "namePlaceholder": "Twoje imię",
+    "startGame": "Utwórz pokój",
+    "questions": "Pytania w tym pakiecie:"
+  },
+  "lobby": {
+    "title": "Lobby",
+    "code": "Kod pokoju",
+    "waitingPartner": "Czekamy na partnera...",
+    "copyInvite": "Kopiuj link",
+    "shareInvite": "Udostępnij",
+    "startGame": "Rozpocznij grę",
+    "startAlone": "Rozpocznij sam (partner dołączy później)",
+    "players": "Gracze"
+  },
+  "game": {
+    "question": "Pytanie",
+    "of": "z",
+    "rateYourself": "Na ile to dotyczy CIEBIE?",
+    "ratePartner": "Na ile to dotyczy PARTNERA?",
+    "next": "Dalej",
+    "finish": "Zakończ",
+    "waitingPartner": "Gotowe! Czekamy na partnera...",
+    "partnerStillPlaying": "Partner wciąż odpowiada na pytania"
+  },
+  "results": {
+    "title": "Wyniki",
+    "loading": "Ładowanie wyników...",
+    "error": "Nie udało się załadować wyników",
+    "matchScore": "Dopasowanie",
+    "allQuestions": "Wszystkie pytania",
+    "insights": "Wnioski",
+    "topMatches": "Najlepsze dopasowania",
+    "topDifferences": "Największe różnice",
+    "shareCard": "Udostępnij",
+    "you": "Ty",
+    "them": "Partner",
+    "self": "Siebie",
+    "fromPartner": "Od partnera"
+  },
+  "account": {
+    "title": "Konto",
+    "gamesPlayed": "Rozegrane gry",
+    "gamesPurchased": "Kupione gry",
+    "freeGames": "Pozostałe darmowe gry",
+    "buyGames": "Kup 10 gier — $1",
+    "pro": "PRO"
+  }
 }

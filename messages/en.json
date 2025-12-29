@@ -2,7 +2,7 @@
   "common": {
     "play": "Play",
     "continue": "Continue Game",
-    "back": "Back",
+    "back": "Back to Home",
     "copy": "Copy",
     "copied": "Copied!",
     "share": "Share",
@@ -10,35 +10,42 @@
     "loading": "Loading...",
     "error": "Error",
     "account": "Account",
-    "createPack": "Create Your Pack"
+    "createPack": "Create Your Pack",
+    "questions": "questions"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "A psychological mirror for couples",
-    "choosePack": "Choose a pack",
-    "footer": "Made with vibecode in Warsaw"
+    "tagline": "A psychological mirror for couples.",
+    "noRegistration": "No registration · Works on mobile",
+    "step1": "Rate yourself and partner on 8 qualities",
+    "step2": "Partner does the same about you",
+    "step3": "Compare \"mirrors\" — where do you differ?",
+    "moodboard": "Moodboard",
+    "choosePack": "Topics to start",
+    "madeWith": "Made with vibecode in Warsaw",
+    "footer": "KNOWING YOU, KNOWING ME © 2025"
   },
   "packs": {
     "romantic": {
       "name": "Romance",
-      "subtitle": "For Couples",
-      "description": "How do you see each other in a romantic relationship?"
+      "subtitle": "For couples",
+      "description": "Discover how you see each other in your relationship"
     },
     "everyday": {
-      "name": "Daily Life",
-      "subtitle": "Everyday",
-      "description": "How do you handle daily routines together?"
+      "name": "Everyday",
+      "subtitle": "Daily life",
+      "description": "How do you handle everyday situations together?"
     },
     "intimacy": {
       "name": "Passion",
-      "subtitle": "Intimate",
-      "description": "Explore your physical and emotional connection"
+      "subtitle": "Intimacy",
+      "description": "Explore the deep connection between you"
     },
     "character": {
       "name": "Character",
       "subtitle": "Personality",
-      "description": "Discover each other's core personality traits"
+      "description": "How do you really see each other's character?"
     },
     "friends": {
       "name": "Friends",
@@ -51,9 +58,9 @@
       "description": "How does your team perceive you at work?"
     },
     "sport": {
-      "name": "Sports",
-      "subtitle": "Athletic",
-      "description": "Your sports habits and fitness attitudes"
+      "name": "Sport",
+      "subtitle": "Active life",
+      "description": "Your athletic side — how does your partner see it?"
     },
     "club": {
       "name": "Parents",
@@ -61,12 +68,54 @@
       "description": "Play with mom or dad — discover how they see you"
     }
   },
+  "create": {
+    "title": "Create Room",
+    "yourName": "Your name",
+    "namePlaceholder": "Your name",
+    "startGame": "Create Room & Start",
+    "questions": "Questions in this pack:"
+  },
+  "lobby": {
+    "title": "Lobby",
+    "code": "Room Code",
+    "waitingPartner": "Waiting for partner...",
+    "copyInvite": "Copy Invite Link",
+    "shareInvite": "Share Invite",
+    "startGame": "Start Game",
+    "startAlone": "Start Alone (partner joins later)",
+    "players": "Players"
+  },
+  "game": {
+    "question": "Question",
+    "of": "of",
+    "rateYourself": "How much is this about YOU?",
+    "ratePartner": "How much is this about your PARTNER?",
+    "next": "Next",
+    "finish": "Finish",
+    "waitingPartner": "Done! Waiting for partner...",
+    "partnerStillPlaying": "Your partner is still answering questions"
+  },
   "results": {
     "title": "Results",
-    "matchScore": "Match Score"
+    "loading": "Loading results...",
+    "error": "Failed to load results",
+    "matchScore": "Match Score",
+    "allQuestions": "All Questions",
+    "insights": "Insights",
+    "topMatches": "Top Matches",
+    "topDifferences": "Biggest Gaps",
+    "shareCard": "Share",
+    "you": "You",
+    "them": "Them",
+    "self": "Self",
+    "fromPartner": "From partner"
   },
   "account": {
     "title": "Account",
-    "gamesPlayed": "Games played"
+    "gamesPlayed": "Games played",
+    "gamesPurchased": "Games purchased",
+    "freeGames": "Free games left",
+    "buyGames": "Buy 10 Games — $1",
+    "pro": "PRO"
   }
 }

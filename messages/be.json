@@ -1,7 +1,7 @@
 {
   "common": {
     "play": "Гуляць",
-    "continue": "Працягнуць",
+    "continue": "Працягнуць гульню",
     "back": "На галоўную",
     "copy": "Капіяваць",
     "copied": "Скапіявана!",
@@ -10,21 +10,112 @@
     "loading": "Загрузка...",
     "error": "Памылка",
     "account": "Акаўнт",
-    "createPack": "Стварыць пак"
+    "createPack": "Стварыць свой пак",
+    "questions": "пытанняў"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "Псіхалагічнае люстэрка для пар",
-    "choosePack": "Абяры пак",
-    "footer": "Made with vibecode in Warsaw"
+    "tagline": "Псіхалагічнае люстэрка для пар.",
+    "noRegistration": "Без рэгістрацыі · Працуе на тэлефоне",
+    "step1": "Ацані сябе і партнёра па 8 якасцях",
+    "step2": "Партнёр робіць тое ж самае пра цябе",
+    "step3": "Параўнай «люстэркі» — дзе разыходзіцеся?",
+    "moodboard": "Moodboard",
+    "choosePack": "Тэмы для старту",
+    "madeWith": "Зроблена з vibecode у Варшаве",
+    "footer": "KNOWING YOU, KNOWING ME © 2025"
   },
   "packs": {
-    "romantic": { "name": "Рамантыка", "subtitle": "Для пар", "description": "Як вы бачыце адзін аднаго?" },
-    "everyday": { "name": "Побыт", "subtitle": "Кожны дзень", "description": "Як вы спраўляецеся з бытам?" },
-    "intimacy": { "name": "Страсць", "subtitle": "Інтымнае", "description": "Даследуйце вашу сувязь" },
-    "character": { "name": "Характар", "subtitle": "Асоба", "description": "Адкрыйце рысы характару" }
+    "romantic": {
+      "name": "Рамантыка",
+      "subtitle": "Для пар",
+      "description": "Як вы бачыце адзін аднаго ў адносінах?"
+    },
+    "everyday": {
+      "name": "Побыт",
+      "subtitle": "Кожны дзень",
+      "description": "Як вы спраўляецеся з бытам разам?"
+    },
+    "intimacy": {
+      "name": "Страсць",
+      "subtitle": "Інтымнае",
+      "description": "Даследуйце фізічную і эмацыйную сувязь"
+    },
+    "character": {
+      "name": "Характар",
+      "subtitle": "Асоба",
+      "description": "Адкрыйце галоўныя рысы характару"
+    },
+    "friends": {
+      "name": "Сябры",
+      "subtitle": "Сяброўства",
+      "description": "Як сябры сапраўды цябе бачаць?"
+    },
+    "office": {
+      "name": "Офіс",
+      "subtitle": "Праца",
+      "description": "Як калегі ўспрымаюць цябе на працы?"
+    },
+    "sport": {
+      "name": "Спорт",
+      "subtitle": "Актыўнасць",
+      "description": "Твае спартыўныя звычкі і стаўленне да фітнесу"
+    },
+    "club": {
+      "name": "Бацькі",
+      "subtitle": "Сям'я",
+      "description": "Згуляй з мамай ці татам — даведайся як яны цябе бачаць"
+    }
   },
-  "results": { "title": "Вынікі", "matchScore": "Супадзенне" },
-  "account": { "title": "Акаўнт", "gamesPlayed": "Згуляна гульняў" }
+  "create": {
+    "title": "Стварыць пакой",
+    "yourName": "Тваё імя",
+    "namePlaceholder": "Тваё імя",
+    "startGame": "Стварыць пакой",
+    "questions": "Пытанні ў гэтым паку:"
+  },
+  "lobby": {
+    "title": "Лобі",
+    "code": "Код пакоя",
+    "waitingPartner": "Чакаем партнёра...",
+    "copyInvite": "Капіяваць спасылку",
+    "shareInvite": "Падзяліцца",
+    "startGame": "Пачаць гульню",
+    "startAlone": "Пачаць аднаму (партнёр далучыцца пазней)",
+    "players": "Гульцы"
+  },
+  "game": {
+    "question": "Пытанне",
+    "of": "з",
+    "rateYourself": "Наколькі гэта пра ЦЯБЕ?",
+    "ratePartner": "Наколькі гэта пра ПАРТНЁРА?",
+    "next": "Далей",
+    "finish": "Скончыць",
+    "waitingPartner": "Гатова! Чакаем партнёра...",
+    "partnerStillPlaying": "Партнёр яшчэ адказвае на пытанні"
+  },
+  "results": {
+    "title": "Вынікі",
+    "loading": "Загружаем вынікі...",
+    "error": "Не атрымалася загрузіць вынікі",
+    "matchScore": "Супадзенне",
+    "allQuestions": "Усе пытанні",
+    "insights": "Інсайты",
+    "topMatches": "Лепшыя супадзенні",
+    "topDifferences": "Найбольшыя адрозненні",
+    "shareCard": "Падзяліцца",
+    "you": "Ты",
+    "them": "Партнёр",
+    "self": "Сябе",
+    "fromPartner": "Ад партнёра"
+  },
+  "account": {
+    "title": "Акаўнт",
+    "gamesPlayed": "Згуляна гульняў",
+    "gamesPurchased": "Куплена гульняў",
+    "freeGames": "Бясплатных гульняў засталося",
+    "buyGames": "Купіць 10 гульняў — $1",
+    "pro": "PRO"
+  }
 }

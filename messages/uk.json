@@ -10,21 +10,112 @@
     "loading": "Завантаження...",
     "error": "Помилка",
     "account": "Акаунт",
-    "createPack": "Створи пак"
+    "createPack": "Створи свій пак",
+    "questions": "питань"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
-    "tagline": "Психологічне дзеркало для пар",
-    "choosePack": "Обери пак",
-    "footer": "Made with vibecode in Warsaw"
+    "tagline": "Психологічне дзеркало для пар.",
+    "noRegistration": "Без реєстрації · Працює на телефоні",
+    "step1": "Оціни себе та партнера за 8 якостями",
+    "step2": "Партнер робить те ж саме про тебе",
+    "step3": "Порівняй «дзеркала» — де розходитесь?",
+    "moodboard": "Moodboard",
+    "choosePack": "Теми для старту",
+    "madeWith": "Зроблено з vibecode у Варшаві",
+    "footer": "KNOWING YOU, KNOWING ME © 2025"
   },
   "packs": {
-    "romantic": { "name": "Романтика", "subtitle": "Для пар", "description": "Як ви бачите одне одного?" },
-    "everyday": { "name": "Побут", "subtitle": "Щодень", "description": "Як ви справляєтесь з побутом?" },
-    "intimacy": { "name": "Пристрасть", "subtitle": "Інтимне", "description": "Дослідіть ваш зв'язок" },
-    "character": { "name": "Характер", "subtitle": "Особистість", "description": "Відкрийте риси характеру" }
+    "romantic": {
+      "name": "Романтика",
+      "subtitle": "Для пар",
+      "description": "Як ви бачите одне одного у стосунках?"
+    },
+    "everyday": {
+      "name": "Побут",
+      "subtitle": "Щодень",
+      "description": "Як ви справляєтесь з побутом разом?"
+    },
+    "intimacy": {
+      "name": "Пристрасть",
+      "subtitle": "Інтимне",
+      "description": "Дослідіть фізичний та емоційний зв'язок"
+    },
+    "character": {
+      "name": "Характер",
+      "subtitle": "Особистість",
+      "description": "Відкрийте головні риси характеру"
+    },
+    "friends": {
+      "name": "Друзі",
+      "subtitle": "Дружба",
+      "description": "Як друзі насправді тебе бачать?"
+    },
+    "office": {
+      "name": "Офіс",
+      "subtitle": "Робота",
+      "description": "Як колеги сприймають тебе на роботі?"
+    },
+    "sport": {
+      "name": "Спорт",
+      "subtitle": "Активність",
+      "description": "Твої спортивні звички та ставлення до фітнесу"
+    },
+    "club": {
+      "name": "Батьки",
+      "subtitle": "Сім'я",
+      "description": "Зіграй з мамою чи татом — дізнайся як вони тебе бачать"
+    }
   },
-  "results": { "title": "Результати", "matchScore": "Співпадіння" },
-  "account": { "title": "Акаунт", "gamesPlayed": "Зіграно ігор" }
+  "create": {
+    "title": "Створити кімнату",
+    "yourName": "Твоє ім'я",
+    "namePlaceholder": "Твоє ім'я",
+    "startGame": "Створити кімнату",
+    "questions": "Питання в цьому паку:"
+  },
+  "lobby": {
+    "title": "Лобі",
+    "code": "Код кімнати",
+    "waitingPartner": "Чекаємо на партнера...",
+    "copyInvite": "Копіювати посилання",
+    "shareInvite": "Поділитися",
+    "startGame": "Почати гру",
+    "startAlone": "Почати самому (партнер приєднається пізніше)",
+    "players": "Гравці"
+  },
+  "game": {
+    "question": "Питання",
+    "of": "з",
+    "rateYourself": "Наскільки це про ТЕБЕ?",
+    "ratePartner": "Наскільки це про ПАРТНЕРА?",
+    "next": "Далі",
+    "finish": "Завершити",
+    "waitingPartner": "Готово! Чекаємо на партнера...",
+    "partnerStillPlaying": "Партнер ще відповідає на питання"
+  },
+  "results": {
+    "title": "Результати",
+    "loading": "Завантажуємо результати...",
+    "error": "Не вдалося завантажити результати",
+    "matchScore": "Співпадіння",
+    "allQuestions": "Всі питання",
+    "insights": "Інсайти",
+    "topMatches": "Найкращі співпадіння",
+    "topDifferences": "Найбільші розходження",
+    "shareCard": "Поділитися",
+    "you": "Ти",
+    "them": "Партнер",
+    "self": "Себе",
+    "fromPartner": "Від партнера"
+  },
+  "account": {
+    "title": "Акаунт",
+    "gamesPlayed": "Зіграно ігор",
+    "gamesPurchased": "Куплено ігор",
+    "freeGames": "Безкоштовних ігор залишилось",
+    "buyGames": "Купити 10 ігор — $1",
+    "pro": "PRO"
+  }
 }
