@@ -160,12 +160,21 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
     description = pack.description
   }
 
+  // Get translated tag text
+  const getTagText = (text: string) => {
+    try {
+      return t(`tags.${text}`)
+    } catch {
+      return text
+    }
+  }
+
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className={`block rounded-[2.5rem] px-8 py-12 text-white transition-all duration-500 ${
-        isFirst ? '' : '-mt-20'
-      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-60px] hover:z-50 relative group overflow-hidden`}
+      className={`block rounded-[2.5rem] px-8 py-10 text-white transition-all duration-500 ${
+        isFirst ? '' : '-mt-16'
+      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-50px] hover:z-50 relative group overflow-hidden`}
       style={{
         backgroundColor: color,
         zIndex: 10 + index
@@ -173,11 +182,24 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
     >
       <div className="relative z-10">
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50 font-black">{subtitle}</p>
-            <h3 className="text-4xl font-black leading-none italic uppercase tracking-tight">{name}</h3>
+          <div className="space-y-1">
+            <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/50 font-black">{subtitle}</p>
+            <h3 className="text-3xl font-black leading-none italic uppercase tracking-tight">{name}</h3>
           </div>
-          <span className="text-7xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
+          <span className="text-6xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
+        </div>
+        
+        <p className="mt-6 text-sm text-white/70 font-medium leading-snug pr-8">{description}</p>
+        
+        <div className="mt-8 flex items-center justify-between">
+          <div className="flex gap-2">
+            {pack.questions.slice(0, 2).map((q) => (
+              <span key={q.text} className="text-[0.55rem] font-black uppercase tracking-widest text-white bg-black/40 px-3 py-1 rounded-lg">
+                {q.icon} {getTagText(q.text)}
+              </span>
+            ))}
+          </div>
+          <span className="text-[0.6rem] font-black text-white bg-black/40 uppercase tracking-widest px-3 py-1 rounded-lg">{pack.questions.length} {t('common.questions')}</span>
         </div>
       </div>
       
