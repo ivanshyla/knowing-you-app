@@ -23,8 +23,8 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#1F313B] overflow-hidden select-none">
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-[#1F313B] via-[#1F313B]/90 to-[#383852]" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-8">
-        <header className="space-y-4 text-center pt-2">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-6">
+        <header className="space-y-3 text-center pt-2">
           <div className="flex items-center justify-between">
             <LanguageSwitcher />
             <Link href="/account" className="text-xs text-white/50 hover:text-white">
@@ -32,43 +32,44 @@ export default function HomePage() {
             </Link>
           </div>
           
-          <div className="space-y-1">
-            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter">
+          <div>
+            <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter">
               {t('home.title')}<br />{t('home.subtitle')}
             </h1>
-            <p className="text-xs text-white/40">{t('home.tagline')}</p>
+            <p className="text-[0.65rem] text-white/40 mt-1">{t('home.tagline')}</p>
           </div>
         </header>
 
-        <div className="mt-8">
+        <div className="mt-6">
           {lastCode ? (
             <Link
               href={`/room/${lastCode}`}
-              className="block w-full rounded-full bg-white text-gray-900 py-5 text-center text-lg font-black uppercase"
+              className="block w-full rounded-full bg-white text-gray-900 py-4 text-center text-base font-black uppercase"
             >
               {t('common.continue')} ⚡
             </Link>
           ) : (
             <Link
               href="/room/create"
-              className="block w-full rounded-full bg-[#BE4039] py-5 text-center text-lg font-black uppercase text-white shadow-[0_15px_40px_rgba(190,64,57,0.4)]"
+              className="block w-full rounded-full bg-[#BE4039] py-4 text-center text-base font-black uppercase text-white shadow-[0_15px_40px_rgba(190,64,57,0.4)]"
             >
               {t('common.play')} →
             </Link>
           )}
         </div>
 
-        <section className="mt-10 flex-1">
-          <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/40 font-black mb-1">PACKS</p>
-          <h2 className="text-2xl font-black text-white italic uppercase mb-4">{t('home.choosePack')}</h2>
+        <section className="mt-8 flex-1">
+          <p className="text-[0.55rem] uppercase tracking-[0.3em] text-white/40 font-bold mb-1">PACKS</p>
+          <h2 className="text-xl font-black text-white italic uppercase mb-4">{t('home.choosePack')}</h2>
           
-          {/* Stacked cards */}
-          <div className="relative pb-16">
+          {/* Stacked cards - each shows title visibly */}
+          <div className="relative">
             {stackPacks.map((pack, index) => (
               <PackCard 
                 key={pack.id} 
                 pack={pack}
                 index={index}
+                total={stackPacks.length}
                 color={STACK_COLORS[index % STACK_COLORS.length]} 
               />
             ))}
@@ -76,11 +77,11 @@ export default function HomePage() {
             {/* Create Your Pack */}
             <Link
               href="/packs/create"
-              className="relative block rounded-[2rem] p-4 border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/5 transition-all"
-              style={{ marginTop: '-2.5rem', zIndex: 2 }}
+              className="relative block rounded-[1.5rem] py-3 px-5 border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/5 transition-all"
+              style={{ marginTop: '0.5rem', zIndex: 1 }}
             >
               <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">✨</span>
+                <span className="text-base">✨</span>
                 <span className="text-sm font-bold text-white/60 uppercase">{t('common.createPack')}</span>
               </div>
             </Link>
@@ -88,50 +89,50 @@ export default function HomePage() {
         </section>
 
         <footer className="pt-4 text-center">
-          <p className="text-[0.5rem] text-white/20 uppercase tracking-widest">{t('home.footer')}</p>
+          <p className="text-[0.45rem] text-white/20 uppercase tracking-widest">{t('home.footer')}</p>
         </footer>
       </div>
     </main>
   )
 }
 
-function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; color: string }) {
+function PackCard({ pack, index, total, color }: { pack: QuestionPack; index: number; total: number; color: string }) {
   const t = useTranslations()
   const packKeys = ['romantic', 'everyday', 'intimacy', 'character', 'friends', 'office', 'sport', 'club'] as const
   const packKey = packKeys.includes(pack.id as any) ? pack.id : 'romantic'
   
-  let name, subtitle, description
+  let name, subtitle
   try {
     name = t(`packs.${packKey}.name`)
     subtitle = t(`packs.${packKey}.subtitle`)
-    description = t(`packs.${packKey}.description`)
   } catch {
     name = pack.name
     subtitle = pack.subtitle || ''
-    description = pack.description
   }
 
+  // First card full height, others peek from behind
+  const isFirst = index === 0
+  
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className="group relative block rounded-[2rem] p-5 transition-all duration-300 ease-out hover:-translate-y-6"
+      className="group relative block rounded-[1.5rem] transition-all duration-300 ease-out hover:-translate-y-8 hover:z-50"
       style={{ 
         backgroundColor: color,
-        marginTop: index === 0 ? 0 : '-3rem',
-        zIndex: 10 - index,
+        marginTop: isFirst ? 0 : '-4.5rem',
+        zIndex: total - index,
+        padding: isFirst ? '1.25rem' : '0.75rem 1.25rem',
+        paddingBottom: isFirst ? '5rem' : '0.75rem',
       }}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 pr-4">
-          <p className="text-[0.5rem] uppercase tracking-[0.3em] text-white/50 font-black">{subtitle}</p>
-          <h3 className="text-xl font-black text-white italic uppercase tracking-tight leading-tight">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-[0.5rem] uppercase tracking-[0.2em] text-white/50 font-bold">{subtitle}</p>
+          <h3 className="text-lg font-black text-white italic uppercase tracking-tight leading-tight truncate">
             {name}
           </h3>
-          <p className="mt-1 text-xs text-white/60 leading-snug">
-            {description}
-          </p>
         </div>
-        <span className="text-3xl flex-shrink-0">{pack.emoji}</span>
+        <span className="text-2xl flex-shrink-0">{pack.emoji}</span>
       </div>
     </Link>
   )
