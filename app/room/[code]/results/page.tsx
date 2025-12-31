@@ -19,7 +19,7 @@ async function shareImage(cardRef: React.RefObject<HTMLDivElement | null>, filen
     if (!blob) { setSaving(false); return }
     const file = new File([blob], filename, { type: 'image/png' })
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Knowing You, Knowing Me', text: 'Мой результат 🪞' })
+      await navigator.share({ files: [file], title: 'Knowing You, Knowing Me', text: 'My result 🪞' })
     } else {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -87,7 +87,7 @@ export default function ResultsPage() {
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-white/40 animate-pulse text-center">
           <div className="text-5xl mb-4">📊</div>
-          <p className="text-sm uppercase tracking-widest">Загружаем...</p>
+          <p className="text-sm uppercase tracking-widest">Loading...</p>
         </div>
       </div>
     )
@@ -98,8 +98,8 @@ export default function ResultsPage() {
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white text-center p-8">
         <div>
           <div className="text-6xl mb-4">🙈</div>
-          <p className="text-white/60 mb-4">Участники не найдены</p>
-          <Link href="/" className="text-[#e94560] underline">На главную</Link>
+          <p className="text-white/60 mb-4">Participants not found</p>
+          <Link href="/" className="text-[#e94560] underline">Home</Link>
         </div>
       </div>
     )
@@ -170,7 +170,7 @@ export default function ResultsPage() {
               onClick={() => setCurrentIndex(i => i - 1)}
               className="px-8 py-4 rounded-full bg-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all"
             >
-              ← Назад
+              ← Back
             </button>
           )}
           {currentIndex < totalSlides - 1 ? (
@@ -230,7 +230,7 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">{result.question.icon}</div>
           <h2 className="text-2xl font-black italic uppercase">{result.question.text}</h2>
-          <p className="text-xs text-white/30 mt-2 uppercase tracking-widest">Вопрос {questionNumber} из {totalQuestions}</p>
+          <p className="text-xs text-white/30 mt-2 uppercase tracking-widest">Question {questionNumber} of {totalQuestions}</p>
         </div>
 
         {/* Ratings visualization */}
@@ -281,7 +281,7 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
         disabled={saving}
         className="w-full py-3 rounded-full bg-white/10 text-white/60 text-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📤 Поделиться'}
+        {saving ? '...' : '📤 Share'}
       </button>
     </div>
   )
@@ -393,7 +393,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
         disabled={saving}
         className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📤 Поделиться'}
+        {saving ? '...' : '📤 Share'}
       </button>
     </div>
   )
@@ -468,7 +468,7 @@ function AllResultsSlide({ questionResults, participantA, participantB, matchPer
         disabled={saving}
         className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
       >
-        {saving ? '...' : '📤 Поделиться'}
+        {saving ? '...' : '📤 Share'}
       </button>
     </div>
   )
