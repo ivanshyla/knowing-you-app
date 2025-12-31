@@ -71,9 +71,14 @@
   "create": {
     "title": "Створити кімнату",
     "yourName": "Твоє ім'я",
-    "namePlaceholder": "Твоє ім'я",
+    "yourAvatar": "Твій аватар",
+    "namePlaceholder": "Як тебе називати?",
     "startGame": "Створити кімнату",
-    "questions": "Питання в цьому паку:"
+    "questions": "Питання в цьому паку:",
+    "showQuestions": "Показати 8 питань",
+    "hideQuestions": "Сховати питання",
+    "enterName": "Введіть своє ім'я!",
+    "partnerJoins": "Партнер приєднається за кодом"
   },
   "lobby": {
     "title": "Лобі",

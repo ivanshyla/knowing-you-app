@@ -71,9 +71,14 @@
   "create": {
     "title": "Создать комнату",
     "yourName": "Твоё имя",
-    "namePlaceholder": "Твоё имя",
+    "yourAvatar": "Твой аватар",
+    "namePlaceholder": "Как тебя называть?",
     "startGame": "Создать комнату",
-    "questions": "Вопросы в этом паке:"
+    "questions": "Вопросы в этом паке:",
+    "showQuestions": "Показать 8 вопросов",
+    "hideQuestions": "Скрыть вопросы",
+    "enterName": "Введите ваше имя!",
+    "partnerJoins": "Партнёр присоединится по коду"
   },
   "lobby": {
     "title": "Лобби",

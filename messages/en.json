@@ -71,9 +71,14 @@
   "create": {
     "title": "Create Room",
     "yourName": "Your name",
-    "namePlaceholder": "Your name",
-    "startGame": "Create Room & Start",
-    "questions": "Questions in this pack:"
+    "yourAvatar": "Your avatar",
+    "namePlaceholder": "What should we call you?",
+    "startGame": "Create Room",
+    "questions": "Questions in this pack:",
+    "showQuestions": "Show 8 questions",
+    "hideQuestions": "Hide questions",
+    "enterName": "Please enter your name!",
+    "partnerJoins": "Partner will join by code"
   },
   "lobby": {
     "title": "Lobby",

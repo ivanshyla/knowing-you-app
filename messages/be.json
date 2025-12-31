@@ -71,9 +71,14 @@
   "create": {
     "title": "Стварыць пакой",
     "yourName": "Тваё імя",
-    "namePlaceholder": "Тваё імя",
+    "yourAvatar": "Твой аватар",
+    "namePlaceholder": "Як цябе зваць?",
     "startGame": "Стварыць пакой",
-    "questions": "Пытанні ў гэтым паку:"
+    "questions": "Пытанні ў гэтым паку:",
+    "showQuestions": "Паказаць 8 пытанняў",
+    "hideQuestions": "Схаваць пытанні",
+    "enterName": "Увядзіце сваё імя!",
+    "partnerJoins": "Партнёр далучыцца па кодзе"
   },
   "lobby": {
     "title": "Лобі",
