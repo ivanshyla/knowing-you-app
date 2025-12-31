@@ -364,7 +364,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
   return (
     <div className="w-full max-w-md space-y-6">
       <div ref={cardRef} className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-10 rounded-3xl text-center">
-        <p className="text-xs uppercase tracking-widest text-white/40 mb-6">Психологическое зеркало</p>
+        <p className="text-xs uppercase tracking-widest text-white/40 mb-6">Perception Mirror</p>
         
         <div className="flex justify-center items-center gap-6 mb-6">
           <div>
@@ -381,7 +381,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
         <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
           {matchPercentage}%
         </div>
-        <p className="text-xs uppercase tracking-widest text-white/40 mt-2">совпадение</p>
+        <p className="text-xs uppercase tracking-widest text-white/40 mt-2">Match</p>
 
         <div className="text-[0.5rem] uppercase tracking-widest text-white/20 mt-8">
           knowing-you.app
