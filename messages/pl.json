@@ -71,14 +71,9 @@
   "create": {
     "title": "Utwórz pokój",
     "yourName": "Twoje imię",
-    "yourAvatar": "Twój awatar",
-    "namePlaceholder": "Jak mamy Cię nazywać?",
+    "namePlaceholder": "Twoje imię",
     "startGame": "Utwórz pokój",
-    "questions": "Pytania w tym pakiecie:",
-    "showQuestions": "Pokaż 8 pytań",
-    "hideQuestions": "Ukryj pytania",
-    "enterName": "Proszę podać swoje imię!",
-    "partnerJoins": "Partner dołączy za pomocą kodu"
+    "questions": "Pytania w tym pakiecie:"
   },
   "lobby": {
     "title": "Lobby",

@@ -1,209 +1,173 @@
 'use client'
 
 import Link from 'next/link'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
 import { QUESTION_PACKS } from '@/data/questionPacks'
 import { apiFetch } from '@/lib/apiClient'
 
 const EMOJIS = ['🫦', '🔥', '😎', '👑', '🦄', '😈', '💘', '🤫', '🤍', '🫶', '💋', '🌶️']
-const STACK_COLORS = ['#BE4039', '#B94E56', '#784259', '#383852', '#1F313B', '#683536'] as const
 
 export default function CreateRoomPage() {
-  const t = useTranslations()
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#1F313B] text-sm uppercase tracking-[0.4em] text-white/40">
-          {t('common.loading')}
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center text-white/40">Загрузка...</div>}>
       <CreateRoomContent />
     </Suspense>
   )
 }
 
 function CreateRoomContent() {
-  const t = useTranslations()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const packs = Object.values(QUESTION_PACKS)
-  const defaultPack = packs[0]?.id ?? ''
+  const packId = searchParams.get('pack') || 'romance'
+  const pack = QUESTION_PACKS[packId] || Object.values(QUESTION_PACKS)[0]
   
-  const [selectedPack, setSelectedPack] = useState(defaultPack)
   const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('👑')
+  const [emoji, setEmoji] = useState('🫦')
   const [loading, setLoading] = useState(false)
   const [showQuestions, setShowQuestions] = useState(false)
-
-  const packFromQuery = searchParams.get('pack')
-
-  useEffect(() => {
-    if (packFromQuery && QUESTION_PACKS[packFromQuery]) {
-      setSelectedPack(packFromQuery)
-    }
-  }, [packFromQuery])
-
-  const currentPack = QUESTION_PACKS[selectedPack]
-  const packKey = selectedPack as 'romantic' | 'everyday' | 'intimacy' | 'character' | 'friends' | 'office' | 'sport' | 'club'
-  
-  let packName, packSubtitle, packDescription
-  try {
-    packName = t(`packs.${packKey}.name`)
-    packSubtitle = t(`packs.${packKey}.subtitle`)
-    packDescription = t(`packs.${packKey}.description`)
-  } catch {
-    packName = currentPack?.name
-    packSubtitle = currentPack?.subtitle
-    packDescription = currentPack?.description
-  }
+  const [error, setError] = useState<string | null>(null)
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      alert(t('create.enterName'))
+      setError('Введите имя')
       return
     }
-
+    
     setLoading(true)
+    setError(null)
+    
     try {
-      const response = await apiFetch('/api/create-room', {
+      const res = await apiFetch('/api/create-room', {
         method: 'POST',
         body: JSON.stringify({
-          questionPack: selectedPack,
+          questionPack: pack.id,
           creatorName: name.trim(),
           creatorEmoji: emoji
         })
       })
-
-      const data = await response.json()
-      if (!response.ok) {
-        if (response.status === 402) {
+      
+      const data = await res.json()
+      
+      if (!res.ok) {
+        if (res.status === 402) {
           router.push('/account')
           return
         }
-        throw new Error(data?.error || 'Failed to create room')
+        setError(data.error || 'Ошибка создания')
+        return
       }
-
+      
+      localStorage.setItem('kykm_last_code', data.code)
+      localStorage.setItem(`session_${data.code}_id`, data.sessionId)
       localStorage.setItem(`session_${data.code}_role`, 'A')
-      localStorage.setItem(`session_${data.code}_participant_id`, data.participantId)
-      localStorage.setItem(`session_${data.code}_session_id`, data.sessionId)
-      localStorage.setItem(`kykm_last_code`, data.code)
+      
       router.push(`/room/${data.code}`)
-    } catch (error) {
-      console.error('Error creating room:', error)
-      alert(t('common.error'))
+    } catch (e) {
+      setError('Ошибка сети')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#1F313B] text-white font-sans">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] opacity-90"
-      />
+    <div className="min-h-screen bg-[#0d0d0d] text-white">
+      <div className="max-w-lg mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/" className="text-white/40 hover:text-white/60 text-sm font-bold transition-all">
+            ← Назад
+          </Link>
+        </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
-        <Link 
-          href="/" 
-          className="text-white/50 hover:text-white text-sm font-bold transition-all mb-8"
+        {/* Pack Info */}
+        <div 
+          className="rounded-3xl p-6 mb-6"
+          style={{ backgroundColor: '#BE4039' }}
         >
-          ← {t('common.back')}
-        </Link>
-
-        {/* Selected Pack Card */}
-        {currentPack && (
-          <div 
-            className="rounded-[2.5rem] px-8 py-8 text-white shadow-[0_25px_60px_rgba(0,0,0,0.5)] relative overflow-hidden"
-            style={{ backgroundColor: STACK_COLORS[0] }}
-          >
-            <div className="relative z-10">
-              <div className="flex items-start gap-4">
-                <span className="text-5xl drop-shadow-2xl">{currentPack.emoji}</span>
-                <div className="flex-1">
-                  <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/50 font-black">{packSubtitle}</p>
-                  <h2 className="text-2xl font-black leading-none italic uppercase tracking-tight mt-1">{packName}</h2>
-                </div>
-              </div>
-              
-              <p className="mt-4 text-sm text-white/70 font-medium leading-snug">{packDescription}</p>
-              
-              <button
-                onClick={() => setShowQuestions(!showQuestions)}
-                className="mt-4 text-[0.7rem] text-white/50 hover:text-white underline underline-offset-4 transition-all"
-              >
-                {showQuestions ? t('create.hideQuestions') : t('create.showQuestions')}
-              </button>
-              
-              {showQuestions && (
-                <div className="mt-4 space-y-2">
-                  {currentPack.questions.map((q, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-white/60">
-                      <span>{q.icon}</span>
-                      <span>{q.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+          <div className="flex items-center gap-4">
+            <span className="text-5xl">{pack.emoji}</span>
+            <div>
+              <p className="text-[0.6rem] uppercase tracking-widest text-white/60">{pack.subtitle}</p>
+              <h1 className="text-2xl font-black italic uppercase">{pack.name}</h1>
             </div>
-            
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
           </div>
-        )}
+          <p className="mt-4 text-sm text-white/80">{pack.description}</p>
+          
+          <button
+            onClick={() => setShowQuestions(!showQuestions)}
+            className="mt-4 text-xs text-white/60 hover:text-white/80 underline"
+          >
+            {showQuestions ? 'Скрыть вопросы' : `Показать ${pack.questions.length} вопросов`}
+          </button>
+        </div>
 
-        {/* Form */}
-        <div className="mt-8 rounded-[2.5rem] bg-white/5 border border-white/10 p-8 space-y-6 backdrop-blur-sm shadow-2xl">
-          <div className="space-y-3">
-            <label className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-bold ml-2">
-              {t('create.yourName')}
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('create.namePlaceholder')}
-              maxLength={20}
-              className="w-full rounded-[1.5rem] border-2 border-white/5 bg-white/5 px-6 py-5 text-white font-bold placeholder:text-white/20 focus:border-white/40 focus:bg-white/10 focus:outline-none transition-all text-lg"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-[0.65rem] uppercase tracking-[0.4em] text-white/40 font-bold ml-2">
-              {t('create.yourAvatar')}
-            </label>
-            <div className="grid grid-cols-6 gap-3">
-              {EMOJIS.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  onClick={() => setEmoji(icon)}
-                  className={`flex items-center justify-center rounded-xl aspect-square text-2xl transition-all ${
-                    emoji === icon 
-                      ? 'bg-white/20 scale-110 ring-2 ring-white/40' 
-                      : 'bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  {icon}
-                </button>
+        {/* Questions Preview */}
+        {showQuestions && (
+          <div className="mb-6 bg-white/5 rounded-2xl p-4 border border-white/10 max-h-64 overflow-y-auto">
+            <div className="space-y-2">
+              {pack.questions.map((q, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <span>{q.icon}</span>
+                  <span className="text-white/70">{q.text}</span>
+                </div>
               ))}
             </div>
           </div>
+        )}
+
+        {/* Name Input */}
+        <div className="bg-white/5 rounded-3xl p-6 border border-white/10 mb-6">
+          <label className="block text-xs text-white/40 uppercase tracking-widest mb-3">
+            Твоё имя
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Как тебя зовут?"
+            className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-4 text-lg font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 mb-4"
+            autoFocus
+          />
+          
+          <label className="block text-xs text-white/40 uppercase tracking-widest mb-3">
+            Твой аватар
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {EMOJIS.map((e) => (
+              <button
+                key={e}
+                onClick={() => setEmoji(e)}
+                className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center transition-all ${
+                  emoji === e 
+                    ? 'bg-white/20 ring-2 ring-white/40 scale-110' 
+                    : 'bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
 
         {/* Create Button */}
         <button
           onClick={handleCreate}
           disabled={loading || !name.trim()}
-          className="mt-8 w-full rounded-full bg-[#BE4039] py-6 text-xl font-bold uppercase tracking-[0.15em] text-white shadow-[0_20px_50px_rgba(190,64,57,0.4)] transition-all active:scale-95 disabled:opacity-40"
+          className="w-full py-5 rounded-full bg-gradient-to-r from-[#e94560] to-[#BE4039] text-white font-black uppercase tracking-widest text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-red-900/30"
         >
-          {loading ? t('common.loading') : `🚀 ${t('create.startGame')}`}
+          {loading ? 'Создаём...' : '🚀 Создать комнату'}
         </button>
-        
-        <p className="mt-4 text-center text-[0.65rem] text-white/30 font-bold uppercase tracking-[0.2em]">
-          {t('create.partnerJoins')}
+
+        <p className="text-center text-xs text-white/30 mt-4">
+          Партнёр присоединится по коду
         </p>
       </div>
     </div>
