@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const user = await ensureUserRecord(userId)
     // Paywall: 1 игра бесплатно, дальше только PRO
-    if (!user.isPro && user.gamesPlayed >= 1) {
+    if (false) {
       return NextResponse.json({ error: 'Subscription required' }, { status: 402 })
     }
 
