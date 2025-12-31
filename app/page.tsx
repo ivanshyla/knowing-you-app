@@ -115,7 +115,7 @@ export default function HomePage() {
             {/* Create Your Own Pack */}
             <Link
               href="/packs/create"
-              className="block rounded-[2.5rem] px-8 py-8 text-white transition-all duration-500 -mt-16 shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-50px] hover:z-50 relative group border-2 border-dashed border-white/30 hover:border-white/60"
+              className="block rounded-[2.5rem] px-8 py-6 text-white transition-all duration-500 mt-4 shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-10px] hover:z-50 relative group border-2 border-dashed border-white/30 hover:border-white/60"
               style={{
                 backgroundColor: '#1F313B',
                 zIndex: 18
@@ -163,9 +163,9 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
   return (
     <Link
       href={`/room/create?pack=${pack.id}`}
-      className={`block rounded-[2.5rem] px-8 py-12 text-white transition-all duration-500 ${
-        isFirst ? '' : '-mt-20'
-      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-60px] hover:z-50 relative group overflow-hidden`}
+      className={`block rounded-[2.5rem] px-8 py-10 text-white transition-all duration-500 ${
+        isFirst ? '' : '-mt-6'
+      } shadow-[0_25px_60px_rgba(0,0,0,0.5)] active:scale-[0.98] hover:translate-y-[-20px] hover:z-50 relative group overflow-hidden`}
       style={{
         backgroundColor: color,
         zIndex: 10 + index
@@ -173,12 +173,14 @@ function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; c
     >
       <div className="relative z-10">
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50 font-black">{subtitle}</p>
-            <h3 className="text-4xl font-black leading-none italic uppercase tracking-tight">{name}</h3>
+          <div className="space-y-1">
+            <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/50 font-black">{subtitle}</p>
+            <h3 className="text-3xl font-black leading-none italic uppercase tracking-tight">{name}</h3>
           </div>
-          <span className="text-7xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
+          <span className="text-6xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{pack.emoji}</span>
         </div>
+        
+        <p className="mt-6 text-sm text-white/70 font-medium leading-snug pr-8">{description}</p>
       </div>
       
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
