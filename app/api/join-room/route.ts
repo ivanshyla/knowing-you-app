@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       sessionId: session.id,
       participantId: participant.participantId,
-      role
+      role,
+      sessionStatus: session.status
     })
     if (shouldSetCookie) {
       response.cookies.set(USER_COOKIE, userId, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 })

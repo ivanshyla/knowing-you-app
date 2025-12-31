@@ -122,6 +122,12 @@ export default function RoomPage() {
       }
       setMyRole(data.role)
       setSessionId(data.sessionId)
+      
+      // If game already started, go directly to questions
+      if (data.sessionStatus === 'live') {
+        router.push(`/room/${code}/questions`)
+        return
+      }
       setViewState('lobby')
       await loadState()
     } catch (error) {
