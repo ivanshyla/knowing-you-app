@@ -296,7 +296,7 @@ export default function QuestionsPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="text-4xl drop-shadow-lg shrink-0">{me?.emoji || '👤'}</span>
-                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">Насколько это <span className="text-white">про тебя</span>?</p>
+                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">How much is this <span className="text-white">about you</span>?</p>
               </div>
               <RatingScale value={mySelfRating} disabled={submitting} onChange={(value) => submitRating(myRole!, value)} color="#BE4039" />
             </div>
@@ -304,7 +304,7 @@ export default function QuestionsPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="text-4xl drop-shadow-lg shrink-0">{partner?.emoji || '❔'}</span>
-                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">Насколько это <span className="text-white font-black italic">{partner?.name || 'неё'}</span>?</p>
+                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">How much is this <span className="text-white font-black italic">{partner?.name || 'them'}</span>?</p>
               </div>
               <RatingScale
                 value={myPartnerRating}
@@ -316,7 +316,7 @@ export default function QuestionsPage() {
           </div>
         </div>
 
-        <p className="text-center text-[0.6rem] font-bold text-white/20 uppercase tracking-[0.4em] italic">1 — СОВСЕМ НЕТ · 10 — ЭТО НА 100% ТАК</p>
+        <p className="text-center text-[0.6rem] font-bold text-white/20 uppercase tracking-[0.4em] italic">1 — NOT AT ALL · 10 — 100% TRUE</p>
       </div>
     </div>
   )
