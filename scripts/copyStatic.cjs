@@ -22,9 +22,11 @@ const staticSource = path.join(projectRoot, '.next', 'static')
 const staticTarget = path.join(standaloneDir, '.next', 'static')
 const publicSource = path.join(projectRoot, 'public')
 const publicTarget = path.join(standaloneDir, 'public')
+const messagesSource = path.join(projectRoot, 'messages')
+const messagesTarget = path.join(standaloneDir, 'messages')
 
 copyDir(staticSource, staticTarget)
 copyDir(publicSource, publicTarget)
+copyDir(messagesSource, messagesTarget)
 
 console.log('Standalone assets copied.')
-
