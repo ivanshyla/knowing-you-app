@@ -1,38 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { apiFetch } from '@/lib/apiClient'
 import html2canvas from 'html2canvas'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 import { buildQuestionResults, computeMatchPercentage } from '@/lib/results'
 
-
-// Share helper
-async function shareImage(cardRef: React.RefObject<HTMLDivElement | null>, filename: string, setSaving: (v: boolean) => void) {
-  if (!cardRef.current) return
-  setSaving(true)
-  try {
-    const canvas = await html2canvas(cardRef.current, { backgroundColor: '#0a0a0a', scale: 2 })
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve))
-    if (!blob) { setSaving(false); return }
-    const file = new File([blob], filename, { type: 'image/png' })
-    if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Knowing You, Knowing Me', text: 'My result 🪞' })
-    } else {
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.download = filename
-      link.href = url
-      link.click()
-      URL.revokeObjectURL(url)
-    }
-  } catch (e) { console.error('Share failed:', e) }
-  setSaving(false)
-}
-
 export default function ResultsPage() {
+  const t = useTranslations()
   const params = useParams()
   const router = useRouter()
   const code = params.code as string
@@ -43,6 +21,7 @@ export default function ResultsPage() {
   const [ratings, setRatings] = useState<RatingRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -74,20 +53,41 @@ export default function ResultsPage() {
   const matchPercentage = useMemo(() => computeMatchPercentage(questionResults), [questionResults])
 
   // Insights
-  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 2), [questionResults])
-  const biggestGaps = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 2), [questionResults])
+  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3), [questionResults])
+  const biggestGaps = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 3), [questionResults])
 
-  const totalSlides = questionResults.length + 3 // questions + insights + final
+  const totalSlides = questionResults.length + 2 // questions + insights + final
   const isInsightsSlide = currentIndex === questionResults.length
   const isFinalSlide = currentIndex === questionResults.length + 1
-  const isAllResultsSlide = currentIndex === questionResults.length + 2
+
+  // Swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX)
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return
+    const diff = touchStart - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentIndex < totalSlides - 1) setCurrentIndex(i => i + 1)
+      if (diff < 0 && currentIndex > 0) setCurrentIndex(i => i - 1)
+    }
+    setTouchStart(null)
+  }
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' && currentIndex < totalSlides - 1) setCurrentIndex(i => i + 1)
+      if (e.key === 'ArrowLeft' && currentIndex > 0) setCurrentIndex(i => i - 1)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [currentIndex, totalSlides])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-white/40 animate-pulse text-center">
-          <div className="text-5xl mb-4">📊</div>
-          <p className="text-sm uppercase tracking-widest">Loading...</p>
+          <div className="text-6xl mb-4 animate-bounce">🔮</div>
+          <p className="text-sm uppercase tracking-widest">{t('results.loading')}</p>
         </div>
       </div>
     )
@@ -98,8 +98,8 @@ export default function ResultsPage() {
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white text-center p-8">
         <div>
           <div className="text-6xl mb-4">🙈</div>
-          <p className="text-white/60 mb-4">Participants not found</p>
-          <Link href="/" className="text-[#e94560] underline">Home</Link>
+          <p className="text-white/60 mb-4">{t('results.error')}</p>
+          <Link href="/" className="text-[#e94560] underline">{t('common.back')}</Link>
         </div>
       </div>
     )
@@ -108,30 +108,53 @@ export default function ResultsPage() {
   const currentResult = questionResults[currentIndex]
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
-        <div 
-          className="h-full bg-gradient-to-r from-[#e94560] to-[#4ecdc4] transition-all duration-300"
-          style={{ width: `${((currentIndex + 1) / totalSlides) * 100}%` }}
-        />
+    <div 
+      className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e94560]/10 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#4ecdc4]/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      {/* Slide counter */}
-      <div className="fixed top-4 right-4 text-xs text-white/30 font-mono z-50">
-        {currentIndex + 1} / {totalSlides}
+      {/* Progress dots */}
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 flex gap-2 z-50">
+        {Array.from({ length: totalSlides }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentIndex(i)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              i === currentIndex 
+                ? 'bg-white w-6' 
+                : i < currentIndex 
+                  ? 'bg-white/60' 
+                  : 'bg-white/20'
+            }`}
+          />
+        ))}
       </div>
 
-      <div className="min-h-screen flex flex-col">
+      {/* Home button */}
+      <Link 
+        href="/"
+        className="fixed top-6 left-6 text-white/40 hover:text-white transition-colors z-50 text-sm"
+      >
+        ← {t('common.back')}
+      </Link>
+
+      <div className="min-h-screen flex flex-col relative z-10">
         {/* Current slide content */}
-        <div className="flex-1 flex items-center justify-center p-6">
-          {currentResult && !isInsightsSlide && !isFinalSlide && !isAllResultsSlide && (
+        <div className="flex-1 flex items-center justify-center p-6 pt-16">
+          {currentResult && !isInsightsSlide && !isFinalSlide && (
             <QuestionSlide
               result={currentResult}
               participantA={participantA}
               participantB={participantB}
               questionNumber={currentIndex + 1}
               totalQuestions={questionResults.length}
+              t={t}
             />
           )}
 
@@ -141,6 +164,7 @@ export default function ResultsPage() {
               biggestGaps={biggestGaps}
               participantA={participantA}
               participantB={participantB}
+              t={t}
             />
           )}
 
@@ -150,56 +174,140 @@ export default function ResultsPage() {
               participantA={participantA}
               participantB={participantB}
               questionResults={questionResults}
-            />
-          )}
-
-          {isAllResultsSlide && (
-            <AllResultsSlide
-              questionResults={questionResults}
-              participantA={participantA}
-              participantB={participantB}
-              matchPercentage={matchPercentage}
+              t={t}
             />
           )}
         </div>
 
-        {/* Navigation */}
-        <div className="p-6 flex justify-center gap-4">
-          {currentIndex > 0 && (
-            <button
-              onClick={() => setCurrentIndex(i => i - 1)}
-              className="px-8 py-4 rounded-full bg-white/10 text-white font-bold uppercase tracking-widest text-sm hover:bg-white/20 transition-all"
-            >
-              ← Back
-            </button>
-          )}
-          {currentIndex < totalSlides - 1 ? (
-            <button
-              onClick={() => setCurrentIndex(i => i + 1)}
-              className="px-8 py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest text-sm hover:scale-105 transition-all"
-            >
-              Дальше →
-            </button>
-          ) : (
-            <Link
-              href="/"
-              className="px-8 py-4 rounded-full bg-gradient-to-r from-[#e94560] to-[#4ecdc4] text-white font-bold uppercase tracking-widest text-sm hover:scale-105 transition-all"
-            >
-              🔄 Играть ещё
-            </Link>
-          )}
+        {/* Navigation hint */}
+        <div className="p-6 text-center text-white/30 text-xs">
+          <span className="hidden md:inline">← → {t('results.useArrows') || 'Use arrows'}</span>
+          <span className="md:hidden">👆 {t('results.swipe') || 'Swipe'}</span>
         </div>
       </div>
     </div>
   )
 }
 
-// Question slide with ratings comparison
-function QuestionSlide({ result, participantA, participantB, questionNumber, totalQuestions }: any) {
+// Get interpretation based on gap
+function getInterpretation(gap: number, t: any): { emoji: string; text: string; color: string } {
+  if (gap <= 1) return { emoji: '💚', text: t('results.perfectMatch') || 'Perfect match!', color: '#4ade80' }
+  if (gap <= 2) return { emoji: '💛', text: t('results.closeViews') || 'Close views', color: '#facc15' }
+  if (gap <= 3) return { emoji: '🧡', text: t('results.someDifference') || 'Some difference', color: '#fb923c' }
+  return { emoji: '❤️‍🔥', text: t('results.differentViews') || 'Different views!', color: '#f87171' }
+}
+
+// Animated number component
+function AnimatedNumber({ value, delay = 0 }: { value: number; delay?: number }) {
+  const [displayed, setDisplayed] = useState(0)
+  
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      let start = 0
+      const duration = 600
+      const startTime = Date.now()
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setDisplayed(Math.round(eased * value))
+        if (progress < 1) requestAnimationFrame(animate)
+      }
+      animate()
+    }, delay)
+    return () => clearTimeout(timeout)
+  }, [value, delay])
+  
+  return <span>{displayed}</span>
+}
+
+// Mirror comparison component
+function MirrorComparison({ 
+  person, 
+  selfRating, 
+  partnerRating, 
+  partnerName,
+  color,
+  t 
+}: { 
+  person: ParticipantRecord
+  selfRating: number
+  partnerRating: number
+  partnerName: string
+  color: string
+  t: any
+}) {
+  const gap = Math.abs(selfRating - partnerRating)
+  const interpretation = getInterpretation(gap, t)
+  
+  return (
+    <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 space-y-4">
+      {/* Person header */}
+      <div className="flex items-center gap-3">
+        <span className="text-4xl">{person.emoji}</span>
+        <div>
+          <div className="font-black text-lg">{person.name}</div>
+          <div className="text-xs text-white/40 uppercase tracking-wider">{t('results.howSeen') || 'How they are seen'}</div>
+        </div>
+      </div>
+
+      {/* Visual comparison */}
+      <div className="space-y-3">
+        {/* Self view */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-white/60">
+            <span>🪞 {t('results.iThink') || 'I think'}...</span>
+            <span className="font-mono font-bold text-white"><AnimatedNumber value={selfRating} /></span>
+          </div>
+          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{ 
+                width: `${selfRating * 10}%`,
+                background: color
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Partner view */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-white/60">
+            <span>👁️ {partnerName} {t('results.thinks') || 'thinks'}...</span>
+            <span className="font-mono font-bold text-white"><AnimatedNumber value={partnerRating} delay={200} /></span>
+          </div>
+          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{ 
+                width: `${partnerRating * 10}%`,
+                background: `${color}99`
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Gap indicator */}
+      <div 
+        className="flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold"
+        style={{ backgroundColor: `${interpretation.color}20`, color: interpretation.color }}
+      >
+        <span className="text-lg">{interpretation.emoji}</span>
+        <span>{interpretation.text}</span>
+        {gap > 0 && <span className="opacity-60">({gap} {t('results.points') || 'pts'})</span>}
+      </div>
+    </div>
+  )
+}
+
+// Question slide with mirror comparison
+function QuestionSlide({ result, participantA, participantB, questionNumber, totalQuestions, t }: any) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
+  const handleShare = async () => {
     if (!cardRef.current) return
     setSaving(true)
     try {
@@ -221,56 +329,46 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
   }
 
   const { AtoA, AtoB, BtoA, BtoB } = result.ratings
+  const avgGapA = Math.abs(AtoA - BtoA)
+  const avgGapB = Math.abs(BtoB - AtoB)
+  const totalGap = (avgGapA + avgGapB) / 2
 
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="w-full max-w-lg space-y-4 animate-fadeIn">
+      {/* Question header */}
+      <div className="text-center space-y-2">
+        <div className="text-7xl drop-shadow-2xl animate-bounce-slow">{result.question.icon}</div>
+        <h2 className="text-3xl font-black italic uppercase tracking-tight leading-tight">
+          {result.question.text}
+        </h2>
+        <p className="text-xs text-white/30 uppercase tracking-widest">
+          {questionNumber} / {totalQuestions}
+        </p>
+      </div>
+
       {/* Shareable card */}
-      <div ref={cardRef} className="bg-[#0a0a0a] p-8 rounded-3xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{result.question.icon}</div>
-          <h2 className="text-2xl font-black italic uppercase">{result.question.text}</h2>
-          <p className="text-xs text-white/30 mt-2 uppercase tracking-widest">Question {questionNumber} of {totalQuestions}</p>
-        </div>
+      <div ref={cardRef} className="bg-[#0a0a0a] p-4 rounded-3xl space-y-4">
+        {/* Mirror comparisons */}
+        <MirrorComparison
+          person={participantA}
+          selfRating={AtoA}
+          partnerRating={BtoA}
+          partnerName={participantB.name}
+          color="#e94560"
+          t={t}
+        />
+        
+        <MirrorComparison
+          person={participantB}
+          selfRating={BtoB}
+          partnerRating={AtoB}
+          partnerName={participantA.name}
+          color="#4ecdc4"
+          t={t}
+        />
 
-        {/* Ratings visualization */}
-        <div className="space-y-6">
-          {/* A's perspective */}
-          <div className="bg-white/5 rounded-2xl p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">{participantA.emoji}</span>
-              <span className="font-bold">{participantA.name}</span>
-            </div>
-            <div className="space-y-2">
-              <RatingBar label="о себе" value={AtoA} color="#e94560" />
-              <RatingBar label={`о ${participantB.name}`} value={AtoB} color="#e94560" opacity={0.5} />
-            </div>
-          </div>
-
-          {/* B's perspective */}
-          <div className="bg-white/5 rounded-2xl p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">{participantB.emoji}</span>
-              <span className="font-bold">{participantB.name}</span>
-            </div>
-            <div className="space-y-2">
-              <RatingBar label="о себе" value={BtoB} color="#4ecdc4" />
-              <RatingBar label={`о ${participantA.name}`} value={BtoA} color="#4ecdc4" opacity={0.5} />
-            </div>
-          </div>
-
-          {/* Gap indicator */}
-          {result.avgGap >= 2 && (
-            <div className="text-center py-2">
-              <span className="text-xs uppercase tracking-widest text-[#e94560]">
-                ⚡ Разрыв восприятия: {result.avgGap.toFixed(1)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Logo */}
-        <div className="text-center mt-6 text-[0.5rem] uppercase tracking-widest text-white/20">
+        {/* Watermark */}
+        <div className="text-center text-[0.5rem] uppercase tracking-widest text-white/20 pt-2">
           knowing-you.app
         </div>
       </div>
@@ -279,131 +377,91 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
       <button
         onClick={handleShare}
         disabled={saving}
-        className="w-full py-3 rounded-full bg-white/10 text-white/60 text-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50"
+        className="w-full py-3 rounded-2xl bg-white/10 text-white/60 text-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {saving ? '...' : '📤 Share'}
+        {saving ? '...' : <>📤 {t('common.share')}</>}
       </button>
     </div>
   )
 }
 
-function RatingBar({ label, value, color, opacity = 1 }: { label: string; value: number; color: string; opacity?: number }) {
+// Insights slide
+function InsightsSlide({ topMatches, biggestGaps, participantA, participantB, t }: any) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-white/50 w-24">{label}</span>
-      <div className="flex-1 h-6 bg-white/10 rounded-full overflow-hidden">
-        <div 
-          className="h-full rounded-full transition-all duration-500"
-          style={{ 
-            width: `${value * 10}%`, 
-            backgroundColor: color,
-            opacity 
-          }}
-        />
+    <div className="w-full max-w-lg space-y-8 animate-fadeIn">
+      <div className="text-center">
+        <div className="text-6xl mb-4">🔍</div>
+        <h2 className="text-3xl font-black italic uppercase">{t('results.insights')}</h2>
       </div>
-      <span className="text-lg font-black w-8 text-right">{value}</span>
-    </div>
-  )
-}
 
-function InsightsSlide({ topMatches, biggestGaps, participantA, participantB }: any) {
-  return (
-    <div className="w-full max-w-md space-y-8 text-center">
-      <h2 className="text-3xl font-black italic uppercase">🔍 Insights</h2>
-      
-      <div className="space-y-4">
-        <div className="bg-[#4ecdc4]/10 border border-[#4ecdc4]/30 rounded-2xl p-6">
-          <h3 className="text-sm uppercase tracking-widest text-[#4ecdc4] mb-4">✨ Where you matched</h3>
-          {topMatches.map((m: any) => (
-            <div key={m.question.questionId} className="flex items-center gap-3 py-2">
-              <span className="text-3xl">{m.question.icon}</span>
-              <span className="font-bold">{m.question.text}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-[#e94560]/10 border border-[#e94560]/30 rounded-2xl p-6">
-          <h3 className="text-sm uppercase tracking-widest text-[#e94560] mb-4">⚡ Where you differed</h3>
-          {biggestGaps.map((m: any) => (
-            <div key={m.question.questionId} className="flex items-center gap-3 py-2">
-              <span className="text-3xl">{m.question.icon}</span>
-              <span className="font-bold">{m.question.text}</span>
+      {/* Perfect matches */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-[#4ade80] flex items-center gap-2">
+          💚 {t('results.whereMatched')}
+        </h3>
+        <div className="space-y-2">
+          {topMatches.map((r: any, i: number) => (
+            <div 
+              key={r.question.questionId}
+              className="bg-[#4ade80]/10 border border-[#4ade80]/20 rounded-2xl p-4 flex items-center gap-3 animate-slideIn"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <span className="text-2xl">{r.question.icon}</span>
+              <span className="font-bold flex-1">{r.question.text}</span>
+              <span className="text-[#4ade80] text-sm font-mono">±{r.avgGap.toFixed(1)}</span>
             </div>
           ))}
         </div>
       </div>
-    </div>
-  )
-}
 
-function FinalSlide({ matchPercentage, participantA, participantB, questionResults }: any) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const [saving, setSaving] = useState(false)
-
-  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
-    if (!cardRef.current) return
-    setSaving(true)
-    try {
-      const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 })
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.download = 'kykm-result.png'
-          link.href = url
-          link.click()
-          URL.revokeObjectURL(url)
-        }
-        setSaving(false)
-      })
-    } catch (e) {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div className="w-full max-w-md space-y-6">
-      <div ref={cardRef} className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-10 rounded-3xl text-center">
-        <p className="text-xs uppercase tracking-widest text-white/40 mb-6">Perception Mirror</p>
-        
-        <div className="flex justify-center items-center gap-6 mb-6">
-          <div>
-            <div className="text-5xl">{participantA.emoji}</div>
-            <div className="text-sm font-bold mt-2">{participantA.name}</div>
-          </div>
-          <div className="text-2xl text-white/20">💕</div>
-          <div>
-            <div className="text-5xl">{participantB.emoji}</div>
-            <div className="text-sm font-bold mt-2">{participantB.name}</div>
-          </div>
-        </div>
-
-        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
-          {matchPercentage}%
-        </div>
-        <p className="text-xs uppercase tracking-widest text-white/40 mt-2">Match</p>
-
-        <div className="text-[0.5rem] uppercase tracking-widest text-white/20 mt-8">
-          knowing-you.app
+      {/* Biggest gaps */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-[#f87171] flex items-center gap-2">
+          ❤️‍🔥 {t('results.whereDiffered')}
+        </h3>
+        <div className="space-y-2">
+          {biggestGaps.map((r: any, i: number) => (
+            <div 
+              key={r.question.questionId}
+              className="bg-[#f87171]/10 border border-[#f87171]/20 rounded-2xl p-4 flex items-center gap-3 animate-slideIn"
+              style={{ animationDelay: `${(i + topMatches.length) * 100}ms` }}
+            >
+              <span className="text-2xl">{r.question.icon}</span>
+              <span className="font-bold flex-1">{r.question.text}</span>
+              <span className="text-[#f87171] text-sm font-mono">±{r.avgGap.toFixed(1)}</span>
+            </div>
+          ))}
         </div>
       </div>
-
-      <button
-        onClick={handleShare}
-        disabled={saving}
-        className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
-      >
-        {saving ? '...' : '📤 Share'}
-      </button>
     </div>
   )
 }
 
-function AllResultsSlide({ questionResults, participantA, participantB, matchPercentage }: any) {
+// Final slide with confetti and share buttons
+function FinalSlide({ matchPercentage, participantA, participantB, questionResults, t }: any) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
+  const [confetti, setConfetti] = useState<any[]>([])
+  const [showNumber, setShowNumber] = useState(false)
 
-  const handleShare = () => shareImage(cardRef, `kykm.png`, setSaving); const _unused = async () => {
+  useEffect(() => {
+    // Delay showing number for dramatic effect
+    const timeout = setTimeout(() => setShowNumber(true), 500)
+    
+    // Create confetti
+    const newConfetti = Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 2}s`,
+      duration: `${2 + Math.random() * 2}s`,
+      color: ['#e94560', '#4ecdc4', '#facc15', '#a855f7', '#22d3ee'][Math.floor(Math.random() * 5)]
+    }))
+    setConfetti(newConfetti)
+    
+    return () => clearTimeout(timeout)
+  }, [])
+
+  const handleShare = async () => {
     if (!cardRef.current) return
     setSaving(true)
     try {
@@ -412,7 +470,7 @@ function AllResultsSlide({ questionResults, participantA, participantB, matchPer
         if (blob) {
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
-          link.download = 'kykm-all-results.png'
+          link.download = `kykm-result.png`
           link.href = url
           link.click()
           URL.revokeObjectURL(url)
@@ -424,52 +482,109 @@ function AllResultsSlide({ questionResults, participantA, participantB, matchPer
     }
   }
 
+  const shareToSocial = (platform: string) => {
+    const text = `${participantA.name} & ${participantB.name}: ${matchPercentage}% match! 🪞 knowing-you.app`
+    const url = 'https://knowing-you.app'
+    
+    const urls: Record<string, string> = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(text)}&u=${encodeURIComponent(url)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
+    }
+    
+    if (urls[platform]) window.open(urls[platform], '_blank')
+    else handleShare() // Instagram/Bluesky = download image
+  }
+
+  const biggestGap = useMemo(() => 
+    [...questionResults].sort((a: any, b: any) => b.avgGap - a.avgGap)[0], 
+    [questionResults]
+  )
+
   return (
-    <div className="w-full max-w-lg space-y-6">
-      <div ref={cardRef} className="bg-[#0a0a0a] p-6 rounded-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{participantA.emoji}</span>
-            <span className="text-sm font-bold">{participantA.name}</span>
-          </div>
-          <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
-            {matchPercentage}%
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold">{participantB.name}</span>
-            <span className="text-2xl">{participantB.emoji}</span>
-          </div>
-        </div>
+    <div className="w-full max-w-lg space-y-6 animate-fadeIn relative">
+      {/* Confetti */}
+      {confetti.map((c) => (
+        <div
+          key={c.id}
+          className="fixed w-3 h-3 rounded-full animate-confetti pointer-events-none"
+          style={{ 
+            left: c.left, 
+            top: '-20px',
+            backgroundColor: c.color,
+            animationDelay: c.delay,
+            animationDuration: c.duration
+          }}
+        />
+      ))}
 
-        {/* All questions */}
-        <div className="space-y-3">
-          {questionResults.map((r: any) => (
-            <div key={r.question.questionId} className="flex items-center gap-2 text-sm">
-              <span className="text-lg">{r.question.icon}</span>
-              <span className="flex-1 text-white/70 truncate">{r.question.text}</span>
-              <div className="flex items-center gap-1">
-                <span className="text-[#e94560] font-bold">{r.ratings.AtoA}</span>
-                <span className="text-white/20">/</span>
-                <span className="text-[#4ecdc4] font-bold">{r.ratings.BtoB}</span>
-              </div>
-              {r.avgGap >= 2 && <span className="text-[#e94560] text-xs">⚡</span>}
+      {/* Result card */}
+      <div ref={cardRef} className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-8 rounded-3xl text-center relative overflow-hidden">
+        {/* Glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#e94560]/20 to-[#4ecdc4]/20 animate-pulse" />
+        
+        <div className="relative z-10">
+          <p className="text-xs uppercase tracking-widest text-white/40 mb-6">{t('results.perceptionMirror')}</p>
+          
+          {/* Participants */}
+          <div className="flex justify-center items-center gap-4 mb-8">
+            <div className="text-center">
+              <div className="text-5xl mb-2">{participantA.emoji}</div>
+              <div className="text-sm font-bold">{participantA.name}</div>
             </div>
-          ))}
-        </div>
+            <div className="text-3xl animate-pulse">💕</div>
+            <div className="text-center">
+              <div className="text-5xl mb-2">{participantB.emoji}</div>
+              <div className="text-sm font-bold">{participantB.name}</div>
+            </div>
+          </div>
 
-        <div className="text-center mt-6 text-[0.5rem] uppercase tracking-widest text-white/20">
-          knowing-you.app
+          {/* Big percentage */}
+          <div className={`transition-all duration-1000 ${showNumber ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
+            <div className="text-8xl font-black bg-gradient-to-r from-[#e94560] to-[#4ecdc4] bg-clip-text text-transparent">
+              {showNumber && <AnimatedNumber value={matchPercentage} />}%
+            </div>
+            <p className="text-sm uppercase tracking-widest text-white/60 mt-2">{t('results.match')}</p>
+          </div>
+
+          {/* Biggest gap insight */}
+          {biggestGap && biggestGap.avgGap >= 2 && (
+            <div className="mt-6 p-4 bg-white/5 rounded-2xl">
+              <p className="text-xs uppercase tracking-widest text-yellow-400 mb-2">🔥 {t('results.biggestGap')}</p>
+              <p className="font-bold">{biggestGap.question.icon} {biggestGap.question.text}</p>
+            </div>
+          )}
+
+          {/* Watermark */}
+          <div className="text-[0.5rem] uppercase tracking-widest text-white/20 mt-6">
+            knowing-you.app
+          </div>
         </div>
       </div>
 
-      <button
-        onClick={handleShare}
-        disabled={saving}
-        className="w-full py-4 rounded-full bg-white text-black font-bold uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50"
+      {/* Share buttons */}
+      <div className="grid grid-cols-4 gap-2">
+        <button onClick={() => shareToSocial('twitter')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
+          𝕏
+        </button>
+        <button onClick={() => shareToSocial('facebook')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
+          📘
+        </button>
+        <button onClick={() => shareToSocial('telegram')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
+          💬
+        </button>
+        <button onClick={handleShare} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
+          📥
+        </button>
+      </div>
+
+      {/* Play again */}
+      <Link
+        href="/"
+        className="block w-full py-4 rounded-2xl bg-gradient-to-r from-[#e94560] to-[#4ecdc4] text-white font-bold uppercase tracking-widest text-center hover:scale-105 transition-all"
       >
-        {saving ? '...' : '📤 Share'}
-      </button>
+        🔄 {t('common.play')}
+      </Link>
     </div>
   )
 }
