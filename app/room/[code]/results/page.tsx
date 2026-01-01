@@ -309,11 +309,11 @@ function RatingBar({ label, value, color, opacity = 1 }: { label: string; value:
 function InsightsSlide({ topMatches, biggestGaps, participantA, participantB }: any) {
   return (
     <div className="w-full max-w-md space-y-8 text-center">
-      <h2 className="text-3xl font-black italic uppercase">🔍 Инсайты</h2>
+      <h2 className="text-3xl font-black italic uppercase">🔍 Insights</h2>
       
       <div className="space-y-4">
         <div className="bg-[#4ecdc4]/10 border border-[#4ecdc4]/30 rounded-2xl p-6">
-          <h3 className="text-sm uppercase tracking-widest text-[#4ecdc4] mb-4">✨ Где совпали</h3>
+          <h3 className="text-sm uppercase tracking-widest text-[#4ecdc4] mb-4">✨ Where you matched</h3>
           {topMatches.map((m: any) => (
             <div key={m.question.questionId} className="flex items-center gap-3 py-2">
               <span className="text-3xl">{m.question.icon}</span>
@@ -323,7 +323,7 @@ function InsightsSlide({ topMatches, biggestGaps, participantA, participantB }: 
         </div>
 
         <div className="bg-[#e94560]/10 border border-[#e94560]/30 rounded-2xl p-6">
-          <h3 className="text-sm uppercase tracking-widest text-[#e94560] mb-4">⚡ Где разошлись</h3>
+          <h3 className="text-sm uppercase tracking-widest text-[#e94560] mb-4">⚡ Where you differed</h3>
           {biggestGaps.map((m: any) => (
             <div key={m.question.questionId} className="flex items-center gap-3 py-2">
               <span className="text-3xl">{m.question.icon}</span>
