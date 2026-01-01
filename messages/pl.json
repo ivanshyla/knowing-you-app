@@ -66,6 +66,11 @@
       "name": "Rodzice",
       "subtitle": "Rodzina",
       "description": "Zagraj z mama lub tata"
+    },
+    "parents": {
+      "name": "Rodzice",
+      "subtitle": "Rodzina",
+      "description": "Zagraj z mama lub tata"
     }
   },
   "questions": {

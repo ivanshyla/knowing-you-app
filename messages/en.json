@@ -66,6 +66,11 @@
       "name": "Parents",
       "subtitle": "Family",
       "description": "Play with mom or dad"
+    },
+    "parents": {
+      "name": "Parents",
+      "subtitle": "Family",
+      "description": "Play with mom or dad"
     }
   },
   "questions": {

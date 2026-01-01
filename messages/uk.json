@@ -66,6 +66,11 @@
       "name": "Батьки",
       "subtitle": "Сім'я",
       "description": "Пограйте з мамою чи татом"
+    },
+    "parents": {
+      "name": "Батьки",
+      "subtitle": "Сім'я",
+      "description": "Пограйте з мамою чи татом"
     }
   },
   "questions": {

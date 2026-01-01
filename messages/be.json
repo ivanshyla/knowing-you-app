@@ -66,6 +66,11 @@
       "name": "Бацькі",
       "subtitle": "Сям'я",
       "description": "Пагуляйце з мамай ці татам"
+    },
+    "parents": {
+      "name": "Бацькі",
+      "subtitle": "Сям'я",
+      "description": "Пагуляйце з мамай ці татам"
     }
   },
   "questions": {
