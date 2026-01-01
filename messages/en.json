@@ -2,7 +2,7 @@
   "common": {
     "play": "Play",
     "continue": "Continue Game",
-    "back": "Back to Home",
+    "back": "Back",
     "copy": "Copy",
     "copied": "Copied!",
     "share": "Share",
@@ -30,92 +30,200 @@
     "romantic": {
       "name": "Romance",
       "subtitle": "For couples",
-      "description": "Discover how you see each other in your relationship"
+      "description": "Discover how you see each other in love"
     },
     "everyday": {
       "name": "Everyday",
       "subtitle": "Daily life",
-      "description": "How do you handle everyday situations together?"
+      "description": "How do you handle everyday situations?"
     },
     "intimacy": {
       "name": "Passion",
       "subtitle": "Intimacy",
-      "description": "Explore the deep connection between you"
+      "description": "Explore your deep connection"
     },
     "character": {
       "name": "Character",
       "subtitle": "Personality",
-      "description": "How do you really see each other's character?"
+      "description": "Who you really are inside"
     },
     "friends": {
       "name": "Friends",
       "subtitle": "Friendship",
-      "description": "How do your friends really see you?"
+      "description": "How well do you know each other?"
     },
     "office": {
       "name": "Office",
       "subtitle": "Work",
-      "description": "How does your team perceive you at work?"
+      "description": "How does your team see you?"
     },
     "sport": {
       "name": "Sport",
       "subtitle": "Active life",
-      "description": "Your athletic side — how does your partner see it?"
+      "description": "Rate athletic abilities"
     },
     "club": {
       "name": "Parents",
       "subtitle": "Family",
-      "description": "Play with mom or dad — discover how they see you"
+      "description": "Play with mom or dad"
+    }
+  },
+  "questions": {
+    "romantic": {
+      "q1": "Romantic",
+      "q2": "Passionate",
+      "q3": "Attentive",
+      "q4": "Tender",
+      "q5": "Trustworthy",
+      "q6": "Jealous",
+      "q7": "Spontaneous",
+      "q8": "Emotional"
+    },
+    "everyday": {
+      "q1": "Tidy",
+      "q2": "Cooking skills",
+      "q3": "Punctual",
+      "q4": "Organized",
+      "q5": "Lazy",
+      "q6": "Thrifty",
+      "q7": "Generous",
+      "q8": "Stubborn"
+    },
+    "intimacy": {
+      "q1": "Initiative",
+      "q2": "Fantasy",
+      "q3": "Sensual",
+      "q4": "Experimental",
+      "q5": "Tempo",
+      "q6": "Communication",
+      "q7": "Confident",
+      "q8": "Aftercare"
+    },
+    "character": {
+      "q1": "Sense of humor",
+      "q2": "Confident",
+      "q3": "Kind",
+      "q4": "Honest",
+      "q5": "Ambitious",
+      "q6": "Social",
+      "q7": "Patient",
+      "q8": "Creative"
+    },
+    "friends": {
+      "q1": "Reliable",
+      "q2": "Fun",
+      "q3": "Supportive",
+      "q4": "Open",
+      "q5": "Active",
+      "q6": "Caring",
+      "q7": "Adventurous",
+      "q8": "Wise"
+    },
+    "office": {
+      "q1": "Meets deadlines",
+      "q2": "Team player",
+      "q3": "Proactive",
+      "q4": "Transparent",
+      "q5": "Responsible",
+      "q6": "Stress-resistant",
+      "q7": "Creative",
+      "q8": "Mentoring"
+    },
+    "sport": {
+      "q1": "Speed",
+      "q2": "Strength",
+      "q3": "Endurance",
+      "q4": "Technique",
+      "q5": "Team spirit",
+      "q6": "Leadership",
+      "q7": "Motivation",
+      "q8": "Competitive"
+    },
+    "parents": {
+      "q1": "Caring",
+      "q2": "Independent",
+      "q3": "Grateful",
+      "q4": "Honest",
+      "q5": "Ambitious",
+      "q6": "Patient",
+      "q7": "Funny",
+      "q8": "Responsible"
     }
   },
   "create": {
     "title": "Create Room",
     "yourName": "Your name",
-    "namePlaceholder": "Your name",
-    "startGame": "Create Room & Start",
-    "questions": "Questions in this pack:"
+    "yourAvatar": "Your avatar",
+    "namePlaceholder": "What should we call you?",
+    "startGame": "Create Room",
+    "questions": "Questions in this pack:",
+    "showQuestions": "Show 8 questions",
+    "hideQuestions": "Hide questions",
+    "enterName": "Please enter your name!",
+    "partnerJoins": "Partner will join by code"
   },
   "lobby": {
     "title": "Lobby",
-    "code": "Room Code",
-    "waitingPartner": "Waiting for partner...",
-    "copyInvite": "Copy Invite Link",
+    "join": "Join Game",
+    "code": "Code",
+    "waitingPartner": "Waiting for partner",
+    "canStartAlone": "You can start alone — partner joins later",
+    "copyInvite": "Copy invite link",
+    "copyLink": "Copy link:",
     "shareInvite": "Share Invite",
+    "shareText": "Join my game 👇",
     "startGame": "Start Game",
-    "startAlone": "Start Alone (partner joins later)",
-    "players": "Players"
+    "players": "Players",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "you": "You",
+    "waiting": "Waiting...",
+    "allReady": "All ready!",
+    "joinGame": "Join Game",
+    "roomNotFound": "Room not found",
+    "connectionError": "Connection error",
+    "searching": "Searching room..."
   },
   "game": {
     "question": "Question",
     "of": "of",
-    "rateYourself": "How much is this about YOU?",
-    "ratePartner": "How much is this about your PARTNER?",
+    "aboutYou": "How much is this about YOU?",
+    "aboutThem": "How much is this about",
+    "scale": "1 — NOT AT ALL · 10 — 100% TRUE",
     "next": "Next",
     "finish": "Finish",
-    "waitingPartner": "Done! Waiting for partner...",
-    "partnerStillPlaying": "Your partner is still answering questions"
+    "waitingPartner": "Done! Waiting for partner..."
   },
   "results": {
     "title": "Results",
-    "loading": "Loading results...",
+    "loading": "Loading...",
     "error": "Failed to load results",
-    "matchScore": "Match Score",
-    "allQuestions": "All Questions",
+    "match": "Match",
+    "perceptionMirror": "Perception Mirror",
     "insights": "Insights",
-    "topMatches": "Top Matches",
-    "topDifferences": "Biggest Gaps",
-    "shareCard": "Share",
-    "you": "You",
-    "them": "Them",
-    "self": "Self",
-    "fromPartner": "From partner"
+    "whereMatched": "Where you matched",
+    "whereDiffered": "Where you differed",
+    "biggestGap": "Biggest gap",
+    "points": "points difference",
+    "share": "Share your results",
+    "saveImage": "Save image",
+    "back": "Back",
+    "next": "Next",
+    "thinks": "thinks",
+    "gap": "Gap",
+    "them": "Them"
   },
   "account": {
     "title": "Account",
-    "gamesPlayed": "Games played",
-    "gamesPurchased": "Games purchased",
-    "freeGames": "Free games left",
-    "buyGames": "Buy 10 Games — $1",
-    "pro": "PRO"
+    "gamesRemaining": "Games remaining",
+    "gamesPlayed": "Played",
+    "gamesPurchased": "Purchased",
+    "buy10Games": "+10 games",
+    "topUp": "Top up balance",
+    "price": "$1",
+    "buy": "Buy",
+    "viaStripe": "Payment via Stripe",
+    "first2Free": "First 2 games free",
+    "neverExpires": "Balance never expires"
   }
 }

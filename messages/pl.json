@@ -1,121 +1,229 @@
 {
   "common": {
     "play": "Graj",
-    "continue": "Kontynuuj grę",
-    "back": "Strona główna",
+    "continue": "Kontynuuj gre",
+    "back": "Wstecz",
     "copy": "Kopiuj",
     "copied": "Skopiowano!",
-    "share": "Udostępnij",
+    "share": "Udostepnij",
     "save": "Zapisz",
-    "loading": "Ładowanie...",
-    "error": "Błąd",
+    "loading": "Ladowanie...",
+    "error": "Blad",
     "account": "Konto",
-    "createPack": "Stwórz swój pakiet",
-    "questions": "pytań"
+    "createPack": "Stworz wlasny pakiet",
+    "questions": "pytan"
   },
   "home": {
     "title": "Knowing You,",
     "subtitle": "Knowing Me",
     "tagline": "Psychologiczne lustro dla par.",
-    "noRegistration": "Bez rejestracji · Działa na telefonie",
-    "step1": "Oceń siebie i partnera w 8 kategoriach",
+    "noRegistration": "Bez rejestracji - Dziala na telefonie",
+    "step1": "Ocen siebie i partnera w 8 cechach",
     "step2": "Partner robi to samo o tobie",
-    "step3": "Porównaj \"lustra\" — gdzie się różnicie?",
-    "moodboard": "Moodboard",
-    "choosePack": "Tematy na start",
+    "step3": "Porownaj lustra - gdzie sie roznicie?",
+    "moodboard": "Tematy",
+    "choosePack": "Wybierz temat",
     "madeWith": "Zrobione z vibecode w Warszawie",
-    "footer": "KNOWING YOU, KNOWING ME © 2025"
+    "footer": "KNOWING YOU, KNOWING ME 2025"
   },
   "packs": {
     "romantic": {
-      "name": "Romantyzm",
+      "name": "Romans",
       "subtitle": "Dla par",
-      "description": "Jak się widzicie w romantycznym związku?"
+      "description": "Odkryj, jak widzicie sie nawzajem w milosci"
     },
     "everyday": {
-      "name": "Codzienność",
-      "subtitle": "Dzień po dniu",
-      "description": "Jak radzicie sobie z codziennymi obowiązkami?"
+      "name": "Codziennosc",
+      "subtitle": "Zycie codzienne",
+      "description": "Jak radzicie sobie z codziennoscia?"
     },
     "intimacy": {
-      "name": "Namiętność",
-      "subtitle": "Intymność",
-      "description": "Odkryjcie swoją fizyczną i emocjonalną więź"
+      "name": "Pasja",
+      "subtitle": "Intymnosc",
+      "description": "Zbadaj gleboka wiez miedzy wami"
     },
     "character": {
       "name": "Charakter",
-      "subtitle": "Osobowość",
-      "description": "Odkryjcie główne cechy charakteru"
+      "subtitle": "Osobowosc",
+      "description": "Kim naprawde jestes w srodku"
     },
     "friends": {
       "name": "Przyjaciele",
-      "subtitle": "Przyjaźń",
-      "description": "Jak naprawdę widzą cię przyjaciele?"
+      "subtitle": "Przyjazn",
+      "description": "Jak dobrze sie znacie?"
     },
     "office": {
       "name": "Biuro",
       "subtitle": "Praca",
-      "description": "Jak postrzega cię zespół w pracy?"
+      "description": "Jak widzi cie zespol?"
     },
     "sport": {
       "name": "Sport",
-      "subtitle": "Aktywność",
-      "description": "Twoje nawyki sportowe i podejście do fitnessu"
+      "subtitle": "Aktywnosc",
+      "description": "Ocen zdolnosci sportowe"
     },
     "club": {
       "name": "Rodzice",
       "subtitle": "Rodzina",
-      "description": "Zagraj z mamą lub tatą — dowiedz się jak cię widzą"
+      "description": "Zagraj z mama lub tata"
+    }
+  },
+  "questions": {
+    "romantic": {
+      "q1": "Romantycznosc",
+      "q2": "Namietnosc",
+      "q3": "Uwaznosc",
+      "q4": "Czulosc",
+      "q5": "Zaufanie",
+      "q6": "Zazdrosc",
+      "q7": "Spontanicznosc",
+      "q8": "Emocjonalnosc"
+    },
+    "everyday": {
+      "q1": "Schludnosc",
+      "q2": "Gotowanie",
+      "q3": "Punktualnosc",
+      "q4": "Organizacja",
+      "q5": "Lenistwo",
+      "q6": "Oszczednosc",
+      "q7": "Hojnosc",
+      "q8": "Upor"
+    },
+    "intimacy": {
+      "q1": "Inicjatywa",
+      "q2": "Fantazja",
+      "q3": "Zmyslowosc",
+      "q4": "Eksperymentowanie",
+      "q5": "Tempo",
+      "q6": "Komunikacja",
+      "q7": "Pewnosc siebie",
+      "q8": "Troska po"
+    },
+    "character": {
+      "q1": "Poczucie humoru",
+      "q2": "Pewnosc siebie",
+      "q3": "Zyczliwosc",
+      "q4": "Uczciwosc",
+      "q5": "Ambicja",
+      "q6": "Towarzyskosc",
+      "q7": "Cierpliwosc",
+      "q8": "Kreatywnosc"
+    },
+    "friends": {
+      "q1": "Niezawodnosc",
+      "q2": "Zabawa",
+      "q3": "Wsparcie",
+      "q4": "Otwartosc",
+      "q5": "Aktywnosc",
+      "q6": "Troskliwosc",
+      "q7": "Przygodowosc",
+      "q8": "Madrosc"
+    },
+    "office": {
+      "q1": "Terminy",
+      "q2": "Praca zespolowa",
+      "q3": "Proaktywnosc",
+      "q4": "Transparentnosc",
+      "q5": "Odpowiedzialnosc",
+      "q6": "Odpornosc na stres",
+      "q7": "Kreatywnosc",
+      "q8": "Mentoring"
+    },
+    "sport": {
+      "q1": "Szybkosc",
+      "q2": "Sila",
+      "q3": "Wytrzymalosc",
+      "q4": "Technika",
+      "q5": "Duch zespolowy",
+      "q6": "Przywodztwo",
+      "q7": "Motywacja",
+      "q8": "Rywalizacja"
+    },
+    "parents": {
+      "q1": "Troska",
+      "q2": "Samodzielnosc",
+      "q3": "Wdziecznosc",
+      "q4": "Uczciwosc",
+      "q5": "Ambicja",
+      "q6": "Cierpliwosc",
+      "q7": "Poczucie humoru",
+      "q8": "Odpowiedzialnosc"
     }
   },
   "create": {
-    "title": "Utwórz pokój",
-    "yourName": "Twoje imię",
-    "namePlaceholder": "Twoje imię",
-    "startGame": "Utwórz pokój",
-    "questions": "Pytania w tym pakiecie:"
+    "title": "Utworz pokoj",
+    "yourName": "Twoje imie",
+    "yourAvatar": "Twoj awatar",
+    "namePlaceholder": "Jak mamy cie nazywac?",
+    "startGame": "Utworz pokoj",
+    "questions": "Pytania w tym pakiecie:",
+    "showQuestions": "Pokaz 8 pytan",
+    "hideQuestions": "Ukryj pytania",
+    "enterName": "Wpisz swoje imie!",
+    "partnerJoins": "Partner dolaczy kodem"
   },
   "lobby": {
     "title": "Lobby",
-    "code": "Kod pokoju",
-    "waitingPartner": "Czekamy na partnera...",
+    "join": "Dolacz do gry",
+    "code": "Kod",
+    "waitingPartner": "Czekamy na partnera",
+    "canStartAlone": "Mozesz zaczac sam - partner dolaczy pozniej",
     "copyInvite": "Kopiuj link",
-    "shareInvite": "Udostępnij",
-    "startGame": "Rozpocznij grę",
-    "startAlone": "Rozpocznij sam (partner dołączy później)",
-    "players": "Gracze"
+    "copyLink": "Skopiuj link:",
+    "shareInvite": "Udostepnij",
+    "shareText": "Dolacz do mojej gry",
+    "startGame": "Rozpocznij gre",
+    "players": "Gracze",
+    "player1": "Gracz 1",
+    "player2": "Gracz 2",
+    "you": "Ty",
+    "waiting": "Czekamy...",
+    "allReady": "Wszyscy gotowi!",
+    "joinGame": "Dolacz",
+    "roomNotFound": "Pokoj nie znaleziony",
+    "connectionError": "Blad polaczenia",
+    "searching": "Szukamy pokoju..."
   },
   "game": {
     "question": "Pytanie",
     "of": "z",
-    "rateYourself": "Na ile to dotyczy CIEBIE?",
-    "ratePartner": "Na ile to dotyczy PARTNERA?",
+    "aboutYou": "Na ile to dotyczy CIEBIE?",
+    "aboutThem": "Na ile to dotyczy",
+    "scale": "1 - WCALE | 10 - W 100% TAK",
     "next": "Dalej",
-    "finish": "Zakończ",
-    "waitingPartner": "Gotowe! Czekamy na partnera...",
-    "partnerStillPlaying": "Partner wciąż odpowiada na pytania"
+    "finish": "Zakoncz",
+    "waitingPartner": "Gotowe! Czekamy na partnera..."
   },
   "results": {
     "title": "Wyniki",
-    "loading": "Ładowanie wyników...",
-    "error": "Nie udało się załadować wyników",
-    "matchScore": "Dopasowanie",
-    "allQuestions": "Wszystkie pytania",
-    "insights": "Wnioski",
-    "topMatches": "Najlepsze dopasowania",
-    "topDifferences": "Największe różnice",
-    "shareCard": "Udostępnij",
-    "you": "Ty",
-    "them": "Partner",
-    "self": "Siebie",
-    "fromPartner": "Od partnera"
+    "loading": "Ladowanie...",
+    "error": "Nie udalo sie zaladowac",
+    "match": "Dopasowanie",
+    "perceptionMirror": "Lustro percepcji",
+    "insights": "Spostrzezenia",
+    "whereMatched": "Gdzie sie zgodziliscie",
+    "whereDiffered": "Gdzie sie roznicie",
+    "biggestGap": "Najwieksza roznica",
+    "points": "punktow roznicy",
+    "share": "Udostepnij wyniki",
+    "saveImage": "Zapisz obraz",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "thinks": "mysli",
+    "gap": "Roznica",
+    "them": "Nich"
   },
   "account": {
     "title": "Konto",
-    "gamesPlayed": "Rozegrane gry",
-    "gamesPurchased": "Kupione gry",
-    "freeGames": "Pozostałe darmowe gry",
-    "buyGames": "Kup 10 gier — $1",
-    "pro": "PRO"
+    "gamesRemaining": "Pozostalo gier",
+    "gamesPlayed": "Rozegrane",
+    "gamesPurchased": "Kupione",
+    "buy10Games": "+10 gier",
+    "topUp": "Doladuj konto",
+    "price": "$1",
+    "buy": "Kup",
+    "viaStripe": "Platnosc przez Stripe",
+    "first2Free": "Pierwsze 2 gry za darmo",
+    "neverExpires": "Saldo nie wygasa"
   }
 }

@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
 
 type RatingTarget = 'A' | 'B'
 
 export default function QuestionsPage() {
+  const t = useTranslations()
   const params = useParams()
   const router = useRouter()
   const code = params.code as string
@@ -296,7 +298,7 @@ export default function QuestionsPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="text-4xl drop-shadow-lg shrink-0">{me?.emoji || '👤'}</span>
-                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">How much is this <span className="text-white">about you</span>?</p>
+                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">{t('game.aboutYou')}</p>
               </div>
               <RatingScale value={mySelfRating} disabled={submitting} onChange={(value) => submitRating(myRole!, value)} color="#BE4039" />
             </div>
@@ -304,7 +306,7 @@ export default function QuestionsPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="text-4xl drop-shadow-lg shrink-0">{partner?.emoji || '❔'}</span>
-                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">How much is this <span className="text-white font-black italic">{partner?.name || 'them'}</span>?</p>
+                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">{t('game.aboutThem')} <span className="text-white font-black italic">{partner?.name || t('results.them')}</span>?</p>
               </div>
               <RatingScale
                 value={myPartnerRating}
@@ -316,7 +318,7 @@ export default function QuestionsPage() {
           </div>
         </div>
 
-        <p className="text-center text-[0.6rem] font-bold text-white/20 uppercase tracking-[0.4em] italic">1 — NOT AT ALL · 10 — 100% TRUE</p>
+        <p className="text-center text-[0.6rem] font-bold text-white/20 uppercase tracking-[0.4em] italic">{t('game.scale')}</p>
       </div>
     </div>
   )
