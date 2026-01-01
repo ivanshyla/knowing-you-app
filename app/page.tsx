@@ -146,7 +146,7 @@ export default function HomePage() {
 
 function PackCard({ pack, index, color }: { pack: QuestionPack; index: number; color: string }) {
   const t = useTranslations()
-  const packKey = pack.id as 'romantic' | 'everyday' | 'intimacy' | 'character' | 'friends' | 'office' | 'sport' | 'club'
+  const packKey = pack.id as 'romantic' | 'everyday' | 'intimacy' | 'character' | 'friends' | 'office' | 'sport' | 'club' | 'parents'
   const isFirst = index === 0
   
   let name, subtitle, description
