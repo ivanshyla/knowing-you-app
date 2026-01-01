@@ -226,6 +226,21 @@
     "useArrows": "Use ← → to navigate",
     "swipe": "Swipe to navigate"
   },
+  "customPack": {
+    "title": "Custom Game",
+    "aiTitle": "AI Generation",
+    "aiSubtitle": "Write a topic — get 8 questions instantly",
+    "topicLabel": "Topic",
+    "topicPlaceholder": "e.g. travel, career, childhood dreams...",
+    "nameLabel": "Game name",
+    "namePlaceholder": "e.g. Our Dreams",
+    "optional": "optional",
+    "create": "Create Game",
+    "generating": "Generating...",
+    "enterTopic": "Please enter a topic",
+    "error": "Generation failed. Try another topic.",
+    "hint": "AI will generate 8 unique questions about your topic"
+  },
   "account": {
     "title": "Account",
     "gamesRemaining": "Games remaining",

@@ -226,6 +226,21 @@
     "useArrows": "← → do nawigacji",
     "swipe": "Przesuń do nawigacji"
   },
+  "customPack": {
+    "title": "Wlasna gra",
+    "aiTitle": "Generacja AI",
+    "aiSubtitle": "Wpisz temat — otrzymaj 8 pytan natychmiast",
+    "topicLabel": "Temat",
+    "topicPlaceholder": "np. podroze, kariera, dzieciece marzenia...",
+    "nameLabel": "Nazwa gry",
+    "namePlaceholder": "np. Nasze marzenia",
+    "optional": "opcjonalnie",
+    "create": "Stworz gre",
+    "generating": "Generowanie...",
+    "enterTopic": "Wpisz temat",
+    "error": "Blad generacji. Sprobuj inny temat.",
+    "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat"
+  },
   "account": {
     "title": "Konto",
     "gamesRemaining": "Pozostalo gier",
