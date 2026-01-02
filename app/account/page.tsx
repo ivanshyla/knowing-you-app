@@ -61,6 +61,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white">
       <div className="max-w-md mx-auto px-6 py-12">
+        {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <Link href="/" className="text-white/40 hover:text-white/60 transition-all">
             ← Назад
@@ -75,6 +76,7 @@ export default function AccountPage() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Stats */}
             <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-3xl p-8 border border-white/10">
               <div className="text-center space-y-4">
                 <div className="text-6xl">🎮</div>
@@ -92,13 +94,16 @@ export default function AccountPage() {
               </div>
             </div>
 
+            {/* Purchase */}
             <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
               <div className="text-center space-y-6">
                 <div>
                   <h2 className="text-2xl font-black italic">+10 игр</h2>
-                  <p className="text-white/40 text-sm mt-2">Пополни баланс</p>
+                  <p className="text-white/40 text-sm mt-2">Пополни баланс и играй дальше</p>
                 </div>
+
                 <div className="text-4xl font-black text-[#4ecdc4]">$1</div>
+
                 <button
                   onClick={handlePurchase}
                   disabled={purchasing}
@@ -106,12 +111,14 @@ export default function AccountPage() {
                 >
                   {purchasing ? 'Загрузка...' : 'Купить'}
                 </button>
+
                 <p className="text-[0.6rem] text-white/20 uppercase tracking-widest">
-                  Оплата через Stripe
+                  Безопасная оплата через Stripe
                 </p>
               </div>
             </div>
 
+            {/* Info */}
             <div className="text-center text-xs text-white/30 space-y-2">
               <p>Первые {FREE_GAMES} игры бесплатно</p>
               <p>Баланс не сгорает</p>
@@ -122,3 +129,5 @@ export default function AccountPage() {
     </div>
   )
 }
+
+

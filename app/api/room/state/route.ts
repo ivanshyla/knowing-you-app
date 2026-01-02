@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (!rawCode) {
     return NextResponse.json({ error: 'Missing code' }, { status: 400 })
   }
-  // Normalize code: remove dashes and spaces
+  // Нормализуем код: убираем дефисы и пробелы
   const code = rawCode.replace(/[-\s]/g, '')
 
   const includeParam = request.nextUrl.searchParams.get('include') || ''

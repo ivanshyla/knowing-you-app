@@ -20,19 +20,18 @@ type ShareCardProps = {
   onClose: () => void
 }
 
-type CardType = 'main' | 'details' | 'insights'
+type CardType = 'bars' | 'mirror' | 'radar'
 
 export default function ShareCard({ 
   participantA, 
   participantB, 
   matchPercentage, 
   shareUrl,
-  topMatch,
   questionResults = [],
   onClose 
 }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const [cardType, setCardType] = useState<CardType>('main')
+  const [cardType, setCardType] = useState<CardType>('bars')
   const [downloading, setDownloading] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -101,236 +100,293 @@ export default function ShareCard({
     }
   }
 
-  // Get insights from question results
-  const sortedByGap = [...questionResults].sort((a, b) => b.avgGap - a.avgGap)
-  const topDifferences = sortedByGap.slice(0, 3)
-  const topMatches = [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3)
-  
-  // Surprises: where partner rated higher than self
-  const surprisesA = questionResults.filter(r => r.ratings.BtoA > r.ratings.AtoA).slice(0, 2)
-  const surprisesB = questionResults.filter(r => r.ratings.AtoB > r.ratings.BtoB).slice(0, 2)
-
-  const renderMainCard = () => (
+  // Comparison Bars Card - visual bars comparing ratings
+  const renderBarsCard = () => (
     <div
       ref={cardRef}
-      className="w-[600px] h-[600px] bg-[#1F313B] p-12 flex flex-col justify-between items-center text-center"
-    >
-      {/* Title */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-black italic tracking-tighter text-white">
-          Knowing You, Knowing Me
-        </h1>
-        <p className="text-sm font-bold text-white/30 uppercase tracking-[0.3em]">
-          Психологическое зеркало
-        </p>
-      </div>
-
-      {/* Participants */}
-      <div className="flex justify-around items-center w-full px-4">
-        <div className="space-y-3">
-          <div className="text-7xl drop-shadow-2xl">{participantA.emoji}</div>
-          <div className="text-xl font-black italic text-white uppercase">
-            {participantA.name}
-          </div>
-        </div>
-        <div className="text-5xl text-white/10 font-black">💕</div>
-        <div className="space-y-3">
-          <div className="text-7xl drop-shadow-2xl">{participantB.emoji}</div>
-          <div className="text-xl font-black italic text-white uppercase">
-            {participantB.name}
-          </div>
-        </div>
-      </div>
-
-      {/* Match Score */}
-      <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 w-full shadow-2xl space-y-2">
-        <div className="text-7xl font-black italic leading-none text-[#BE4039]">
-          {matchPercentage}%
-        </div>
-        <div className="text-[0.65rem] font-bold uppercase tracking-[0.4em] text-white/40">
-          СОВПАДЕНИЕ ОБРАЗОВ
-        </div>
-        
-        {/* Top Match */}
-        <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-white/5 text-white">
-          <span className="text-3xl drop-shadow-lg">{topMatch.question.icon}</span>
-          <span className="text-sm font-bold italic opacity-80">
-            Лучший матч: {topMatch.question.text}
-          </span>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="pt-2 w-full text-[0.6rem] font-black uppercase tracking-[0.3em] text-white/20">
-        {host || 'knowing-you.app'}
-      </div>
-    </div>
-  )
-
-  const renderDetailsCard = () => (
-    <div
-      ref={cardRef}
-      className="w-[600px] h-[800px] bg-[#1F313B] p-10 flex flex-col text-white"
+      className="w-[600px] h-[800px] bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] p-8 flex flex-col text-white"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <span className="text-4xl">{participantA.emoji}</span>
-          <span className="text-2xl text-white/20">×</span>
-          <span className="text-4xl">{participantB.emoji}</span>
-        </div>
-        <div className="text-right">
-          <div className="text-4xl font-black text-[#BE4039] italic">{matchPercentage}%</div>
-          <div className="text-[0.5rem] uppercase tracking-widest text-white/30 font-bold">совпадение</div>
-        </div>
-      </div>
-
-      {/* Title */}
       <div className="text-center mb-6">
-        <h2 className="text-xl font-black italic uppercase tracking-tight">Детальное сравнение</h2>
-        <p className="text-[0.6rem] text-white/30 uppercase tracking-widest font-bold mt-1">{participantA.name} × {participantB.name}</p>
+        <div className="flex justify-center items-center gap-4 mb-3">
+          <span className="text-5xl">{participantA.emoji}</span>
+          <div className="text-3xl font-black text-[#e94560] italic">{matchPercentage}%</div>
+          <span className="text-5xl">{participantB.emoji}</span>
+        </div>
+        <h1 className="text-xl font-black italic uppercase tracking-tight">Психологическое Зеркало</h1>
+        <p className="text-xs text-white/40 uppercase tracking-widest mt-1">{participantA.name} × {participantB.name}</p>
       </div>
 
-      {/* Questions Grid */}
-      <div className="flex-1 space-y-3">
-        {questionResults.slice(0, 6).map((result) => (
-          <div key={result.question.questionId} className="bg-white/5 rounded-2xl p-4 border border-white/5">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">{result.question.icon}</span>
-              <span className="font-bold text-sm flex-1">{result.question.text}</span>
-              {result.avgGap >= 3 && <span className="text-lg">⚠️</span>}
+      {/* Bars */}
+      <div className="flex-1 space-y-4">
+        {questionResults.slice(0, 8).map((result) => (
+          <div key={result.question.questionId} className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{result.question.icon}</span>
+              <span className="text-sm font-bold flex-1">{result.question.text}</span>
+              {result.avgGap >= 3 && <span className="text-xs bg-[#e94560]/20 text-[#e94560] px-2 py-0.5 rounded-full font-bold">GAP</span>}
             </div>
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-white/5 rounded-xl p-2">
-                <div className="text-[0.5rem] text-white/40 uppercase tracking-widest mb-1">{participantA.name}</div>
-                <div className="flex justify-around">
-                  <div>
-                    <div className="text-lg font-bold">{result.ratings.AtoA}</div>
-                    <div className="text-[0.45rem] text-white/30">сам</div>
-                  </div>
-                  <div>
-                    <div className={`text-lg font-bold ${result.gapA >= 3 ? 'text-[#BE4039]' : ''}`}>{result.ratings.BtoA}</div>
-                    <div className="text-[0.45rem] text-white/30">партнёр</div>
+            
+            {/* Visual Bars */}
+            <div className="space-y-1">
+              {/* A's perception */}
+              <div className="flex items-center gap-2">
+                <span className="text-[0.6rem] w-16 text-right text-white/50">{participantA.name}</span>
+                <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden flex">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#e94560] to-[#ff6b6b] rounded-l-full flex items-center justify-end pr-1"
+                    style={{ width: `${result.ratings.AtoA * 10}%` }}
+                  >
+                    <span className="text-[0.5rem] font-bold">{result.ratings.AtoA}</span>
                   </div>
                 </div>
+                <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden flex">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] rounded-l-full flex items-center justify-end pr-1"
+                    style={{ width: `${result.ratings.AtoB * 10}%` }}
+                  >
+                    <span className="text-[0.5rem] font-bold">{result.ratings.AtoB}</span>
+                  </div>
+                </div>
+                <span className="text-[0.6rem] w-16 text-white/50">{participantB.name}</span>
               </div>
-              <div className="bg-white/5 rounded-xl p-2">
-                <div className="text-[0.5rem] text-white/40 uppercase tracking-widest mb-1">{participantB.name}</div>
-                <div className="flex justify-around">
-                  <div>
-                    <div className="text-lg font-bold">{result.ratings.BtoB}</div>
-                    <div className="text-[0.45rem] text-white/30">сам</div>
-                  </div>
-                  <div>
-                    <div className={`text-lg font-bold ${result.gapB >= 3 ? 'text-[#BE4039]' : ''}`}>{result.ratings.AtoB}</div>
-                    <div className="text-[0.45rem] text-white/30">партнёр</div>
+              
+              {/* B's perception */}
+              <div className="flex items-center gap-2">
+                <span className="text-[0.6rem] w-16 text-right text-white/30">партнёр</span>
+                <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden flex">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#e94560]/50 to-[#ff6b6b]/50 rounded-l-full flex items-center justify-end pr-1"
+                    style={{ width: `${result.ratings.BtoA * 10}%` }}
+                  >
+                    <span className="text-[0.5rem] font-bold">{result.ratings.BtoA}</span>
                   </div>
                 </div>
+                <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden flex">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#4ecdc4]/50 to-[#44a08d]/50 rounded-l-full flex items-center justify-end pr-1"
+                    style={{ width: `${result.ratings.BtoB * 10}%` }}
+                  >
+                    <span className="text-[0.5rem] font-bold">{result.ratings.BtoB}</span>
+                  </div>
+                </div>
+                <span className="text-[0.6rem] w-16 text-white/30">партнёр</span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Legend */}
+      <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#e94560] to-[#ff6b6b]" />
+          <span className="text-[0.6rem] text-white/40">сам о себе</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[#e94560]/50 to-[#ff6b6b]/50" />
+          <span className="text-[0.6rem] text-white/40">партнёр о тебе</span>
+        </div>
+      </div>
+
       {/* Footer */}
-      <div className="pt-4 text-center text-[0.55rem] font-black uppercase tracking-[0.3em] text-white/20">
-        Knowing You, Knowing Me • {host || 'knowing-you.app'}
+      <div className="pt-4 text-center text-[0.5rem] font-bold uppercase tracking-[0.3em] text-white/20">
+        knowing-you.app
       </div>
     </div>
   )
 
-  const renderInsightsCard = () => (
+  // Mirror Card - side by side comparison
+  const renderMirrorCard = () => (
     <div
       ref={cardRef}
-      className="w-[600px] h-[600px] bg-gradient-to-br from-[#BE4039] via-[#B94E56] to-[#784259] p-10 flex flex-col text-white"
+      className="w-[600px] h-[600px] bg-[#0d0d0d] p-8 flex flex-col text-white relative overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">{participantA.emoji}</span>
-          <span className="text-xl text-white/30">×</span>
-          <span className="text-4xl">{participantB.emoji}</span>
-        </div>
-        <div className="bg-white/20 rounded-full px-4 py-2">
-          <span className="text-2xl font-black italic">{matchPercentage}%</span>
-        </div>
-      </div>
-
-      {/* Title */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-black italic uppercase tracking-tight">🔍 Инсайты</h2>
-        <p className="text-sm text-white/60 font-bold mt-2">Что мы узнали друг о друге</p>
-      </div>
-
-      {/* Insights Grid */}
-      <div className="flex-1 grid grid-cols-2 gap-4">
-        {/* Best Matches */}
-        <div className="bg-white/10 rounded-3xl p-5 border border-white/10">
-          <h3 className="text-sm font-black uppercase tracking-widest mb-4 text-white/80">✨ Совпали</h3>
-          <div className="space-y-3">
-            {topMatches.slice(0, 3).map((m) => (
-              <div key={m.question.questionId} className="flex items-center gap-3">
-                <span className="text-2xl">{m.question.icon}</span>
-                <span className="text-sm font-bold">{m.question.text}</span>
-              </div>
-            ))}
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#e94560]/20 via-transparent to-[#4ecdc4]/20" />
+      
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-black italic uppercase tracking-tight">🪞 Зеркало Восприятия</h1>
+          <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4] mt-2">
+            {matchPercentage}%
           </div>
         </div>
 
-        {/* Biggest Gaps */}
-        <div className="bg-white/10 rounded-3xl p-5 border border-white/10">
-          <h3 className="text-sm font-black uppercase tracking-widest mb-4 text-white/80">⚡ Разошлись</h3>
-          <div className="space-y-3">
-            {topDifferences.slice(0, 3).map((m) => (
-              <div key={m.question.questionId} className="flex items-center gap-3">
-                <span className="text-2xl">{m.question.icon}</span>
-                <span className="text-sm font-bold">{m.question.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Surprises for A */}
-        {surprisesA.length > 0 && (
-          <div className="bg-white/10 rounded-3xl p-5 border border-white/10">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-3 text-white/80">
-              🎁 {participantA.name} недооценивает себя
-            </h3>
+        {/* Two columns - A and B */}
+        <div className="flex-1 grid grid-cols-2 gap-4">
+          {/* Column A */}
+          <div className="bg-gradient-to-b from-[#e94560]/20 to-transparent rounded-3xl p-4 border border-[#e94560]/20">
+            <div className="text-center mb-4">
+              <span className="text-4xl">{participantA.emoji}</span>
+              <div className="text-sm font-black uppercase mt-1">{participantA.name}</div>
+            </div>
+            
             <div className="space-y-2">
-              {surprisesA.map((s) => (
-                <div key={s.question.questionId} className="flex items-center gap-2">
-                  <span className="text-xl">{s.question.icon}</span>
-                  <span className="text-xs font-bold">{s.question.text}</span>
+              {questionResults.slice(0, 5).map((r) => (
+                <div key={r.question.questionId} className="flex items-center gap-2">
+                  <span className="text-lg">{r.question.icon}</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between text-[0.6rem] text-white/40 mb-0.5">
+                      <span>я</span>
+                      <span>партнёр</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="flex-1 h-5 bg-white/5 rounded-lg flex items-center justify-center">
+                        <span className="text-sm font-black">{r.ratings.AtoA}</span>
+                      </div>
+                      <div className={`flex-1 h-5 rounded-lg flex items-center justify-center ${r.gapA >= 3 ? 'bg-[#e94560]/30' : 'bg-white/5'}`}>
+                        <span className="text-sm font-black">{r.ratings.BtoA}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Surprises for B */}
-        {surprisesB.length > 0 && (
-          <div className="bg-white/10 rounded-3xl p-5 border border-white/10">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-3 text-white/80">
-              🎁 {participantB.name} недооценивает себя
-            </h3>
+          {/* Column B */}
+          <div className="bg-gradient-to-b from-[#4ecdc4]/20 to-transparent rounded-3xl p-4 border border-[#4ecdc4]/20">
+            <div className="text-center mb-4">
+              <span className="text-4xl">{participantB.emoji}</span>
+              <div className="text-sm font-black uppercase mt-1">{participantB.name}</div>
+            </div>
+            
             <div className="space-y-2">
-              {surprisesB.map((s) => (
-                <div key={s.question.questionId} className="flex items-center gap-2">
-                  <span className="text-xl">{s.question.icon}</span>
-                  <span className="text-xs font-bold">{s.question.text}</span>
+              {questionResults.slice(0, 5).map((r) => (
+                <div key={r.question.questionId} className="flex items-center gap-2">
+                  <span className="text-lg">{r.question.icon}</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between text-[0.6rem] text-white/40 mb-0.5">
+                      <span>я</span>
+                      <span>партнёр</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="flex-1 h-5 bg-white/5 rounded-lg flex items-center justify-center">
+                        <span className="text-sm font-black">{r.ratings.BtoB}</span>
+                      </div>
+                      <div className={`flex-1 h-5 rounded-lg flex items-center justify-center ${r.gapB >= 3 ? 'bg-[#4ecdc4]/30' : 'bg-white/5'}`}>
+                        <span className="text-sm font-black">{r.ratings.AtoB}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Footer */}
-      <div className="pt-4 text-center text-[0.55rem] font-black uppercase tracking-[0.3em] text-white/40">
-        Knowing You, Knowing Me
+        {/* Footer */}
+        <div className="pt-4 text-center text-[0.55rem] font-bold uppercase tracking-[0.3em] text-white/20">
+          Knowing You, Knowing Me
+        </div>
       </div>
     </div>
   )
+
+  // Radar-style card with circular visualization
+  const renderRadarCard = () => {
+    const questions = questionResults.slice(0, 6)
+    const angleStep = 360 / questions.length
+    
+    return (
+      <div
+        ref={cardRef}
+        className="w-[600px] h-[600px] bg-gradient-to-br from-[#1F313B] via-[#2a3f4d] to-[#1F313B] p-8 flex flex-col text-white relative"
+      >
+        {/* Header */}
+        <div className="text-center mb-4">
+          <div className="flex justify-center items-center gap-4">
+            <span className="text-4xl">{participantA.emoji}</span>
+            <span className="text-2xl text-white/20">×</span>
+            <span className="text-4xl">{participantB.emoji}</span>
+          </div>
+          <div className="text-5xl font-black text-[#BE4039] italic mt-2">{matchPercentage}%</div>
+          <p className="text-[0.6rem] text-white/30 uppercase tracking-widest mt-1">совпадение образов</p>
+        </div>
+
+        {/* Circular Radar */}
+        <div className="flex-1 flex items-center justify-center relative">
+          {/* Background circles */}
+          <div className="absolute w-64 h-64 border border-white/5 rounded-full" />
+          <div className="absolute w-48 h-48 border border-white/5 rounded-full" />
+          <div className="absolute w-32 h-32 border border-white/10 rounded-full" />
+          
+          {/* Question points */}
+          {questions.map((q, i) => {
+            const angle = (angleStep * i - 90) * (Math.PI / 180)
+            const radius = 120
+            const x = Math.cos(angle) * radius
+            const y = Math.sin(angle) * radius
+            
+            // Calculate dot positions based on ratings
+            const selfRadius = (q.ratings.AtoA / 10) * 100
+            const partnerRadius = (q.ratings.BtoA / 10) * 100
+            const selfX = Math.cos(angle) * selfRadius
+            const selfY = Math.sin(angle) * selfRadius
+            const partnerX = Math.cos(angle) * partnerRadius
+            const partnerY = Math.sin(angle) * partnerRadius
+            
+            return (
+              <div key={q.question.questionId}>
+                {/* Question icon at edge */}
+                <div 
+                  className="absolute text-2xl"
+                  style={{ 
+                    left: `calc(50% + ${x}px - 14px)`,
+                    top: `calc(50% + ${y}px - 14px)`
+                  }}
+                >
+                  {q.question.icon}
+                </div>
+                
+                {/* Self rating dot */}
+                <div 
+                  className="absolute w-3 h-3 bg-[#BE4039] rounded-full shadow-lg shadow-[#BE4039]/50"
+                  style={{ 
+                    left: `calc(50% + ${selfX}px - 6px)`,
+                    top: `calc(50% + ${selfY}px - 6px)`
+                  }}
+                />
+                
+                {/* Partner rating dot */}
+                <div 
+                  className="absolute w-3 h-3 bg-[#4ecdc4] rounded-full shadow-lg shadow-[#4ecdc4]/50"
+                  style={{ 
+                    left: `calc(50% + ${partnerX}px - 6px)`,
+                    top: `calc(50% + ${partnerY}px - 6px)`
+                  }}
+                />
+              </div>
+            )
+          })}
+          
+          {/* Center */}
+          <div className="absolute w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+            <span className="text-lg">🎯</span>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex justify-center gap-8 pt-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#BE4039]" />
+            <span className="text-xs text-white/40">{participantA.name} о себе</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#4ecdc4]" />
+            <span className="text-xs text-white/40">{participantB.name} о {participantA.name}</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-2 text-center text-[0.5rem] font-bold uppercase tracking-[0.3em] text-white/20">
+          knowing-you.app
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -338,7 +394,7 @@ export default function ShareCard({
         <div className="p-8">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-white italic tracking-tight">Создать карточку для соцсетей</h2>
+            <h2 className="text-xl font-bold text-white italic tracking-tight">Карточка для соцсетей</h2>
             <button
               onClick={onClose}
               className="text-white/20 hover:text-white transition-all text-3xl"
@@ -350,48 +406,48 @@ export default function ShareCard({
           {/* Card Type Selector */}
           <div className="mb-8">
             <label className="block text-[0.65rem] font-bold text-white/40 uppercase tracking-widest mb-4 ml-1">
-              ТИП КАРТОЧКИ
+              СТИЛЬ ГРАФИКИ
             </label>
             <div className="grid grid-cols-3 gap-3">
               <button
-                onClick={() => setCardType('main')}
+                onClick={() => setCardType('bars')}
                 className={`py-4 px-4 rounded-xl border-2 transition-all font-bold text-xs uppercase tracking-widest ${
-                  cardType === 'main'
+                  cardType === 'bars'
                     ? 'border-white bg-white text-gray-900 shadow-xl'
                     : 'border-white/5 bg-white/5 text-white/40 hover:border-white/20'
                 }`}
               >
-                💕 ГЛАВНАЯ
+                📊 БАРЫ
               </button>
               <button
-                onClick={() => setCardType('details')}
+                onClick={() => setCardType('mirror')}
                 className={`py-4 px-4 rounded-xl border-2 transition-all font-bold text-xs uppercase tracking-widest ${
-                  cardType === 'details'
+                  cardType === 'mirror'
                     ? 'border-white bg-white text-gray-900 shadow-xl'
                     : 'border-white/5 bg-white/5 text-white/40 hover:border-white/20'
                 }`}
               >
-                📊 ДЕТАЛИ
+                🪞 ЗЕРКАЛО
               </button>
               <button
-                onClick={() => setCardType('insights')}
+                onClick={() => setCardType('radar')}
                 className={`py-4 px-4 rounded-xl border-2 transition-all font-bold text-xs uppercase tracking-widest ${
-                  cardType === 'insights'
+                  cardType === 'radar'
                     ? 'border-white bg-white text-gray-900 shadow-xl'
                     : 'border-white/5 bg-white/5 text-white/40 hover:border-white/20'
                 }`}
               >
-                🔍 ИНСАЙТЫ
+                🎯 РАДАР
               </button>
             </div>
           </div>
 
           {/* Preview Card */}
-          <div className="mb-10 overflow-hidden rounded-[2rem] shadow-2xl border border-white/5 flex justify-center">
-            <div className="transform scale-[0.55] origin-top">
-              {cardType === 'main' && renderMainCard()}
-              {cardType === 'details' && renderDetailsCard()}
-              {cardType === 'insights' && renderInsightsCard()}
+          <div className="mb-10 overflow-hidden rounded-[2rem] shadow-2xl border border-white/5 flex justify-center bg-black/50">
+            <div className={`transform ${cardType === 'bars' ? 'scale-[0.45]' : 'scale-[0.55]'} origin-top`}>
+              {cardType === 'bars' && renderBarsCard()}
+              {cardType === 'mirror' && renderMirrorCard()}
+              {cardType === 'radar' && renderRadarCard()}
             </div>
           </div>
 

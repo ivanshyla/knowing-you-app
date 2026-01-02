@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createUserId, getUserIdFromRequest, USER_COOKIE } from '@/lib/auth'
-import {
-  addParticipantRecord,
-  createUserSessionLink,
-  ensureUserRecord,
-  fetchParticipants,
-  fetchSessionByCode,
-  syncUserSessionPartnerInfo
-} from '@/lib/sessionStore'
+import { addParticipantRecord, ensureUserRecord, fetchParticipants, fetchSessionByCode } from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +15,9 @@ export async function POST(request: NextRequest) {
     await ensureUserRecord(userId)
 
     const body = await request.json()
-    const code = String(body?.code || '')
+    const rawCode = String(body?.code || '')
+    // Нормализуем код: убираем дефисы и пробелы
+    const code = rawCode.replace(/[-\s]/g, '')
     const name = String(body?.name || '').trim()
     const emoji = String(body?.emoji || '').trim() || '😊'
 
@@ -54,18 +49,6 @@ export async function POST(request: NextRequest) {
       emoji,
       userId
     })
-
-    await createUserSessionLink({
-      userId,
-      sessionId: session.id,
-      createdAt: new Date().toISOString(),
-      code,
-      role,
-      participantName: name,
-      participantEmoji: emoji
-    })
-    // if both are present now, fill partner info for both accounts
-    await syncUserSessionPartnerInfo(session.id)
 
     const response = NextResponse.json({
       sessionId: session.id,

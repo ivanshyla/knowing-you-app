@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
@@ -15,16 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Knowing You, Knowing Me - Mirror Game for Couples",
-  description: "A fun game for couples and friends! Rate each other on different qualities and discover how well you really know each other.",
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
+  title: "Knowing You, Knowing Me",
+  description: "A psychological mirror for couples. Rate yourself and your partner — discover how your self-perception differs from how they see you.",
 };
 
 export default async function RootLayout({

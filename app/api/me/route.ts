@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const user = isNew ? await ensureUserRecord(userId) : ((await getUserRecord(userId)) ?? (await ensureUserRecord(userId)))
 
   const avgMatch = user.gamesPlayed > 0 ? Math.round(user.matchSum / user.gamesPlayed) : 0
-  const gamesPurchased = (user as any).gamesPurchased || 0
+  const gamesPurchased = user.gamesPurchased || 0
   const gamesRemaining = Math.max(0, FREE_GAMES_LIMIT - user.gamesPlayed + gamesPurchased)
 
   const response = NextResponse.json({

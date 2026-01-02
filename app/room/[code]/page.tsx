@@ -128,6 +128,7 @@ export default function RoomPage() {
         router.push(`/room/${code}/questions`)
         return
       }
+      
       setViewState('lobby')
       await loadState()
     } catch (error) {

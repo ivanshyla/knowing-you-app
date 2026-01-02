@@ -36,9 +36,7 @@ const TABLES = {
   questions: process.env.AWS_DDB_QUESTIONS_TABLE || 'kykm_questions',
   ratings: process.env.AWS_DDB_RATINGS_TABLE || 'kykm_ratings',
   users: process.env.AWS_DDB_USERS_TABLE || 'kykm_users',
-  userSessions: process.env.AWS_DDB_USER_SESSIONS_TABLE || 'kykm_user_sessions',
-  userEmails: process.env.AWS_DDB_USER_EMAILS_TABLE || 'kykm_user_emails',
-  customPacks: process.env.AWS_DDB_CUSTOM_PACKS_TABLE || 'kykm_custom_packs'
+  userSessions: process.env.AWS_DDB_USER_SESSIONS_TABLE || 'kykm_user_sessions'
 }
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }), {
@@ -238,6 +236,7 @@ export async function ensureUserRecord(userId: string): Promise<UserRecord> {
     createdAt: NOW(),
     isPro: false,
     gamesPlayed: 0,
+    gamesPurchased: 0,
     matchSum: 0
   }
 
@@ -251,53 +250,6 @@ export async function ensureUserRecord(userId: string): Promise<UserRecord> {
   return created
 }
 
-export async function getUserIdByEmail(email: string): Promise<string | null> {
-  const normalized = email.trim().toLowerCase()
-  if (!normalized) return null
-
-  const result = await dynamo.send(
-    new GetCommand({
-      TableName: TABLES.userEmails,
-      Key: { email: normalized }
-    })
-  )
-  return (result.Item as { userId?: string } | undefined)?.userId ?? null
-}
-
-export async function attachEmailAndPasswordToUser(params: {
-  userId: string
-  email: string
-  passwordSalt: string
-  passwordHash: string
-}): Promise<void> {
-  const normalized = params.email.trim().toLowerCase()
-  if (!normalized) throw new Error('Invalid email')
-
-  // 1) Ensure email is unique (email table condition)
-  await dynamo.send(
-    new PutCommand({
-      TableName: TABLES.userEmails,
-      Item: { email: normalized, userId: params.userId, createdAt: NOW() },
-      ConditionExpression: 'attribute_not_exists(email)'
-    })
-  )
-
-  // 2) Update user record
-  await ensureUserRecord(params.userId)
-  await dynamo.send(
-    new UpdateCommand({
-      TableName: TABLES.users,
-      Key: { userId: params.userId },
-      UpdateExpression: 'SET email = :email, passwordSalt = :salt, passwordHash = :hash',
-      ExpressionAttributeValues: {
-        ':email': normalized,
-        ':salt': params.passwordSalt,
-        ':hash': params.passwordHash
-      }
-    })
-  )
-}
-
 export async function getUserRecord(userId: string): Promise<UserRecord | null> {
   const result = await dynamo.send(
     new GetCommand({
@@ -306,47 +258,6 @@ export async function getUserRecord(userId: string): Promise<UserRecord | null> 
     })
   )
   return (result.Item as UserRecord) ?? null
-}
-
-export async function setUserStripeStatus(params: {
-  userId: string
-  stripeCustomerId?: string
-  stripeSubscriptionId?: string
-  stripeStatus?: string
-  isPro?: boolean
-}): Promise<void> {
-  await ensureUserRecord(params.userId)
-
-  const updates: string[] = []
-  const values: Record<string, unknown> = {}
-
-  if (params.stripeCustomerId !== undefined) {
-    updates.push('stripeCustomerId = :cust')
-    values[':cust'] = params.stripeCustomerId
-  }
-  if (params.stripeSubscriptionId !== undefined) {
-    updates.push('stripeSubscriptionId = :sub')
-    values[':sub'] = params.stripeSubscriptionId
-  }
-  if (params.stripeStatus !== undefined) {
-    updates.push('stripeStatus = :status')
-    values[':status'] = params.stripeStatus
-  }
-  if (params.isPro !== undefined) {
-    updates.push('isPro = :isPro')
-    values[':isPro'] = params.isPro
-  }
-
-  if (updates.length === 0) return
-
-  await dynamo.send(
-    new UpdateCommand({
-      TableName: TABLES.users,
-      Key: { userId: params.userId },
-      UpdateExpression: `SET ${updates.join(', ')}`,
-      ExpressionAttributeValues: values
-    })
-  )
 }
 
 export async function listUserSessions(userId: string): Promise<UserSessionRecord[]> {
@@ -390,38 +301,6 @@ export async function createUserSessionLink(params: {
       Item: item
     })
   )
-}
-
-export async function syncUserSessionPartnerInfo(sessionId: string): Promise<void> {
-  const participants = await fetchParticipants(sessionId)
-  const a = participants.find((p) => p.role === 'A')
-  const b = participants.find((p) => p.role === 'B')
-  if (!a || !b) return
-
-  const updates = [
-    a.userId
-      ? dynamo.send(
-          new UpdateCommand({
-            TableName: TABLES.userSessions,
-            Key: { userId: a.userId, sessionId },
-            UpdateExpression: 'SET partnerName = :name, partnerEmoji = :emoji',
-            ExpressionAttributeValues: { ':name': b.name, ':emoji': b.emoji }
-          })
-        )
-      : Promise.resolve(),
-    b.userId
-      ? dynamo.send(
-          new UpdateCommand({
-            TableName: TABLES.userSessions,
-            Key: { userId: b.userId, sessionId },
-            UpdateExpression: 'SET partnerName = :name, partnerEmoji = :emoji',
-            ExpressionAttributeValues: { ':name': a.name, ':emoji': a.emoji }
-          })
-        )
-      : Promise.resolve()
-  ]
-
-  await Promise.all(updates)
 }
 
 export async function finalizeSessionAndUpdateStats(sessionId: string): Promise<void> {
@@ -567,23 +446,20 @@ function chunk<T>(list: T[], size: number): T[][] {
   return result
 }
 
-export async function saveCustomPack(params: {
-  userId: string
-  name: string
-  questions: Array<{ text: string; icon: string }>
-}): Promise<string> {
-  const packId = randomUUID()
+// Add purchased games to user balance
+export async function addGamesToUser(userId: string, count: number): Promise<void> {
+  await ensureUserRecord(userId)
   await dynamo.send(
-    new PutCommand({
-      TableName: TABLES.customPacks,
-      Item: {
-        packId,
-        userId: params.userId,
-        name: params.name,
-        questions: params.questions,
-        createdAt: new Date().toISOString()
+    new UpdateCommand({
+      TableName: TABLES.users,
+      Key: { userId },
+      UpdateExpression: 'SET gamesPurchased = if_not_exists(gamesPurchased, :zero) + :count',
+      ExpressionAttributeValues: {
+        ':zero': 0,
+        ':count': count
       }
     })
   )
-  return packId
+  console.log(`[addGamesToUser] Added ${count} games to user ${userId}`)
 }
+

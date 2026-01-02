@@ -4,14 +4,14 @@ import { calculateGap } from './utils'
 export type QuestionResult = {
   question: QuestionRecord
   ratings: {
-    AtoA: number
-    AtoB: number
-    BtoA: number
-    BtoB: number
+    AtoA: number // A о себе
+    AtoB: number // A о партнере B
+    BtoA: number // B о партнере A
+    BtoB: number // B о себе
   }
-  avgGap: number
-  gapA: number
-  gapB: number
+  gapA: number // Насколько A видит себя иначе, чем B видит его (|AtoA - BtoA|)
+  gapB: number // Насколько B видит себя иначе, чем A видит её (|BtoB - AtoB|)
+  avgGap: number // Средний разрыв восприятия по этому вопросу
 }
 
 export function buildQuestionResults(
@@ -29,14 +29,13 @@ export function buildQuestionResults(
 
     const gapA = calculateGap(AtoA, BtoA)
     const gapB = calculateGap(BtoB, AtoB)
-    const avgGap = (gapA + gapB) / 2
 
     return {
       question,
       ratings: { AtoA, AtoB, BtoA, BtoB },
-      avgGap,
       gapA,
-      gapB
+      gapB,
+      avgGap: (gapA + gapB) / 2
     }
   })
 }
@@ -54,3 +53,6 @@ export function pickTopMatches(questionResults: QuestionResult[], limit = 3): Qu
 export function pickTopDifferences(questionResults: QuestionResult[], limit = 3): QuestionResult[] {
   return [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, limit)
 }
+
+
+

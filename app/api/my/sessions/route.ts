@@ -7,15 +7,13 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   const userId = getUserIdFromRequest(request)
   if (!userId) {
-    return NextResponse.json({ sessions: [] })
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
 
-  try {
-    const sessions = await listUserSessions(userId)
-    return NextResponse.json({ sessions })
-  } catch (error) {
-    console.error('Error listing user sessions:', error)
-    return NextResponse.json({ error: 'Failed to load sessions' }, { status: 500 })
-  }
+  const sessions = await listUserSessions(userId)
+  const sorted = [...sessions].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+
+  return NextResponse.json({ sessions: sorted })
 }
+
 

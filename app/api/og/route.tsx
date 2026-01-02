@@ -33,12 +33,9 @@ export async function GET(request: NextRequest) {
   const matchPercentage = computeMatchPercentage(questionResults)
   const topMatch = pickTopMatches(questionResults, 1)[0]
 
-  const bg =
-    matchPercentage >= 70
-      ? 'linear-gradient(135deg, #FBCFE8 0%, #DDD6FE 50%, #BFDBFE 100%)'
-      : matchPercentage >= 40
-        ? 'linear-gradient(135deg, #FEF3C7 0%, #FED7AA 45%, #FECACA 100%)'
-        : 'linear-gradient(135deg, #E5E7EB 0%, #DBEAFE 45%, #DDD6FE 100%)'
+  // Exact brand colors from the palette image
+  const bg = '#1F313B' // Dark teal/blue from the top of stack
+  const accent = '#BE4039' // Bright red from the stack
 
   return new ImageResponse(
     (
@@ -49,79 +46,66 @@ export async function GET(request: NextRequest) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: '56px',
-          backgroundImage: bg,
+          padding: '80px',
+          backgroundColor: bg,
           fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: 44, fontWeight: 800, color: '#111827' }}>Knowing You, Knowing Me</div>
-            <div style={{ fontSize: 22, color: 'rgba(17, 24, 39, 0.75)' }}>Результат игры</div>
+            <div style={{ fontSize: 52, fontWeight: 900, color: '#FFFFFF', fontStyle: 'italic', letterSpacing: '-2px' }}>Knowing You, Knowing Me</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: 'rgba(255, 255, 255, 0.3)', textTransform: 'uppercase', letterSpacing: '6px' }}>Психологическое зеркало</div>
           </div>
           <div
             style={{
-              padding: '12px 18px',
-              borderRadius: 999,
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.9)',
-              fontSize: 18,
-              color: 'rgba(17, 24, 39, 0.65)'
+              padding: '14px 28px',
+              borderRadius: 24,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              fontSize: 22,
+              fontWeight: 900,
+              color: 'rgba(255, 255, 255, 0.5)',
+              letterSpacing: '2px'
             }}
           >
             18+
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ fontSize: 84 }}>{participantA.emoji}</div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 18, letterSpacing: 6, textTransform: 'uppercase', color: 'rgba(17,24,39,0.55)' }}>
-                игрок 1
-              </div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#111827' }}>{participantA.name}</div>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+            <div style={{ fontSize: 140, filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))' }}>{participantA.emoji}</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: '#FFFFFF', fontStyle: 'italic', textTransform: 'uppercase' }}>{participantA.name}</div>
           </div>
 
-          <div style={{ fontSize: 52, color: 'rgba(17, 24, 39, 0.35)' }}>×</div>
+          <div style={{ fontSize: 80, color: 'rgba(255, 255, 255, 0.05)', fontWeight: 900, fontStyle: 'italic' }}>×</div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ fontSize: 84 }}>{participantB.emoji}</div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 18, letterSpacing: 6, textTransform: 'uppercase', color: 'rgba(17,24,39,0.55)' }}>
-                игрок 2
-              </div>
-              <div style={{ fontSize: 36, fontWeight: 800, color: '#111827' }}>{participantB.name}</div>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+            <div style={{ fontSize: 140, filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))' }}>{participantB.emoji}</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: '#FFFFFF', fontStyle: 'italic', textTransform: 'uppercase' }}>{participantB.name}</div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '24px' }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              padding: '26px 28px',
-              borderRadius: 28,
-              background: 'rgba(255,255,255,0.75)',
-              border: '1px solid rgba(255,255,255,0.95)',
-              flex: 1
-            }}
-          >
-            <div style={{ fontSize: 18, letterSpacing: 6, textTransform: 'uppercase', color: 'rgba(17,24,39,0.55)' }}>
-              совместимость
-            </div>
-            <div style={{ fontSize: 92, fontWeight: 900, color: '#7C3AED', lineHeight: 1 }}>
-              {matchPercentage}%
-            </div>
-            <div style={{ fontSize: 20, color: 'rgba(17,24,39,0.75)' }}>
-              {topMatch ? `Лучшее совпадение: ${topMatch.question.icon} ${topMatch.question.text}` : 'Сыграйте, чтобы увидеть совпадения'}
-            </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '50px',
+            borderRadius: 50,
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            width: '100%',
+            boxShadow: '0 30px 60px rgba(0,0,0,0.3)'
+          }}
+        >
+          <div style={{ fontSize: 110, fontWeight: 900, color: accent, fontStyle: 'italic', lineHeight: 1, letterSpacing: '-4px' }}>
+            {matchPercentage}%
           </div>
-
-          <div style={{ fontSize: 18, color: 'rgba(17,24,39,0.55)' }}>Откройте ссылку и сыграйте сами</div>
+          <div style={{ fontSize: 22, letterSpacing: 10, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', fontWeight: 900 }}>
+            разрыв восприятия
+          </div>
         </div>
       </div>
     ),
@@ -131,6 +115,3 @@ export async function GET(request: NextRequest) {
     }
   )
 }
-
-
-
