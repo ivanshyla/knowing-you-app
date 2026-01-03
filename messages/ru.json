@@ -247,16 +247,14 @@
     "hint": "AI сгенерирует 8 уникальных вопросов по вашей теме"
   },
   "account": {
-    "title": "Аккаунт",
     "gamesRemaining": "Игр осталось",
-    "gamesPlayed": "Сыграно",
-    "gamesPurchased": "Куплено",
-    "buy10Games": "+10 игр",
-    "topUp": "Пополни баланс",
-    "price": "$1",
+    "played": "Сыграно",
+    "purchased": "Куплено",
+    "games": "игр",
+    "refillBalance": "Пополни баланс и играй дальше",
     "buy": "Купить",
-    "viaStripe": "Оплата через Stripe",
-    "first2Free": "Первые 2 игры бесплатно",
-    "neverExpires": "Баланс не сгорает"
+    "securePayment": "Безопасная оплата через Stripe",
+    "firstFree": "Первые {count} игры бесплатно",
+    "noExpiry": "Баланс не сгорает"
   }
 }

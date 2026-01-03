@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { apiFetch } from '@/lib/apiClient'
 
 type UserData = {
@@ -11,6 +12,7 @@ type UserData = {
 }
 
 export default function AccountPage() {
+  const t = useTranslations()
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState(false)
@@ -46,11 +48,11 @@ export default function AccountPage() {
           window.location.href = data.url
         }
       } else {
-        alert('Ошибка создания платежа')
+        alert(t('common.error'))
       }
     } catch (e) {
       console.error(e)
-      alert('Ошибка')
+      alert(t('common.error'))
     } finally {
       setPurchasing(false)
     }
@@ -59,15 +61,20 @@ export default function AccountPage() {
   const FREE_GAMES = 2
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] text-white">
-      <div className="max-w-md mx-auto px-6 py-12">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#1F313B] text-white font-sans">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] opacity-90"
+      />
+
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-12">
-          <Link href="/" className="text-white/40 hover:text-white/60 transition-all">
-            ← Назад
+        <div className="flex items-center justify-between mb-10">
+          <Link href="/" className="text-white/40 hover:text-white/60 text-sm font-bold transition-all">
+            ← {t('common.back')}
           </Link>
-          <h1 className="text-xl font-black uppercase tracking-widest">Аккаунт</h1>
-          <div className="w-16" />
+          <h1 className="text-lg font-black uppercase tracking-widest">{t('common.account')}</h1>
+          <div className="w-12" />
         </div>
 
         {loading ? (
@@ -75,53 +82,58 @@ export default function AccountPage() {
             <div className="text-4xl animate-pulse">⏳</div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Stats */}
-            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-3xl p-8 border border-white/10">
+            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-sm shadow-2xl">
               <div className="text-center space-y-4">
-                <div className="text-6xl">🎮</div>
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[#BE4039] to-[#8B2E2A] flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
                 <div>
-                  <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#e94560] to-[#4ecdc4]">
+                  <div className="text-5xl font-black text-white">
                     {user?.gamesRemaining ?? FREE_GAMES}
                   </div>
-                  <div className="text-sm text-white/40 uppercase tracking-widest mt-2">
-                    игр осталось
+                  <div className="text-[0.65rem] text-white/40 uppercase tracking-[0.3em] mt-2 font-bold">
+                    {t('account.gamesRemaining')}
                   </div>
                 </div>
                 <div className="text-xs text-white/30 pt-4">
-                  Сыграно: {user?.gamesPlayed ?? 0} | Куплено: {user?.totalPurchased ?? 0}
+                  {t('account.played')}: {user?.gamesPlayed ?? 0} | {t('account.purchased')}: {user?.totalPurchased ?? 0}
                 </div>
               </div>
             </div>
 
             {/* Purchase */}
-            <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-sm shadow-2xl">
               <div className="text-center space-y-6">
                 <div>
-                  <h2 className="text-2xl font-black italic">+10 игр</h2>
-                  <p className="text-white/40 text-sm mt-2">Пополни баланс и играй дальше</p>
+                  <h2 className="text-xl font-black uppercase tracking-wider">+10 {t('account.games')}</h2>
+                  <p className="text-white/40 text-sm mt-2">{t('account.refillBalance')}</p>
                 </div>
 
-                <div className="text-4xl font-black text-[#4ecdc4]">$1</div>
+                <div className="text-4xl font-black text-[#BE4039]">$1</div>
 
                 <button
                   onClick={handlePurchase}
                   disabled={purchasing}
-                  className="w-full py-5 rounded-full bg-gradient-to-r from-[#e94560] to-[#4ecdc4] text-white font-black uppercase tracking-widest text-lg hover:scale-105 transition-all disabled:opacity-50"
+                  className="w-full py-5 rounded-full bg-[#BE4039] text-white font-black uppercase tracking-widest text-lg shadow-[0_20px_50px_rgba(190,64,57,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                 >
-                  {purchasing ? 'Загрузка...' : 'Купить'}
+                  {purchasing ? t('common.loading') : t('account.buy')}
                 </button>
 
                 <p className="text-[0.6rem] text-white/20 uppercase tracking-widest">
-                  Безопасная оплата через Stripe
+                  {t('account.securePayment')}
                 </p>
               </div>
             </div>
 
             {/* Info */}
-            <div className="text-center text-xs text-white/30 space-y-2">
-              <p>Первые {FREE_GAMES} игры бесплатно</p>
-              <p>Баланс не сгорает</p>
+            <div className="text-center text-[0.65rem] text-white/30 space-y-2 font-bold uppercase tracking-wider">
+              <p>{t('account.firstFree', { count: FREE_GAMES })}</p>
+              <p>{t('account.noExpiry')}</p>
             </div>
           </div>
         )}
@@ -129,5 +141,3 @@ export default function AccountPage() {
     </div>
   )
 }
-
-

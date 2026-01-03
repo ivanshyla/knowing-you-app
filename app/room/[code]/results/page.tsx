@@ -84,7 +84,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center">
         <div className="text-white/40 animate-pulse text-center">
           <div className="text-6xl mb-4 animate-bounce">🔮</div>
           <p className="text-sm uppercase tracking-widest">{t('results.loading')}</p>
@@ -95,7 +95,7 @@ export default function ResultsPage() {
 
   if (!participantA || !participantB) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white text-center p-8">
+      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center text-white text-center p-8">
         <div>
           <div className="text-6xl mb-4">🙈</div>
           <p className="text-white/60 mb-4">{t('results.error')}</p>
@@ -109,14 +109,12 @@ export default function ResultsPage() {
 
   return (
     <div 
-      className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden"
+      className="min-h-screen bg-[#1F313B] text-white overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e94560]/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#4ecdc4]/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Background gradient */}
+      <div aria-hidden="true" className="fixed inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] opacity-90 pointer-events-none">
       </div>
 
       {/* Progress dots */}
@@ -347,7 +345,7 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
       </div>
 
       {/* Shareable card */}
-      <div ref={cardRef} className="bg-[#0a0a0a] p-4 rounded-3xl space-y-4">
+      <div ref={cardRef} className="bg-[#1F313B] p-4 rounded-3xl space-y-4">
         {/* Mirror comparisons */}
         <MirrorComparison
           person={participantA}

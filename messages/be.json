@@ -247,16 +247,14 @@
     "hint": "AI згенеруе 8 унікальных пытанняў па вашай тэме"
   },
   "account": {
-    "title": "Акаўнт",
     "gamesRemaining": "Гульняў засталося",
-    "gamesPlayed": "Згулялі",
-    "gamesPurchased": "Куплена",
-    "buy10Games": "+10 гульняў",
-    "topUp": "Папоўні баланс",
-    "price": "$1",
+    "played": "Згуляна",
+    "purchased": "Куплена",
+    "games": "гульняў",
+    "refillBalance": "Папоўні баланс і гуляй далей",
     "buy": "Купіць",
-    "viaStripe": "Аплата праз Stripe",
-    "first2Free": "Першыя 2 гульні бясплатна",
-    "neverExpires": "Баланс не згарае"
+    "securePayment": "Бяспечная аплата праз Stripe",
+    "firstFree": "Першыя {count} гульні бясплатна",
+    "noExpiry": "Баланс не згарае"
   }
 }

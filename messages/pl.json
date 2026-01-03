@@ -247,16 +247,14 @@
     "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat"
   },
   "account": {
-    "title": "Konto",
-    "gamesRemaining": "Pozostalo gier",
-    "gamesPlayed": "Rozegrane",
-    "gamesPurchased": "Kupione",
-    "buy10Games": "+10 gier",
-    "topUp": "Doladuj konto",
-    "price": "$1",
+    "gamesRemaining": "Pozostało gier",
+    "played": "Zagrane",
+    "purchased": "Kupione",
+    "games": "gier",
+    "refillBalance": "Doładuj saldo i graj dalej",
     "buy": "Kup",
-    "viaStripe": "Platnosc przez Stripe",
-    "first2Free": "Pierwsze 2 gry za darmo",
-    "neverExpires": "Saldo nie wygasa"
+    "securePayment": "Bezpieczna płatność przez Stripe",
+    "firstFree": "Pierwsze {count} gry za darmo",
+    "noExpiry": "Saldo nie wygasa"
   }
 }
