@@ -249,9 +249,13 @@ export default function RoomPage() {
             {viewState === 'lobby' && (
               <button
                 onClick={handleCopyInvite}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] text-white font-black uppercase tracking-widest text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-emerald-900/30"
+                className={`w-full py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${
+                  copyStatus === 'copied' 
+                    ? 'bg-white/10 text-white/60 border border-white/20' 
+                    : 'bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-900/30'
+                }`}
               >
-                {copyStatus === 'copied' ? `✅ ${t('common.copied')}` : `🔗 ${t('lobby.copyInvite')}`}
+                {copyStatus === 'copied' ? `✓ ${t('common.copied')}` : `🔗 ${t('lobby.copyInvite')}`}
               </button>
             )}
           </div>
