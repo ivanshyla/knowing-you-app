@@ -11,7 +11,8 @@
     "error": "Blad",
     "account": "Konto",
     "createPack": "Stworz wlasny pakiet",
-    "questions": "pytan"
+    "questions": "pytan",
+    "backToHome": "Strona główna"
   },
   "home": {
     "title": "Knowing You,",
@@ -197,7 +198,10 @@
     "scale": "1 - WCALE | 10 - W 100% TAK",
     "next": "Dalej",
     "finish": "Zakoncz",
-    "waitingPartner": "Gotowe! Czekamy na partnera..."
+    "waitingPartner": "Gotowe! Czekamy na partnera...",
+    "youDone": "Gotowe!",
+    "waitingPartnerMessage": "Twoje odpowiedzi zostały zapisane. Czekamy na partnera.",
+    "waiting": "Oczekiwanie"
   },
   "results": {
     "title": "Wyniki",

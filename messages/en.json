@@ -11,7 +11,8 @@
     "error": "Error",
     "account": "Account",
     "createPack": "Create Your Pack",
-    "questions": "questions"
+    "questions": "questions",
+    "backToHome": "Back to Home"
   },
   "home": {
     "title": "Knowing You,",
@@ -197,7 +198,10 @@
     "scale": "1 — NOT AT ALL · 10 — 100% TRUE",
     "next": "Next",
     "finish": "Finish",
-    "waitingPartner": "Done! Waiting for partner..."
+    "waitingPartner": "Done! Waiting for partner...",
+    "youDone": "You're done!",
+    "waitingPartnerMessage": "Your answers are saved. Waiting for them to reveal the mirror.",
+    "waiting": "Waiting"
   },
   "results": {
     "title": "Results",

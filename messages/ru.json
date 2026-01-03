@@ -11,7 +11,8 @@
     "error": "Ошибка",
     "account": "Аккаунт",
     "createPack": "Создать свой пакет",
-    "questions": "вопросов"
+    "questions": "вопросов",
+    "backToHome": "На главную"
   },
   "home": {
     "title": "Knowing You,",
@@ -197,7 +198,10 @@
     "scale": "1 — СОВСЕМ НЕТ · 10 — НА 100% ТАК",
     "next": "Далее",
     "finish": "Завершить",
-    "waitingPartner": "Готово! Ждём партнёра..."
+    "waitingPartner": "Готово! Ждём партнёра...",
+    "youDone": "Готово!",
+    "waitingPartnerMessage": "Твои ответы сохранены. Ждём, пока партнёр откроет «зеркало».",
+    "waiting": "Ожидание"
   },
   "results": {
     "title": "Результаты",

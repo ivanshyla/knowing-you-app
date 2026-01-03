@@ -11,7 +11,8 @@
     "error": "Памылка",
     "account": "Акаўнт",
     "createPack": "Стварыць свой пакет",
-    "questions": "пытанняў"
+    "questions": "пытанняў",
+    "backToHome": "На галоўную"
   },
   "home": {
     "title": "Knowing You,",
@@ -197,7 +198,10 @@
     "scale": "1 — ЗУСІМ НЕ · 10 — НА 100% ТАК",
     "next": "Далей",
     "finish": "Завяршыць",
-    "waitingPartner": "Гатова! Чакаем партнёра..."
+    "waitingPartner": "Гатова! Чакаем партнёра...",
+    "youDone": "Гатова!",
+    "waitingPartnerMessage": "Твае адказы захаваны. Чакаем на партнёра.",
+    "waiting": "Чаканне"
   },
   "results": {
     "title": "Вынікі",

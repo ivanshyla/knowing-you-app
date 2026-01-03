@@ -11,7 +11,8 @@
     "error": "Помилка",
     "account": "Акаунт",
     "createPack": "Створити свій пакет",
-    "questions": "питань"
+    "questions": "питань",
+    "backToHome": "На головну"
   },
   "home": {
     "title": "Knowing You,",
@@ -197,7 +198,10 @@
     "scale": "1 — ЗОВСІМ НІ · 10 — НА 100% ТАК",
     "next": "Далі",
     "finish": "Завершити",
-    "waitingPartner": "Готово! Чекаємо на партнера..."
+    "waitingPartner": "Готово! Чекаємо на партнера...",
+    "youDone": "Готово!",
+    "waitingPartnerMessage": "Твої відповіді збережено. Чекаємо на партнера.",
+    "waiting": "Очікування"
   },
   "results": {
     "title": "Результати",

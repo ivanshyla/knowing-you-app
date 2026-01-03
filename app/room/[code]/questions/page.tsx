@@ -247,19 +247,19 @@ export default function QuestionsPage() {
         />
         <div className="relative z-10 max-w-md w-full bg-white/5 border border-white/10 rounded-[3rem] p-12 shadow-2xl text-center space-y-8 backdrop-blur-md">
           <div className="text-8xl drop-shadow-2xl">🎉</div>
-          <h2 className="text-4xl font-bold leading-tight italic uppercase tracking-tighter">Ты всё!</h2>
-          <p className="text-white/60 font-medium text-lg px-4">Твои ответы сохранены. Ждем партнера, чтобы открыть «зеркало».</p>
+          <h2 className="text-4xl font-bold leading-tight italic uppercase tracking-tighter">{t('game.youDone')}</h2>
+          <p className="text-white/60 font-medium text-lg px-4">{t('game.waitingPartnerMessage')}</p>
           <div className="py-6 px-8 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center gap-4 shadow-inner">
             <div className="h-3 w-3 rounded-full bg-[#BE4039] animate-bounce shadow-lg shadow-red-500/50" />
             <div className="h-3 w-3 rounded-full bg-[#BE4039] animate-bounce [animation-delay:0.2s] shadow-lg shadow-red-500/50" />
             <div className="h-3 w-3 rounded-full bg-[#BE4039] animate-bounce [animation-delay:0.4s] shadow-lg shadow-red-500/50" />
-            <span className="text-white/80 font-black text-sm tracking-widest uppercase ml-2">ОЖИДАНИЕ</span>
+            <span className="text-white/80 font-black text-sm tracking-widest uppercase ml-2">{t('game.waiting')}</span>
           </div>
           <button 
             onClick={() => router.push('/')}
             className="text-[0.65rem] font-bold text-white/20 hover:text-white/40 uppercase tracking-[0.3em] transition-all italic"
           >
-            ВЕРНУТЬСЯ НА ГЛАВНУЮ
+            {t('common.backToHome')}
           </button>
         </div>
       </div>
