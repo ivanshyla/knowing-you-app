@@ -74,7 +74,7 @@ export default function HomePage() {
         {/* КАК ИГРАТЬ */}
         <div className="mt-10 space-y-3">
           <div className="flex items-center gap-4 bg-white/5 rounded-2xl p-4 border border-white/10 group hover:bg-white/10 transition-all">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#BE4039] to-[#8B2E2A] flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#BE4039] to-[#8B2E2A] flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
               1
             </div>
             <p className="text-sm text-white/70 font-medium">{t('home.step1')}</p>
