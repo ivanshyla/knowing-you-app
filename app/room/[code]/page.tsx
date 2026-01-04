@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { ParticipantRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
-import { formatCode } from '@/lib/utils'
+
 import Link from 'next/link'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫']
@@ -236,33 +236,41 @@ export default function RoomPage() {
         </Link>
 
         <header className="text-center space-y-4">
-          <h1 className="text-4xl font-black leading-tight tracking-tight text-white italic uppercase">
-            {viewState === 'join' ? t('lobby.join') : t('lobby.title')}
-          </h1>
+          {viewState === 'join' && (
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-white italic uppercase">
+              {t('lobby.join')}
+            </h1>
+          )}
           
-          <div className="mt-6 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-4 bg-white/5 px-8 py-5 rounded-[2rem] border border-white/10 shadow-inner backdrop-blur-sm">
-              <span className="text-[0.65rem] uppercase tracking-widest text-white/40 font-black">{t('lobby.code')}:</span>
-              <span className="text-3xl font-bold font-mono text-white tracking-widest italic">{formatCode(code)}</span>
-            </div>
-            
-            {viewState === 'lobby' && (
-              <button
-                onClick={handleCopyInvite}
-                className={`w-full py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${
-                  copyStatus === 'copied' 
-                    ? 'bg-white/10 text-white/60 border border-white/20' 
-                    : 'bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-900/30'
-                }`}
-              >
-                {copyStatus === 'copied' ? `✓ ${t('common.copied')}` : `🔗 ${t('lobby.copyInvite')}`}
-              </button>
-            )}
-          </div>
+          {viewState === 'lobby' && (
+            <button
+              onClick={handleCopyInvite}
+              className={`w-full py-5 px-6 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg ${
+                copyStatus === 'copied' 
+                  ? 'bg-white/10 text-white/60 border border-white/20' 
+                  : 'bg-gradient-to-r from-[#4ecdc4] to-[#44a08d] text-white hover:scale-[1.02] active:scale-[0.98] shadow-emerald-900/30'
+              }`}
+            >
+              {copyStatus === 'copied' ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {t('common.copied')}
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  {t('lobby.copyInvite')}
+                </span>
+              )}
+            </button>
+          )}
           
           {pollingError && <p className="mt-4 text-sm text-[#BE4039] font-bold italic uppercase tracking-widest">{pollingError}</p>}
         </header>
-
         {viewState === 'join' ? (
           <div className="mt-8 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 backdrop-blur-sm shadow-2xl">
             <div className="space-y-3">
