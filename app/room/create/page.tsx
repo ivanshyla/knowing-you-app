@@ -71,6 +71,9 @@ function CreateRoomContent() {
       const response = await apiFetch('/api/create-room', {
         method: 'POST',
         body: JSON.stringify({
+          ...(selectedPack.startsWith('custom_') && {
+            customQuestions: JSON.parse(sessionStorage.getItem(`custom_pack_${selectedPack}`) || '[]')
+          }),
           questionPack: selectedPack,
           creatorName: name.trim(),
           creatorEmoji: emoji

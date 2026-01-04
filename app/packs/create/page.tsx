@@ -128,19 +128,11 @@ export default function CreatePackPage() {
       
       const saveData = await saveRes.json()
       
-      // Create room directly with this pack
-      const roomRes = await apiFetch('/api/create-room', {
-        method: 'POST',
-        body: JSON.stringify({
-          packId: saveData.packId,
-          customQuestions: saveData.pack.questions
-        })
-      })
+      // Store custom questions in sessionStorage for room creation
+      sessionStorage.setItem(`custom_pack_${saveData.packId}`, JSON.stringify(saveData.pack.questions))
       
-      if (!roomRes.ok) throw new Error('Room creation failed')
-      
-      const roomData = await roomRes.json()
-      router.push(`/room/${roomData.code}`)
+      // Redirect to room creation page with pack ID
+      router.push(`/room/create?pack=${saveData.packId}`)
       
     } catch (e: any) {
       console.error(e)
