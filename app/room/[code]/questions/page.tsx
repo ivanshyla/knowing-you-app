@@ -306,7 +306,7 @@ export default function QuestionsPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <span className="text-4xl drop-shadow-lg shrink-0">{partner?.emoji || '❔'}</span>
-                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">{t('game.aboutThem')} <span className="text-white font-black italic">{partner?.name || t('results.them')}</span>?</p>
+                <p className="text-[0.65rem] font-black text-white/40 uppercase tracking-[0.3em]">{t('game.aboutThem')} <span className="text-white font-black italic">{partner?.name || t('game.partner')}</span>?</p>
               </div>
               <RatingScale
                 value={myPartnerRating}
