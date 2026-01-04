@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { ParticipantRecord, QuestionRecord, RatingRecord, SessionRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
@@ -275,9 +276,10 @@ export default function QuestionsPage() {
         className="fixed inset-0 bg-gradient-to-b from-[#BE4039]/20 via-[#383852]/40 to-[#1F313B] pointer-events-none" 
       />
       <div className="relative z-10 max-w-md mx-auto space-y-10">
+        <Link href="/" className="inline-flex items-center gap-1 text-white/40 hover:text-white/70 text-sm font-bold transition-all mb-4"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>{t('common.back')}</Link>
         <div className="space-y-4">
           <div className="flex items-center justify-between text-[0.6rem] font-black uppercase tracking-[0.4em] text-white/40 italic">
-            <span>ВОПРОС {currentQuestionIdx + 1} / {questions.length}</span>
+            <span>{t('game.question')} {currentQuestionIdx + 1} / {questions.length}</span>
             <span>{progress}%</span>
           </div>
           <div className="h-3 w-full rounded-full bg-white/5 p-1 shadow-inner border border-white/5">
