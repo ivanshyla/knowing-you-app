@@ -244,7 +244,10 @@
     "generating": "Generating...",
     "enterTopic": "Please enter a topic",
     "error": "Generation failed. Try another topic.",
-    "hint": "AI will generate 8 unique questions about your topic"
+    "hint": "AI will generate 8 unique questions about your topic",
+    "custom": "Custom",
+    "aiGenerated": "AI Generated",
+    "questions": "questions"
   },
   "account": {
     "gamesRemaining": "Games remaining",

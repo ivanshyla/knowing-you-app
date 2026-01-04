@@ -244,7 +244,10 @@
     "generating": "Generowanie...",
     "enterTopic": "Wpisz temat",
     "error": "Blad generacji. Sprobuj inny temat.",
-    "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat"
+    "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat",
+    "custom": "Własny",
+    "aiGenerated": "Wygenerowane AI",
+    "questions": "pytań"
   },
   "account": {
     "gamesRemaining": "Pozostało gier",
