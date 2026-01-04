@@ -126,7 +126,7 @@ export default function HomePage() {
               }}
             >
               <div className="flex items-center justify-center gap-4">
-                <span className="text-4xl">✨</span>
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                 <span className="text-xl font-black text-white/70 group-hover:text-white uppercase tracking-wide">
                   {t('common.createPack')}
                 </span>
