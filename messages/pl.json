@@ -201,7 +201,8 @@
     "waitingPartner": "Gotowe! Czekamy na partnera...",
     "youDone": "Gotowe!",
     "waitingPartnerMessage": "Twoje odpowiedzi zostały zapisane. Czekamy na partnera.",
-    "waiting": "Oczekiwanie"
+    "waiting": "Oczekiwanie",
+    "partner": "partnera"
   },
   "results": {
     "title": "Wyniki",
