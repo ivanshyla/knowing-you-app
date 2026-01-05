@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  const format = searchParams.get('format') // 'og' (1200x630) or 'story' (1080x1920)
+  const format = searchParams.get('format')
 
   let nameA = ''
   let nameB = ''
@@ -41,47 +41,42 @@ export async function GET(request: NextRequest) {
           emojiB = pB.emoji
           hasData = true
           
-          // Find biggest perception gap
           const results = buildQuestionResults(questions, ratings)
           
-          // Calculate gaps for each person
           let maxGap = 0
           let whoHasGap = ''
           let gapDirection = ''
           
           results.forEach((r: any) => {
-            // Gap for A: how A sees self vs how B sees A
             const gapA = Math.abs(r.selfA - r.partnerViewA)
-            // Gap for B: how B sees self vs how A sees B
             const gapB = Math.abs(r.selfB - r.partnerViewB)
             
             if (gapA > maxGap) {
               maxGap = gapA
               whoHasGap = nameA
               gapDirection = r.selfA > r.partnerViewA ? 'higher' : 'lower'
-              biggestGapQuestion = r.short || r.question.substring(0, 30)
+              biggestGapQuestion = r.short || r.question.substring(0, 25) + '...'
             }
             if (gapB > maxGap) {
               maxGap = gapB
               whoHasGap = nameB
               gapDirection = r.selfB > r.partnerViewB ? 'higher' : 'lower'
-              biggestGapQuestion = r.short || r.question.substring(0, 30)
+              biggestGapQuestion = r.short || r.question.substring(0, 25) + '...'
             }
           })
           
           gapValue = maxGap
           
-          // Generate insight based on gap
           if (maxGap >= 4) {
             insight = gapDirection === 'higher' 
-              ? `${whoHasGap} sees themselves differently than their partner does!`
-              : `${whoHasGap}'s partner sees hidden qualities!`
+              ? `${whoHasGap} sees themselves differently!`
+              : `Hidden qualities discovered!`
             insightEmoji = '🔥'
           } else if (maxGap >= 2) {
-            insight = `Interesting perception differences discovered!`
+            insight = `Interesting perception gaps!`
             insightEmoji = '👀'
           } else {
-            insight = `${nameA} & ${nameB} truly know each other!`
+            insight = `They truly know each other!`
             insightEmoji = '💕'
           }
         }
@@ -93,7 +88,7 @@ export async function GET(request: NextRequest) {
 
   const isStory = format === 'story'
   const width = isStory ? 1080 : 1200
-  const height = isStory ? 630 : 630
+  const height = isStory ? 1920 : 630
 
   return new ImageResponse(
     (
@@ -106,7 +101,7 @@ export async function GET(request: NextRequest) {
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        padding: 50,
+        padding: isStory ? 60 : 40,
         position: 'relative',
         overflow: 'hidden',
       }}>
@@ -114,19 +109,19 @@ export async function GET(request: NextRequest) {
         <div style={{
           position: 'absolute',
           top: '-20%',
-          left: '-10%',
-          width: '45%',
-          height: '70%',
-          background: 'radial-gradient(circle, rgba(190,64,57,0.35) 0%, transparent 60%)',
+          left: '-15%',
+          width: '50%',
+          height: '60%',
+          background: 'radial-gradient(circle, rgba(190,64,57,0.3) 0%, transparent 60%)',
           borderRadius: '50%',
         }} />
         <div style={{
           position: 'absolute',
-          bottom: '-25%',
-          right: '-10%',
+          bottom: '-20%',
+          right: '-15%',
           width: '50%',
-          height: '80%',
-          background: 'radial-gradient(circle, rgba(78,205,196,0.25) 0%, transparent 60%)',
+          height: '60%',
+          background: 'radial-gradient(circle, rgba(78,205,196,0.2) 0%, transparent 60%)',
           borderRadius: '50%',
         }} />
 
@@ -135,82 +130,81 @@ export async function GET(request: NextRequest) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           zIndex: 10,
+          width: '100%',
         }}>
           {/* Title */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
-            marginBottom: hasData ? 20 : 30,
+            gap: 10,
+            marginBottom: isStory ? 50 : 25,
           }}>
-            <span style={{ fontSize: 40 }}>🪞</span>
+            <span style={{ fontSize: isStory ? 50 : 32 }}>🪞</span>
             <span style={{
-              fontSize: 28,
+              fontSize: isStory ? 28 : 20,
               fontWeight: 300,
-              color: 'rgba(255,255,255,0.6)',
-              letterSpacing: 8,
+              color: 'rgba(255,255,255,0.5)',
+              letterSpacing: 6,
               textTransform: 'uppercase'
             }}>Perception Mirror</span>
-            <span style={{ fontSize: 40 }}>🪞</span>
+            <span style={{ fontSize: isStory ? 50 : 32 }}>🪞</span>
           </div>
 
-          {/* Players */}
           {hasData ? (
             <>
+              {/* Players row */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 40,
-                marginBottom: 30,
+                justifyContent: 'center',
+                gap: isStory ? 50 : 35,
+                marginBottom: isStory ? 50 : 25,
+                width: '100%',
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ fontSize: 70 }}>{emojiA}</div>
-                  <div style={{ color: 'white', fontSize: 26, fontWeight: 'bold', marginTop: 8 }}>{nameA}</div>
+                  <div style={{ fontSize: isStory ? 90 : 55 }}>{emojiA}</div>
+                  <div style={{ 
+                    color: 'white', 
+                    fontSize: isStory ? 28 : 20, 
+                    fontWeight: 'bold', 
+                    marginTop: 8 
+                  }}>{nameA}</div>
                 </div>
                 
                 <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  padding: '15px 25px',
-                  background: 'rgba(255,255,255,0.08)',
-                  borderRadius: 20,
-                }}>
-                  <span style={{ fontSize: 35 }}>💕</span>
-                  <span style={{ 
-                    fontSize: 14, 
-                    color: 'rgba(255,255,255,0.5)', 
-                    marginTop: 5,
-                    textTransform: 'uppercase',
-                    letterSpacing: 2 
-                  }}>vs</span>
-                </div>
+                  fontSize: isStory ? 50 : 35,
+                  opacity: 0.6,
+                }}>💕</div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ fontSize: 70 }}>{emojiB}</div>
-                  <div style={{ color: 'white', fontSize: 26, fontWeight: 'bold', marginTop: 8 }}>{nameB}</div>
+                  <div style={{ fontSize: isStory ? 90 : 55 }}>{emojiB}</div>
+                  <div style={{ 
+                    color: 'white', 
+                    fontSize: isStory ? 28 : 20, 
+                    fontWeight: 'bold', 
+                    marginTop: 8 
+                  }}>{nameB}</div>
                 </div>
               </div>
 
-              {/* Insight - the key viral element */}
+              {/* Insight box */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 15,
-                marginBottom: 25,
-                padding: '20px 40px',
-                background: 'linear-gradient(135deg, rgba(233,69,96,0.2), rgba(78,205,196,0.2))',
-                borderRadius: 100,
-                border: '2px solid rgba(255,255,255,0.15)',
+                justifyContent: 'center',
+                gap: 12,
+                marginBottom: isStory ? 40 : 20,
+                padding: isStory ? '25px 45px' : '15px 35px',
+                background: 'linear-gradient(135deg, rgba(233,69,96,0.25), rgba(78,205,196,0.2))',
+                borderRadius: 50,
+                border: '2px solid rgba(255,255,255,0.12)',
               }}>
-                <span style={{ fontSize: 35 }}>{insightEmoji}</span>
+                <span style={{ fontSize: isStory ? 40 : 28 }}>{insightEmoji}</span>
                 <span style={{
-                  fontSize: 22,
+                  fontSize: isStory ? 26 : 18,
                   fontWeight: 600,
                   color: 'white',
-                  textAlign: 'center',
                 }}>{insight}</span>
               </div>
 
@@ -219,37 +213,39 @@ export async function GET(request: NextRequest) {
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
-                  color: 'rgba(255,255,255,0.5)',
-                  fontSize: 16,
+                  gap: 8,
+                  color: 'rgba(255,255,255,0.45)',
+                  fontSize: isStory ? 18 : 14,
+                  marginBottom: isStory ? 40 : 15,
                 }}>
                   <span>Biggest gap:</span>
                   <span style={{ 
                     color: '#facc15', 
                     fontWeight: 'bold',
                     padding: '4px 12px',
-                    background: 'rgba(250,204,21,0.15)',
-                    borderRadius: 20,
+                    background: 'rgba(250,204,21,0.12)',
+                    borderRadius: 15,
                   }}>{biggestGapQuestion}</span>
                 </div>
               )}
             </>
           ) : (
             <>
-              <div style={{ fontSize: 70, marginBottom: 25 }}>💕</div>
+              <div style={{ fontSize: isStory ? 100 : 60, marginBottom: isStory ? 40 : 20 }}>💕</div>
               <div style={{
-                fontSize: 32,
+                fontSize: isStory ? 42 : 28,
                 fontWeight: 700,
                 color: 'white',
                 textAlign: 'center',
-                marginBottom: 15,
+                marginBottom: 12,
               }}>
                 How do you really see each other?
               </div>
               <div style={{
-                fontSize: 18,
-                color: 'rgba(255,255,255,0.6)',
+                fontSize: isStory ? 22 : 16,
+                color: 'rgba(255,255,255,0.5)',
                 textAlign: 'center',
+                marginBottom: isStory ? 50 : 25,
               }}>
                 Discover perception gaps in your relationship
               </div>
@@ -258,16 +254,15 @@ export async function GET(request: NextRequest) {
 
           {/* CTA */}
           <div style={{
-            marginTop: hasData ? 25 : 35,
             background: 'linear-gradient(135deg, #e94560, #BE4039)',
             color: 'white',
-            padding: '16px 50px',
-            borderRadius: 100,
-            fontSize: 18,
+            padding: isStory ? '22px 55px' : '14px 40px',
+            borderRadius: 50,
+            fontSize: isStory ? 22 : 16,
             fontWeight: 'bold',
             textTransform: 'uppercase',
             letterSpacing: 3,
-            boxShadow: '0 15px 40px rgba(233,69,96,0.4)',
+            boxShadow: '0 12px 35px rgba(233,69,96,0.35)',
           }}>
             kykmgame.com
           </div>
