@@ -50,10 +50,24 @@ export async function createSessionRecord(params: {
   creatorName: string
   creatorEmoji: string
   creatorUserId?: string
+  customQuestions?: { text: string; icon?: string }[]
 }): Promise<{ sessionId: string; code: string; participantId: string }> {
-  const pack = QUESTION_PACKS[params.questionPack]
-  if (!pack) {
-    throw new Error('Unknown question pack')
+  // Support both built-in packs and custom questions
+  let questions: { text: string; icon: string }[]
+  
+  if (params.customQuestions && params.customQuestions.length > 0) {
+    // Use custom questions
+    questions = params.customQuestions.map(q => ({
+      text: q.text,
+      icon: q.icon || '✨'
+    }))
+  } else {
+    // Use built-in pack
+    const pack = QUESTION_PACKS[params.questionPack]
+    if (!pack) {
+      throw new Error('Unknown question pack')
+    }
+    questions = pack.questions
   }
 
   const code = await reserveUniqueCode()
@@ -90,11 +104,10 @@ export async function createSessionRecord(params: {
     })
   )
 
-  await writeQuestions(sessionId, pack.questions)
+  await writeQuestions(sessionId, questions)
 
   return { sessionId, code, participantId }
 }
-
 export async function fetchSessionByCode(code: string): Promise<SessionRecord | null> {
   const result = await dynamo.send(
     new QueryCommand({

@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const questionPack = String(body?.questionPack || '')
     const creatorName = String(body?.creatorName || '').trim()
-    const creatorEmoji = String(body?.creatorEmoji || '').trim() || '🫦'
+    const creatorEmoji = String(body?.creatorEmoji || '')
+    const customQuestions = body?.customQuestions
 
     if (!questionPack || !creatorName) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
@@ -48,7 +49,8 @@ export async function POST(request: NextRequest) {
       questionPack,
       creatorName,
       creatorEmoji,
-      creatorUserId: userId
+      creatorUserId: userId,
+      customQuestions
     })
 
     await createUserSessionLink({
