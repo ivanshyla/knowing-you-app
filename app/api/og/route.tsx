@@ -37,6 +37,8 @@ export async function GET(request: NextRequest) {
   const width = isStory ? 1080 : 1200
   const height = isStory ? 1920 : 630
 
+  const title = hasData ? `${nameA} & ${nameB}` : 'How well do you know each other?'
+
   return new ImageResponse(
     (
       <div style={{
@@ -49,36 +51,26 @@ export async function GET(request: NextRequest) {
         justifyContent: 'center',
         fontFamily: 'system-ui, sans-serif',
       }}>
-        <div style={{
+        <span style={{
           fontSize: 20,
           color: 'rgba(255,255,255,0.4)',
           letterSpacing: 4,
           marginBottom: 25,
         }}>
           PERCEPTION MIRROR
-        </div>
+        </span>
 
-        {hasData ? (
-          <div style={{
-            fontSize: 38,
-            fontWeight: 700,
-            color: 'white',
-            marginBottom: 30,
-          }}>
-            {nameA} & {nameB}
-          </div>
-        ) : (
-          <div style={{
-            fontSize: 32,
-            fontWeight: 700,
-            color: 'white',
-            marginBottom: 30,
-          }}>
-            How well do you know each other?
-          </div>
-        )}
+        <span style={{
+          fontSize: hasData ? 38 : 32,
+          fontWeight: 700,
+          color: 'white',
+          marginBottom: 30,
+          textAlign: 'center',
+        }}>
+          {title}
+        </span>
 
-        <div style={{
+        <span style={{
           background: '#BE4039',
           color: 'white',
           padding: '12px 35px',
@@ -87,7 +79,7 @@ export async function GET(request: NextRequest) {
           fontWeight: 600,
         }}>
           kykmgame.com
-        </div>
+        </span>
       </div>
     ),
     { width, height }
