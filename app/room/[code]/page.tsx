@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { ParticipantRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
-
+import { formatCode } from '@/lib/utils'
 import Link from 'next/link'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫']
@@ -61,21 +61,39 @@ export default function RoomPage() {
       
       setPollingError(null)
 
+      // Check if user has already joined this room
+      const storedRole = typeof window !== 'undefined' 
+        ? localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null 
+        : null
+      const storedParticipantId = typeof window !== 'undefined'
+        ? localStorage.getItem(`session_${code}_participant_id`)
+        : null
+
+      // If game is live or done, only redirect if user has a participantId (they've joined)
       if (data.session.status === 'live') {
-        router.push(`/room/${code}/questions`)
+        if (storedRole && storedParticipantId) {
+          router.push(`/room/${code}/questions`)
+          return
+        }
+        // User hasn't joined yet - show join form
+        setMyRole(null)
+        setViewState('join')
         return
       }
 
       if (data.session.status === 'done') {
-        router.push(`/room/${code}/results`)
+        if (storedRole && storedParticipantId) {
+          router.push(`/room/${code}/results`)
+          return
+        }
+        // User hasn't joined - they can't view results, show error
+        setPollingError('Game has already ended')
         return
       }
 
-      if (typeof window !== 'undefined') {
-        const storedRole = localStorage.getItem(`session_${code}_role`) as 'A' | 'B' | null
-        setMyRole(storedRole)
-        setViewState(storedRole ? 'lobby' : 'join')
-      }
+      // Game is waiting - show join form or lobby
+      setMyRole(storedRole)
+      setViewState(storedRole ? 'lobby' : 'join')
     } catch (error) {
       console.error('Failed to load room state:', error)
       setPollingError(t('lobby.connectionError'))
@@ -271,6 +289,7 @@ export default function RoomPage() {
           
           {pollingError && <p className="mt-4 text-sm text-[#BE4039] font-bold italic uppercase tracking-widest">{pollingError}</p>}
         </header>
+
         {viewState === 'join' ? (
           <div className="mt-8 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-6 backdrop-blur-sm shadow-2xl">
             <div className="space-y-3">
