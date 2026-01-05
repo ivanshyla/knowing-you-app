@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { locales, Locale } from '@/i18n/request';
 import "./globals.css";
 
 const GA_ID = "G-VGDWH9G6JX";
@@ -21,17 +23,30 @@ export const metadata: Metadata = {
   description: "A psychological mirror for couples. Rate yourself and your partner — discover how your self-perception differs from how they see you.",
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+type Props = {
   children: React.ReactNode;
-}>) {
-  const locale = await getLocale();
+  params: Promise<{ locale: string }>;
+};
+
+export default async function LocaleLayout({ children, params }: Props) {
+  const { locale } = await params;
+  
+  // Validate locale
+  if (!locales.includes(locale as Locale)) {
+    notFound();
+  }
+
   const messages = await getMessages();
 
   return (
     <html lang={locale}>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

@@ -1,5 +1,4 @@
 import { getRequestConfig } from 'next-intl/server'
-import { cookies } from 'next/headers'
 
 import enMessages from '../messages/en.json'
 import ruMessages from '../messages/ru.json'
@@ -19,12 +18,16 @@ const messages: Record<Locale, typeof enMessages> = {
   be: beMessages
 }
 
-export default getRequestConfig(async () => {
-  const cookieStore = await cookies()
-  const locale = (cookieStore.get('locale')?.value as Locale) || defaultLocale
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale
+  
+  // Validate locale
+  if (!locale || !locales.includes(locale as Locale)) {
+    locale = defaultLocale
+  }
 
   return {
     locale,
-    messages: messages[locale]
+    messages: messages[locale as Locale]
   }
 })
