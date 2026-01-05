@@ -201,7 +201,8 @@
     "waitingPartner": "Done! Waiting for partner...",
     "youDone": "You're done!",
     "waitingPartnerMessage": "Your answers are saved. Waiting for partner to reveal the mirror.",
-    "waiting": "Waiting"
+    "waiting": "Waiting",
+    "partner": "your partner"
   },
   "results": {
     "title": "Results",
