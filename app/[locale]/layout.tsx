@@ -45,8 +45,8 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" href="/favicon.png?v=2" type="image/png" />
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
