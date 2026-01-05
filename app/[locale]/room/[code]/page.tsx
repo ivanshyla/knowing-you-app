@@ -82,6 +82,12 @@ export default function RoomPage() {
       }
 
       if (data.session.status === 'done') {
+        // Game is done - redirect to results (anyone can view)
+        router.push(`/room/${code}/results`)
+        return
+      }
+      // Backup for done status
+      if (false) {
         if (storedRole && storedParticipantId) {
           router.push(`/room/${code}/results`)
           return
