@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
-import { fetchSessionByCode, fetchParticipants, fetchQuestions, fetchRatings } from '@/lib/sessionStore'
-import { buildQuestionResults } from '@/lib/results'
+import { fetchSessionByCode, fetchParticipants } from '@/lib/sessionStore'
 
 export const runtime = 'nodejs'
 
@@ -13,53 +12,20 @@ export async function GET(request: NextRequest) {
   let nameA = ''
   let nameB = ''
   let hasData = false
-  let insight = ''
 
   if (code) {
     try {
       const session = await fetchSessionByCode(code)
       
       if (session && session.status === 'done') {
-        const [participants, questions, ratings] = await Promise.all([
-          fetchParticipants(session.id),
-          fetchQuestions(session.id),
-          fetchRatings(session.id)
-        ])
-        
+        const participants = await fetchParticipants(session.id)
         const pA = participants.find(p => p.role === 'A')
         const pB = participants.find(p => p.role === 'B')
         
-        if (pA && pB && ratings.length > 0) {
+        if (pA && pB) {
           nameA = pA.name
           nameB = pB.name
           hasData = true
-          
-          const results = buildQuestionResults(questions, ratings)
-          
-          let maxGap = 0
-          let whoHasGap = ''
-          
-          results.forEach((r: any) => {
-            const gapA = Math.abs(r.selfA - r.partnerViewA)
-            const gapB = Math.abs(r.selfB - r.partnerViewB)
-            
-            if (gapA > maxGap) {
-              maxGap = gapA
-              whoHasGap = nameA
-            }
-            if (gapB > maxGap) {
-              maxGap = gapB
-              whoHasGap = nameB
-            }
-          })
-          
-          if (maxGap >= 4) {
-            insight = `${whoHasGap} sees themselves differently`
-          } else if (maxGap >= 2) {
-            insight = `Interesting perception gaps discovered`
-          } else {
-            insight = `They truly know each other`
-          }
         }
       }
     } catch (e) {
@@ -74,7 +40,7 @@ export async function GET(request: NextRequest) {
   return new ImageResponse(
     (
       <div style={{
-        background: 'linear-gradient(160deg, #1F313B 0%, #2a1a35 100%)',
+        background: '#1F313B',
         width: '100%',
         height: '100%',
         display: 'flex',
@@ -82,79 +48,43 @@ export async function GET(request: NextRequest) {
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: 'system-ui, sans-serif',
-        padding: 50,
       }}>
-        {/* Simple title */}
         <div style={{
-          fontSize: isStory ? 32 : 24,
-          fontWeight: 300,
+          fontSize: 20,
           color: 'rgba(255,255,255,0.4)',
-          letterSpacing: 6,
-          marginBottom: hasData ? 30 : 40,
-          textTransform: 'uppercase',
+          letterSpacing: 4,
+          marginBottom: 25,
         }}>
-          Perception Mirror
+          PERCEPTION MIRROR
         </div>
 
         {hasData ? (
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            fontSize: 38,
+            fontWeight: 700,
+            color: 'white',
+            marginBottom: 30,
           }}>
-            {/* Names */}
-            <div style={{
-              fontSize: isStory ? 56 : 42,
-              fontWeight: 700,
-              color: 'white',
-              marginBottom: 25,
-            }}>
-              {nameA} & {nameB}
-            </div>
-
-            {/* Insight - simple text */}
-            <div style={{
-              fontSize: isStory ? 28 : 22,
-              color: 'rgba(255,255,255,0.7)',
-              marginBottom: 40,
-            }}>
-              {insight}
-            </div>
+            {nameA} & {nameB}
           </div>
         ) : (
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            fontSize: 32,
+            fontWeight: 700,
+            color: 'white',
+            marginBottom: 30,
           }}>
-            <div style={{
-              fontSize: isStory ? 48 : 36,
-              fontWeight: 700,
-              color: 'white',
-              marginBottom: 15,
-              textAlign: 'center',
-            }}>
-              How well do you know each other?
-            </div>
-            <div style={{
-              fontSize: isStory ? 24 : 18,
-              color: 'rgba(255,255,255,0.5)',
-              marginBottom: 40,
-            }}>
-              Discover perception gaps
-            </div>
+            How well do you know each other?
           </div>
         )}
 
-        {/* CTA */}
         <div style={{
           background: '#BE4039',
           color: 'white',
-          padding: isStory ? '18px 50px' : '14px 40px',
-          borderRadius: 8,
-          fontSize: isStory ? 20 : 16,
+          padding: '12px 35px',
+          borderRadius: 6,
+          fontSize: 16,
           fontWeight: 600,
-          letterSpacing: 2,
         }}>
           kykmgame.com
         </div>
