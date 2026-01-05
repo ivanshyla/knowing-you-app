@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const creatorName = String(body?.creatorName || '').trim()
     const creatorEmoji = String(body?.creatorEmoji || '')
     const customQuestions = body?.customQuestions
+    console.log("[create-room] Custom questions:", customQuestions?.length || 0, "pack:", questionPack)
 
     if (!questionPack || !creatorName) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
