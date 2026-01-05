@@ -3,6 +3,7 @@
     "play": "Play",
     "continue": "Continue Game",
     "back": "Back",
+    "backToHome": "Back to Home",
     "copy": "Copy",
     "copied": "Copied!",
     "share": "Share",
@@ -11,8 +12,7 @@
     "error": "Error",
     "account": "Account",
     "createPack": "Create Your Pack",
-    "questions": "questions",
-    "backToHome": "Back to Home"
+    "questions": "questions"
   },
   "home": {
     "title": "Knowing You,",
@@ -200,9 +200,8 @@
     "finish": "Finish",
     "waitingPartner": "Done! Waiting for partner...",
     "youDone": "You're done!",
-    "waitingPartnerMessage": "Your answers are saved. Waiting for them to reveal the mirror.",
-    "waiting": "Waiting",
-    "partner": "your partner"
+    "waitingPartnerMessage": "Your answers are saved. Waiting for partner to reveal the mirror.",
+    "waiting": "Waiting"
   },
   "results": {
     "title": "Results",
@@ -221,9 +220,14 @@
     "next": "Next",
     "thinks": "thinks",
     "gap": "Gap",
-    "them": "Them",
+    "them": "them",
     "howSeen": "How they're seen",
     "iThink": "I think",
+    "about": "About",
+    "aboutSelf": "about themselves",
+    "thinksAbout": "thinks about",
+    "seesHigher": "rates higher",
+    "seesSame": "Views match perfectly!",
     "perfectMatch": "Perfect match!",
     "closeViews": "Close views",
     "someDifference": "Some difference",
@@ -245,20 +249,19 @@
     "generating": "Generating...",
     "enterTopic": "Please enter a topic",
     "error": "Generation failed. Try another topic.",
-    "hint": "AI will generate 8 unique questions about your topic",
-    "custom": "Custom",
-    "aiGenerated": "AI Generated",
-    "questions": "questions"
+    "hint": "AI will generate 8 unique questions about your topic"
   },
   "account": {
+    "title": "Account",
     "gamesRemaining": "Games remaining",
-    "played": "Played",
-    "purchased": "Purchased",
-    "games": "games",
-    "refillBalance": "Refill your balance and keep playing",
+    "gamesPlayed": "Played",
+    "gamesPurchased": "Purchased",
+    "buy10Games": "+10 games",
+    "topUp": "Top up balance",
+    "price": "$1",
     "buy": "Buy",
-    "securePayment": "Secure payment via Stripe",
-    "firstFree": "First {count} games are free",
-    "noExpiry": "Balance never expires"
+    "viaStripe": "Payment via Stripe",
+    "first2Free": "First 2 games free",
+    "neverExpires": "Balance never expires"
   }
 }

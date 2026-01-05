@@ -84,7 +84,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-white/40 animate-pulse text-center">
           <div className="text-6xl mb-4 animate-bounce">🔮</div>
           <p className="text-sm uppercase tracking-widest">{t('results.loading')}</p>
@@ -95,7 +95,7 @@ export default function ResultsPage() {
 
   if (!participantA || !participantB) {
     return (
-      <div className="min-h-screen bg-[#1F313B] flex items-center justify-center text-white text-center p-8">
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white text-center p-8">
         <div>
           <div className="text-6xl mb-4">🙈</div>
           <p className="text-white/60 mb-4">{t('results.error')}</p>
@@ -109,12 +109,14 @@ export default function ResultsPage() {
 
   return (
     <div 
-      className="min-h-screen bg-[#1F313B] text-white overflow-hidden"
+      className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Background gradient */}
-      <div aria-hidden="true" className="fixed inset-0 bg-gradient-to-b from-[#BE4039]/30 via-[#383852]/50 to-[#1F313B] opacity-90 pointer-events-none">
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e94560]/10 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#4ecdc4]/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
       {/* Progress dots */}
@@ -220,81 +222,88 @@ function AnimatedNumber({ value, delay = 0 }: { value: number; delay?: number })
   return <span>{displayed}</span>
 }
 
-// Mirror comparison component
-function MirrorComparison({ 
+// Get insight text based on gap direction
+function getGapInsight(selfRating: number, partnerRating: number, personName: string, partnerName: string, t: any): string {
+  const diff = selfRating - partnerRating
+  if (Math.abs(diff) <= 1) return t('results.seesSame') || 'Views align perfectly!'
+  if (diff > 0) return `${personName} ${t('results.thinksBetter') || 'rates higher than'} ${partnerName}`
+  return `${partnerName} ${t('results.thinksBetter') || 'rates higher than'} ${personName}`
+}
+
+// Perception card - shows how one person is perceived
+function PerceptionCard({ 
   person, 
+  partner,
   selfRating, 
   partnerRating, 
-  partnerName,
   color,
   t 
 }: { 
   person: ParticipantRecord
+  partner: ParticipantRecord
   selfRating: number
   partnerRating: number
-  partnerName: string
   color: string
   t: any
 }) {
   const gap = Math.abs(selfRating - partnerRating)
   const interpretation = getInterpretation(gap, t)
+  const diff = selfRating - partnerRating
   
   return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 space-y-4">
-      {/* Person header */}
-      <div className="flex items-center gap-3">
-        <span className="text-4xl">{person.emoji}</span>
+    <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-5 space-y-4">
+      {/* Header - About whom */}
+      <div className="flex items-center gap-3 pb-2 border-b border-white/10">
+        <span className="text-3xl">{person.emoji}</span>
         <div>
-          <div className="font-black text-lg">{person.name}</div>
-          <div className="text-xs text-white/40 uppercase tracking-wider">{t('results.howSeen') || 'How they are seen'}</div>
+          <div className="font-black text-lg uppercase">{t('results.about')} {person.name}</div>
         </div>
       </div>
 
-      {/* Visual comparison */}
-      <div className="space-y-3">
-        {/* Self view */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-white/60">
-            <span>🪞 {t('results.iThink') || 'I think'}...</span>
-            <span className="font-mono font-bold text-white"><AnimatedNumber value={selfRating} /></span>
+      {/* Comparison bars */}
+      <div className="space-y-4">
+        {/* Self assessment */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-lg">{person.emoji}</span>
+            <span className="text-white/70">{person.name} {t('results.aboutSelf')}:</span>
+            <span className="ml-auto font-black text-xl" style={{ color }}><AnimatedNumber value={selfRating} /></span>
           </div>
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-4 bg-white/10 rounded-full overflow-hidden">
             <div 
               className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{ 
-                width: `${selfRating * 10}%`,
-                background: color
-              }}
+              style={{ width: `${selfRating * 10}%`, background: color }}
             />
           </div>
         </div>
 
-        {/* Partner view */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-white/60">
-            <span>👁️ {partnerName} {t('results.thinks') || 'thinks'}...</span>
-            <span className="font-mono font-bold text-white"><AnimatedNumber value={partnerRating} delay={200} /></span>
+        {/* Partner's view */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-lg">{partner.emoji}</span>
+            <span className="text-white/70">{partner.name} {t('results.thinksAbout')} {person.name}:</span>
+            <span className="ml-auto font-black text-xl" style={{ color: `${color}cc` }}><AnimatedNumber value={partnerRating} delay={200} /></span>
           </div>
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-4 bg-white/10 rounded-full overflow-hidden">
             <div 
               className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{ 
-                width: `${partnerRating * 10}%`,
-                background: `${color}99`
-              }}
+              style={{ width: `${partnerRating * 10}%`, background: `${color}99` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Gap indicator */}
+      {/* Difference indicator */}
       <div 
-        className="flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold"
-        style={{ backgroundColor: `${interpretation.color}20`, color: interpretation.color }}
+        className="flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold"
+        style={{ backgroundColor: `${interpretation.color}15`, color: interpretation.color }}
       >
-        <span className="text-lg">{interpretation.emoji}</span>
-        <span>{interpretation.text}</span>
-        {gap > 0 && <span className="opacity-60">({gap} {t('results.points') || 'pts'})</span>}
+        <span className="text-xl">{interpretation.emoji}</span>
+        <span>{Math.abs(diff) <= 1 ? interpretation.text : (
+          diff > 0 
+            ? `${person.name} ${t('results.seesHigher') || 'sees higher'} (+${diff})` 
+            : `${partner.name} ${t('results.seesHigher') || 'sees higher'} (+${Math.abs(diff)})`
+        )}</span>
       </div>
     </div>
   )
@@ -345,29 +354,30 @@ function QuestionSlide({ result, participantA, participantB, questionNumber, tot
       </div>
 
       {/* Shareable card */}
-      <div ref={cardRef} className="bg-[#1F313B] p-4 rounded-3xl space-y-4">
-        {/* Mirror comparisons */}
-        <MirrorComparison
+      <div ref={cardRef} className="bg-[#0a0a0a] p-4 rounded-3xl space-y-4">
+        {/* How A is perceived */}
+        <PerceptionCard
           person={participantA}
+          partner={participantB}
           selfRating={AtoA}
           partnerRating={BtoA}
-          partnerName={participantB.name}
           color="#e94560"
           t={t}
         />
         
-        <MirrorComparison
+        {/* How B is perceived */}
+        <PerceptionCard
           person={participantB}
+          partner={participantA}
           selfRating={BtoB}
           partnerRating={AtoB}
-          partnerName={participantA.name}
           color="#4ecdc4"
           t={t}
         />
 
         {/* Watermark */}
         <div className="text-center text-[0.5rem] uppercase tracking-widest text-white/20 pt-2">
-          knowing-you.app
+          kykmgame.com
         </div>
       </div>
 
@@ -560,28 +570,47 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
         </div>
       </div>
 
-      {/* Share buttons */}
+      {/* Share to Instagram Stories - Primary */}
+      <button 
+        onClick={handleShare} 
+        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white font-bold uppercase tracking-widest text-center hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+      >
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        Share to Stories
+      </button>
+
+      {/* Other share options */}
       <div className="grid grid-cols-4 gap-2">
-        <button onClick={() => shareToSocial('twitter')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
-          𝕏
+        <button onClick={() => shareToSocial('twitter')} className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
         </button>
-        <button onClick={() => shareToSocial('facebook')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
-          📘
+        <button onClick={() => shareToSocial('facebook')} className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
         </button>
-        <button onClick={() => shareToSocial('telegram')} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
-          💬
+        <button onClick={() => shareToSocial('telegram')} className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
         </button>
-        <button onClick={handleShare} className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-2xl">
-          📥
+        <button onClick={handleShare} className="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
         </button>
       </div>
 
       {/* Play again */}
       <Link
         href="/"
-        className="block w-full py-4 rounded-2xl bg-gradient-to-r from-[#e94560] to-[#4ecdc4] text-white font-bold uppercase tracking-widest text-center hover:scale-105 transition-all"
+        className="block w-full py-4 rounded-2xl bg-white/5 border border-white/20 text-white/80 font-bold uppercase tracking-widest text-center hover:bg-white/10 hover:text-white transition-all"
       >
-        🔄 {t('common.play')}
+        {t('results.playAgain')} →
       </Link>
     </div>
   )

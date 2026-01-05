@@ -201,8 +201,7 @@
     "waitingPartner": "Готово! Чекаємо на партнера...",
     "youDone": "Готово!",
     "waitingPartnerMessage": "Твої відповіді збережено. Чекаємо на партнера.",
-    "waiting": "Очікування",
-    "partner": "партнера"
+    "waiting": "Очікування"
   },
   "results": {
     "title": "Результати",
@@ -230,6 +229,11 @@
     "differentViews": "Різні погляди!",
     "useArrows": "← → для навігації",
     "swipe": "Свайп для навігації",
+    "about": "Про",
+    "aboutSelf": "про себе",
+    "thinksAbout": "думає про",
+    "seesHigher": "оцінює вище",
+    "seesSame": "Погляди збігаються!",
     "playAgain": "Грати знову"
   },
   "customPack": {
@@ -245,20 +249,19 @@
     "generating": "Генеруємо...",
     "enterTopic": "Введіть тему",
     "error": "Помилка генерації. Спробуйте іншу тему.",
-    "hint": "AI згенерує 8 унікальних питань за вашою темою",
-    "custom": "Своя тема",
-    "aiGenerated": "Створені AI",
-    "questions": "питань"
+    "hint": "AI згенерує 8 унікальних питань за вашою темою"
   },
   "account": {
     "gamesRemaining": "Ігор залишилось",
-    "played": "Зіграно",
-    "purchased": "Куплено",
-    "games": "ігор",
-    "refillBalance": "Поповни баланс і грай далі",
     "buy": "Купити",
-    "securePayment": "Безпечна оплата через Stripe",
-    "firstFree": "Перші {count} ігри безкоштовно",
-    "noExpiry": "Баланс не згорає"
+    "title": "Account",
+    "gamesPlayed": "Played",
+    "gamesPurchased": "Purchased",
+    "buy10Games": "+10 games",
+    "topUp": "Top up balance",
+    "price": "$1",
+    "viaStripe": "Payment via Stripe",
+    "first2Free": "First 2 games free",
+    "neverExpires": "Balance never expires"
   }
 }

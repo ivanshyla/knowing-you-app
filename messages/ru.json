@@ -3,6 +3,7 @@
     "play": "Играть",
     "continue": "Продолжить игру",
     "back": "Назад",
+    "backToHome": "Вернуться на главную",
     "copy": "Копировать",
     "copied": "Скопировано!",
     "share": "Поделиться",
@@ -11,8 +12,7 @@
     "error": "Ошибка",
     "account": "Аккаунт",
     "createPack": "Создать свой пакет",
-    "questions": "вопросов",
-    "backToHome": "На главную"
+    "questions": "вопросов"
   },
   "home": {
     "title": "Knowing You,",
@@ -199,10 +199,9 @@
     "next": "Далее",
     "finish": "Завершить",
     "waitingPartner": "Готово! Ждём партнёра...",
-    "youDone": "Готово!",
-    "waitingPartnerMessage": "Твои ответы сохранены. Ждём, пока партнёр откроет «зеркало».",
-    "waiting": "Ожидание",
-    "partner": "партнёра"
+    "youDone": "Ты всё!",
+    "waitingPartnerMessage": "Твои ответы сохранены. Ждём партнёра, чтобы открыть «зеркало».",
+    "waiting": "Ожидание"
   },
   "results": {
     "title": "Результаты",
@@ -230,6 +229,11 @@
     "differentViews": "Разные взгляды!",
     "useArrows": "← → для навигации",
     "swipe": "Свайп для навигации",
+    "about": "Про",
+    "aboutSelf": "о себе",
+    "thinksAbout": "думает про",
+    "seesHigher": "оценивает выше",
+    "seesSame": "Взгляды совпадают!",
     "playAgain": "Играть снова"
   },
   "customPack": {
@@ -245,20 +249,19 @@
     "generating": "Генерируем...",
     "enterTopic": "Введите тему",
     "error": "Ошибка генерации. Попробуйте другую тему.",
-    "hint": "AI сгенерирует 8 уникальных вопросов по вашей теме",
-    "custom": "Своя тема",
-    "aiGenerated": "Созданы AI",
-    "questions": "вопросов"
+    "hint": "AI сгенерирует 8 уникальных вопросов по вашей теме"
   },
   "account": {
+    "title": "Аккаунт",
     "gamesRemaining": "Игр осталось",
-    "played": "Сыграно",
-    "purchased": "Куплено",
-    "games": "игр",
-    "refillBalance": "Пополни баланс и играй дальше",
+    "gamesPlayed": "Сыграно",
+    "gamesPurchased": "Куплено",
+    "buy10Games": "+10 игр",
+    "topUp": "Пополни баланс",
+    "price": "$1",
     "buy": "Купить",
-    "securePayment": "Безопасная оплата через Stripe",
-    "firstFree": "Первые {count} игры бесплатно",
-    "noExpiry": "Баланс не сгорает"
+    "viaStripe": "Оплата через Stripe",
+    "first2Free": "Первые 2 игры бесплатно",
+    "neverExpires": "Баланс не сгорает"
   }
 }

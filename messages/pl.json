@@ -201,8 +201,7 @@
     "waitingPartner": "Gotowe! Czekamy na partnera...",
     "youDone": "Gotowe!",
     "waitingPartnerMessage": "Twoje odpowiedzi zostały zapisane. Czekamy na partnera.",
-    "waiting": "Oczekiwanie",
-    "partner": "partnera"
+    "waiting": "Oczekiwanie"
   },
   "results": {
     "title": "Wyniki",
@@ -230,6 +229,11 @@
     "differentViews": "Rozne spojrzenia!",
     "useArrows": "← → do nawigacji",
     "swipe": "Przesuń do nawigacji",
+    "about": "O",
+    "aboutSelf": "o sobie",
+    "thinksAbout": "myśli o",
+    "seesHigher": "ocenia wyżej",
+    "seesSame": "Poglądy się zgadzają!",
     "playAgain": "Zagraj ponownie"
   },
   "customPack": {
@@ -245,20 +249,19 @@
     "generating": "Generowanie...",
     "enterTopic": "Wpisz temat",
     "error": "Blad generacji. Sprobuj inny temat.",
-    "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat",
-    "custom": "Własny",
-    "aiGenerated": "Wygenerowane AI",
-    "questions": "pytań"
+    "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat"
   },
   "account": {
     "gamesRemaining": "Pozostało gier",
-    "played": "Zagrane",
-    "purchased": "Kupione",
-    "games": "gier",
-    "refillBalance": "Doładuj saldo i graj dalej",
     "buy": "Kup",
-    "securePayment": "Bezpieczna płatność przez Stripe",
-    "firstFree": "Pierwsze {count} gry za darmo",
-    "noExpiry": "Saldo nie wygasa"
+    "title": "Account",
+    "gamesPlayed": "Played",
+    "gamesPurchased": "Purchased",
+    "buy10Games": "+10 games",
+    "topUp": "Top up balance",
+    "price": "$1",
+    "viaStripe": "Payment via Stripe",
+    "first2Free": "First 2 games free",
+    "neverExpires": "Balance never expires"
   }
 }
