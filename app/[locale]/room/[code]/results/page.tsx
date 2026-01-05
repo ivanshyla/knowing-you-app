@@ -491,8 +491,8 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
   }
 
   const shareToSocial = (platform: string) => {
-    const text = `${participantA.name} & ${participantB.name}: ${matchPercentage}% match! 🪞 knowing-you.app`
-    const url = 'https://knowing-you.app'
+    const text = `${participantA.name} & ${participantB.name}: ${matchPercentage}% match! 🪞 kykmgame.com`
+    const url = 'https://kykmgame.com'
     
     const urls: Record<string, string> = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -565,7 +565,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
 
           {/* Watermark */}
           <div className="text-[0.5rem] uppercase tracking-widest text-white/20 mt-6">
-            knowing-you.app
+            kykmgame.com
           </div>
         </div>
       </div>
