@@ -174,6 +174,7 @@ export default function ResultsPage() {
               participantA={participantA}
               participantB={participantB}
               questionResults={questionResults}
+              code={code}
               t={t}
             />
           )}
@@ -446,7 +447,7 @@ function InsightsSlide({ topMatches, biggestGaps, participantA, participantB, t 
 }
 
 // Final slide with confetti and share buttons
-function FinalSlide({ matchPercentage, participantA, participantB, questionResults, t }: any) {
+function FinalSlide({ code, matchPercentage, participantA, participantB, questionResults, t }: any) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
   const [confetti, setConfetti] = useState<any[]>([])
@@ -489,6 +490,25 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
       setSaving(false)
     }
   }
+
+  const downloadStories = async () => {
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/og?code=${code}\&format=story`)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.download = `kykm-story-${code}.png`
+      link.href = url
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('Download error:', e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
 
   const shareToSocial = (platform: string) => {
     const text = `${participantA.name} & ${participantB.name}: ${matchPercentage}% match! 🪞 kykmgame.com`
@@ -572,7 +592,7 @@ function FinalSlide({ matchPercentage, participantA, participantB, questionResul
 
       {/* Share to Instagram Stories - Primary */}
       <button 
-        onClick={handleShare} 
+        onClick={downloadStories} 
         className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white font-bold uppercase tracking-widest text-center hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
       >
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
