@@ -4,7 +4,7 @@ import { createNavigation } from 'next-intl/navigation'
 export const routing = defineRouting({
   locales: ['en', 'ru', 'pl', 'uk', 'be'],
   defaultLocale: 'en',
-  localePrefix: { mode: 'always' } // Always show prefix in URL (e.g. /en, /ru)
+  localePrefix: { mode: 'as-needed' } // Default locale without prefix, others with (/ru, /pl, ...)
 })
 
 // Lightweight wrappers around Next.js navigation APIs

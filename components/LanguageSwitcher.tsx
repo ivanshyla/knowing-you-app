@@ -2,7 +2,7 @@
 
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
-import { locales, localeLabels, type Locale } from '@/lib/i18n'
+import { defaultLocale, locales, localeLabels, type Locale } from '@/lib/i18n'
 
 export function LanguageSwitcher() {
   const currentLocale = useLocale() as Locale
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
       {locales.map((locale) => (
         <a
           key={locale}
-          href={`/${locale}${basePath === '/' ? '' : basePath}${search}`}
+          href={`${locale === defaultLocale ? '' : `/${locale}`}${basePath === '/' ? '' : basePath}${search}` || '/'}
           className={`px-2 py-1 rounded text-xs font-bold transition-all ${
             currentLocale === locale
               ? 'bg-white/20 text-white'
