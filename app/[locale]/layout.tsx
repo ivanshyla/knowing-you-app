@@ -45,8 +45,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <head>
-        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
-        <link rel="icon" href="/favicon.png?v=2" type="image/png" />
+        <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico?v=3" />
+        <link rel="icon" href="/favicon.png?v=3" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
