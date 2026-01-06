@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import type { ParticipantRecord } from '@/lib/models'
 import { apiFetch } from '@/lib/apiClient'
 import { formatCode } from '@/lib/utils'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 
 const EMOJIS = ['😊', '🥰', '😎', '🤗', '😇', '🤩', '😋', '🥳', '🤠', '👑', '🌟', '💫']
 

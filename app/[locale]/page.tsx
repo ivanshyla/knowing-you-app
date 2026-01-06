@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
