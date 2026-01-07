@@ -23,9 +23,12 @@ export const metadata: Metadata = {
   description: "A psychological mirror for couples. Rate yourself and your partner — discover how your self-perception differs from how they see you.",
 };
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// export function generateStaticParams() {
+//   return locales.map((locale) => ({ locale }));
+// }
 
 type Props = {
   children: React.ReactNode;
@@ -45,10 +48,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale}>
       <head>
-        <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
-        <link rel="shortcut icon" href="/favicon.ico?v=3" />
-        <link rel="icon" href="/favicon.png?v=3" type="image/png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

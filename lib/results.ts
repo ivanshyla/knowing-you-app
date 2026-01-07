@@ -18,7 +18,8 @@ export function buildQuestionResults(
   questions: QuestionRecord[],
   ratings: RatingRecord[]
 ): QuestionResult[] {
-  if (!questions.length) return []
+  if (!questions || !Array.isArray(questions) || questions.length === 0) return []
+  if (!ratings || !Array.isArray(ratings)) return []
 
   return questions.map((question) => {
     const qRatings = ratings.filter((rating) => rating.questionId === question.questionId)
@@ -41,7 +42,7 @@ export function buildQuestionResults(
 }
 
 export function computeMatchPercentage(questionResults: QuestionResult[]): number {
-  if (!questionResults.length) return 0
+  if (!questionResults || !Array.isArray(questionResults) || questionResults.length === 0) return 0
   const totalGap = questionResults.reduce((acc, item) => acc + item.avgGap, 0) / questionResults.length
   return Math.max(0, Math.round(100 - (totalGap / 10) * 100))
 }

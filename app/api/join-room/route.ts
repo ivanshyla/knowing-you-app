@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createUserId, getUserIdFromRequest, USER_COOKIE } from '@/lib/auth'
-import { addParticipantRecord, ensureUserRecord, fetchParticipants, fetchSessionByCode } from '@/lib/sessionStore'
+import {
+  addParticipantRecord,
+  createUserSessionLink,
+  ensureUserRecord,
+  fetchParticipants,
+  fetchSessionByCode
+} from '@/lib/sessionStore'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,9 +21,7 @@ export async function POST(request: NextRequest) {
     await ensureUserRecord(userId)
 
     const body = await request.json()
-    const rawCode = String(body?.code || '')
-    // Нормализуем код: убираем дефисы и пробелы
-    const code = rawCode.replace(/[-\s]/g, '')
+    const code = String(body?.code || '')
     const name = String(body?.name || '').trim()
     const emoji = String(body?.emoji || '').trim() || '😊'
 
@@ -36,6 +40,27 @@ export async function POST(request: NextRequest) {
 
     const participants = await fetchParticipants(session.id)
     if (participants.length >= 2) {
+      // Allow reconnection by name: if a participant with the same name exists,
+      // return their participant info instead of rejecting as full.
+      const existing = participants.find(
+        (p) => p.name.trim().toLowerCase() === name.toLowerCase()
+      )
+      if (existing) {
+        const response = NextResponse.json({
+          sessionId: session.id,
+          participantId: existing.participantId,
+          role: existing.role
+        })
+        if (shouldSetCookie) {
+          response.cookies.set(USER_COOKIE, userId, {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 365
+          })
+        }
+        return response
+      }
       return NextResponse.json({ error: 'Room is full' }, { status: 400 })
     }
 
@@ -50,11 +75,20 @@ export async function POST(request: NextRequest) {
       userId
     })
 
+    await createUserSessionLink({
+      userId,
+      sessionId: session.id,
+      createdAt: new Date().toISOString(),
+      code,
+      role,
+      participantName: name,
+      participantEmoji: emoji
+    })
+
     const response = NextResponse.json({
       sessionId: session.id,
       participantId: participant.participantId,
-      role,
-      sessionStatus: session.status
+      role
     })
     if (shouldSetCookie) {
       response.cookies.set(USER_COOKIE, userId, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 })

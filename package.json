@@ -7,7 +7,10 @@
     "build": "next build",
     "postbuild": "node scripts/copyStatic.cjs",
     "start": "NODE_ENV=production node .next/standalone/server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "check": "npm run lint && npm run type-check",
+    "predeploy": "npm run check && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.946.0",

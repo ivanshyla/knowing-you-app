@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { Link } from '@/i18n/routing'
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -49,16 +51,28 @@ export default function ResultsPage() {
 
   const participantA = participants.find((p) => p.role === 'A')
   const participantB = participants.find((p) => p.role === 'B')
-  const questionResults = useMemo(() => buildQuestionResults(questions, ratings), [questions, ratings])
-  const matchPercentage = useMemo(() => computeMatchPercentage(questionResults), [questionResults])
+  const questionResults = useMemo(() => {
+    if (!questions || !ratings || questions.length === 0) return []
+    return buildQuestionResults(questions, ratings)
+  }, [questions, ratings])
+  const matchPercentage = useMemo(() => {
+    if (!questionResults || questionResults.length === 0) return 0
+    return computeMatchPercentage(questionResults)
+  }, [questionResults])
 
   // Insights
-  const topMatches = useMemo(() => [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3), [questionResults])
-  const biggestGaps = useMemo(() => [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 3), [questionResults])
+  const topMatches = useMemo(() => {
+    if (!questionResults || questionResults.length === 0) return []
+    return [...questionResults].sort((a, b) => a.avgGap - b.avgGap).slice(0, 3)
+  }, [questionResults])
+  const biggestGaps = useMemo(() => {
+    if (!questionResults || questionResults.length === 0) return []
+    return [...questionResults].sort((a, b) => b.avgGap - a.avgGap).slice(0, 3)
+  }, [questionResults])
 
-  const totalSlides = questionResults.length + 2 // questions + insights + final
-  const isInsightsSlide = currentIndex === questionResults.length
-  const isFinalSlide = currentIndex === questionResults.length + 1
+  const totalSlides = (questionResults?.length ?? 0) + 2 // questions + insights + final
+  const isInsightsSlide = currentIndex === (questionResults?.length ?? 0)
+  const isFinalSlide = currentIndex === (questionResults?.length ?? 0) + 1
 
   // Swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX)

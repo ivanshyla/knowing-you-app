@@ -142,19 +142,30 @@ export default function RoomPage() {
         localStorage.setItem(`session_${code}_role`, data.role)
         localStorage.setItem(`session_${code}_participant_id`, data.participantId)
         localStorage.setItem(`session_${code}_session_id`, data.sessionId)
+        localStorage.setItem(`session_${code}_name`, name.trim()) // Store name for rejoin
         localStorage.setItem('kykm_last_code', code)
       }
       setMyRole(data.role)
       setSessionId(data.sessionId)
       
-      // If game already started, go directly to questions
-      if (data.sessionStatus === 'live') {
-        router.push(`/room/${code}/questions`)
-        return
+      // Reload state to check if game started
+      await loadState()
+      
+      // Check if game is live and redirect
+      try {
+        const stateCheck = await apiFetch(`/api/room/state?code=${code}`, { cache: 'no-store' })
+        if (stateCheck.ok) {
+          const stateData = await stateCheck.json()
+          if (stateData?.session?.status === 'live') {
+            router.push(`/room/${code}/questions`)
+            return
+          }
+        }
+      } catch (e) {
+        // Ignore errors, just show lobby
       }
       
       setViewState('lobby')
-      await loadState()
     } catch (error) {
       console.error('Error joining room:', error)
       alert(t('common.error'))

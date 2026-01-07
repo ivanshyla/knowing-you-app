@@ -27,10 +27,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Room not found' }, { status: 404 })
     }
 
-    const payload: Record<string, unknown> = {
-      session: state.session,
-      participants: state.participants
-    }
+    // Redact sensitive fields (e.g., userId) from participants before returning
+    const safeParticipants = (state.participants ?? []).map((p) => ({
+      sessionId: p.sessionId,
+      participantId: p.participantId,
+      role: p.role,
+      name: p.name,
+      emoji: p.emoji,
+      joinedAt: p.joinedAt
+    }))
+
+    const payload: Record<string, unknown> = { session: state.session, participants: safeParticipants }
 
     if (include.questions) {
       payload.questions = state.questions ?? []

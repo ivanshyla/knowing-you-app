@@ -51,6 +51,9 @@ export const RESULT_MESSAGES = {
 
 // Get random message from array
 export function getRandomMessage(messages: string[]): string {
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return ''
+  }
   return messages[Math.floor(Math.random() * messages.length)]
 }
 
