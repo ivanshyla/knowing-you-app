@@ -253,16 +253,10 @@
     "hint": "AI wygeneruje 8 unikalnych pytan na twoj temat"
   },
   "account": {
-    "gamesRemaining": "Pozostało gier",
-    "buy": "Kup",
-    "title": "Account",
-    "gamesPlayed": "Played",
-    "gamesPurchased": "Purchased",
-    "buy10Games": "+10 games",
-    "topUp": "Top up balance",
-    "price": "$1",
-    "viaStripe": "Payment via Stripe",
-    "first2Free": "First 2 games free",
-    "neverExpires": "Balance never expires"
+    "title": "Konto",
+    "gamesPlayed": "Zagrane gry",
+    "avgMatch": "Średnie dopasowanie",
+    "freeForever": "Na zawsze za darmo",
+    "noLimits": "Graj bez ograniczeń z przyjaciółmi"
   }
 }

@@ -254,15 +254,9 @@
   },
   "account": {
     "title": "Аккаунт",
-    "gamesRemaining": "Игр осталось",
-    "gamesPlayed": "Сыграно",
-    "gamesPurchased": "Куплено",
-    "buy10Games": "+10 игр",
-    "topUp": "Пополни баланс",
-    "price": "$1",
-    "buy": "Купить",
-    "viaStripe": "Оплата через Stripe",
-    "first2Free": "Первые 2 игры бесплатно",
-    "neverExpires": "Баланс не сгорает"
+    "gamesPlayed": "Игр сыграно",
+    "avgMatch": "Средний матч",
+    "freeForever": "Бесплатно навсегда",
+    "noLimits": "Играйте без ограничений с друзьями"
   }
 }

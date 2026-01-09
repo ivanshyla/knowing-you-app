@@ -141,10 +141,6 @@ function CreateRoomContent() {
 
       const data = await response.json()
       if (!response.ok) {
-        if (response.status === 402) {
-          router.push('/account')
-          return
-        }
         throw new Error(data?.error || 'Failed to create room')
       }
 
