@@ -13,11 +13,7 @@ export async function POST(request: NextRequest) {
       shouldSetCookie = true
     }
 
-    const user = await ensureUserRecord(userId)
-    // Paywall: 1 игра бесплатно, дальше только PRO
-    if (!user.isPro && user.gamesPlayed >= 1) {
-      return NextResponse.json({ error: 'Subscription required' }, { status: 402 })
-    }
+    await ensureUserRecord(userId)
 
     const body = await request.json()
     const questionPack = String(body?.questionPack || '')

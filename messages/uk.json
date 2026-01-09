@@ -253,16 +253,10 @@
     "hint": "AI згенерує 8 унікальних питань за вашою темою"
   },
   "account": {
-    "gamesRemaining": "Ігор залишилось",
-    "buy": "Купити",
-    "title": "Account",
-    "gamesPlayed": "Played",
-    "gamesPurchased": "Purchased",
-    "buy10Games": "+10 games",
-    "topUp": "Top up balance",
-    "price": "$1",
-    "viaStripe": "Payment via Stripe",
-    "first2Free": "First 2 games free",
-    "neverExpires": "Balance never expires"
+    "title": "Акаунт",
+    "gamesPlayed": "Ігор зіграно",
+    "avgMatch": "Середній матч",
+    "freeForever": "Безкоштовно назавжди",
+    "noLimits": "Грайте без обмежень з друзями"
   }
 }

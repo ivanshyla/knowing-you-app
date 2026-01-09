@@ -254,15 +254,9 @@
   },
   "account": {
     "title": "Account",
-    "gamesRemaining": "Games remaining",
-    "gamesPlayed": "Played",
-    "gamesPurchased": "Purchased",
-    "buy10Games": "+10 games",
-    "topUp": "Top up balance",
-    "price": "$1",
-    "buy": "Buy",
-    "viaStripe": "Payment via Stripe",
-    "first2Free": "First 2 games free",
-    "neverExpires": "Balance never expires"
+    "gamesPlayed": "Games Played",
+    "avgMatch": "Average Match",
+    "freeForever": "Free Forever",
+    "noLimits": "Play unlimited games with friends"
   }
 }
